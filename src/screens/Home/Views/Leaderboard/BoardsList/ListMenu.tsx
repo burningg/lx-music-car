@@ -1,6 +1,7 @@
-import { useMemo, useRef, useImperativeHandle, forwardRef, useState } from 'react'
+import { useRef, useImperativeHandle, forwardRef, useState } from 'react'
 import { useI18n } from '@/lang'
-import Menu, { type MenuType, type Position } from '@/components/common/Menu'
+import { Sheet, type SheetType, type SheetHeader, type SheetQuickAction } from '@/components/car'
+import { type Position } from '@/components/common/Menu'
 
 export interface SelectInfo {
   listId: string
@@ -15,7 +16,7 @@ export interface ListMenuProps {
   onHideMenu: () => void
 }
 export interface ListMenuType {
-  show: (selectInfo: SelectInfo, position: Position) => void
+  show: (selectInfo: SelectInfo, position?: Position) => void
 }
 
 export type {
@@ -24,31 +25,24 @@ export type {
 
 export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
   const t = useI18n()
-  const [visible, setVisible] = useState(false)
-  const menuRef = useRef<MenuType>(null)
+  const sheetRef = useRef<SheetType>(null)
   const selectInfoRef = useRef<SelectInfo>(initSelectInfo as SelectInfo)
+  const [header, setHeader] = useState<SheetHeader>()
 
   useImperativeHandle(ref, () => ({
-    show(selectInfo, position) {
+    show(selectInfo) {
       selectInfoRef.current = selectInfo
-      if (visible) menuRef.current?.show(position)
-      else {
-        setVisible(true)
-        requestAnimationFrame(() => {
-          menuRef.current?.show(position)
-        })
-      }
+      setHeader({ title: selectInfo.name })
+      requestAnimationFrame(() => { sheetRef.current?.show() })
     },
   }))
 
-  const menus = useMemo(() => {
-    return [
-      { action: 'play', label: t('play') },
-      { action: 'collect', label: t('collect') },
-    ] as const
-  }, [t])
+  const quick: SheetQuickAction[] = [
+    { action: 'play', icon: 'lucide-play', label: t('play'), primary: true },
+    { action: 'collect', icon: 'ph-heart', label: t('collect') },
+  ]
 
-  const handleMenuPress = ({ action }: typeof menus[number]) => {
+  const handlePress = (action: string) => {
     const selectInfo = selectInfoRef.current
     switch (action) {
       case 'play':
@@ -63,9 +57,12 @@ export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
   }
 
   return (
-    visible
-      ? <Menu ref={menuRef} menus={menus} onPress={handleMenuPress} onHide={props.onHideMenu} />
-      : null
+    <Sheet
+      ref={sheetRef}
+      header={header}
+      quick={quick}
+      onPress={handlePress}
+      onHide={props.onHideMenu}
+    />
   )
 })
-

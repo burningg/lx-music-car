@@ -11,6 +11,7 @@ import { scaleSizeH, scaleSizeW, setSpText } from './pixelRatio'
 import { toOldMusicInfo } from './index'
 import { stringMd5 } from 'react-native-quick-md5'
 import { windowSizeTools } from '@/utils/windowSizeTools'
+import { hasOverlayHost, showConfirm, showToast } from '@/components/car/overlay'
 
 
 // https://stackoverflow.com/a/47349998
@@ -105,6 +106,11 @@ export const requestStoragePermission = async() => {
  * @param position 位置
  */
 export const toast = (message: string, duration: 'long' | 'short' = 'short', position: 'top' | 'center' | 'bottom' = 'bottom') => {
+  // 车机界面用自绘 Toast，其它界面（原生弹窗、启动早期）仍用系统 Toast
+  if (hasOverlayHost()) {
+    showToast(message, duration)
+    return
+  }
   let _duration
   switch (duration) {
     case 'long':
@@ -188,8 +194,12 @@ export const confirmDialog = async({
   message = '',
   cancelButtonText = global.i18n.t('dialog_cancel'),
   confirmButtonText = global.i18n.t('dialog_confirm'),
+  danger = false,
   bgClose = true,
 }) => {
+  if (hasOverlayHost()) {
+    return showConfirm({ title, message, cancelButtonText, confirmButtonText, danger, bgClose })
+  }
   return new Promise<boolean>(resolve => {
     Alert.alert(title, message, [
       {
@@ -219,6 +229,10 @@ export const tipDialog = async({
   btnText = global.i18n.t('dialog_confirm'),
   bgClose = true,
 }) => {
+  if (hasOverlayHost()) {
+    await showConfirm({ title, message, cancelButtonText: '', confirmButtonText: btnText, single: true, bgClose })
+    return
+  }
   return new Promise<void>(resolve => {
     Alert.alert(title, message, [
       {

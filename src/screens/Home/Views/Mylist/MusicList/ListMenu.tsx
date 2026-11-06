@@ -1,6 +1,7 @@
 import { useRef, useImperativeHandle, forwardRef, useState } from 'react'
 import { useI18n } from '@/lang'
-import Menu, { type Menus, type MenuType, type Position } from '@/components/common/Menu'
+import { Sheet, type SheetType, type SheetAction, type SheetHeader, type SheetQuickAction } from '@/components/car'
+import { type Position } from '@/components/common/Menu'
 import { hasDislike } from '@/core/dislikeList'
 import { existsFile } from '@/utils/fs'
 import { hasMusicUrlByMusic } from '@/utils/data'
@@ -29,7 +30,7 @@ export interface ListMenuProps {
   onRemove: (selectInfo: SelectInfo) => void
 }
 export interface ListMenuType {
-  show: (selectInfo: SelectInfo, position: Position) => void
+  show: (selectInfo: SelectInfo, position?: Position) => void
 }
 
 export type {
@@ -43,67 +44,72 @@ const hasEditMetadata = async(musicInfo: LX.Music.MusicInfo) => {
 const hasUrlCache = async(musicInfo: LX.Music.MusicInfo) => {
   return hasMusicUrlByMusic(musicInfo)
 }
+
+interface SheetState {
+  header?: SheetHeader
+  quick: SheetQuickAction[]
+  actions: SheetAction[]
+}
+
 export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
   const t = useI18n()
-  const [visible, setVisible] = useState(false)
-  const menuRef = useRef<MenuType>(null)
+  const sheetRef = useRef<SheetType>(null)
   const selectInfoRef = useRef<SelectInfo>(initSelectInfo as SelectInfo)
-  const [menus, setMenus] = useState<Menus>([])
+  const [sheetState, setSheetState] = useState<SheetState>({ quick: [], actions: [] })
+
+  const buildActions = (musicInfo: LX.Music.MusicInfo): SheetAction[] => {
+    const isLocal = musicInfo.source == 'local'
+    const actions: SheetAction[] = []
+    if (isLocal) actions.push({ action: 'editMetadata', icon: 'lucide-copy', disabled: true, label: t('edit_metadata') })
+    actions.push(
+      { action: 'move', icon: 'lucide-folder-input', label: t('move_to') },
+      { action: 'changePosition', icon: 'lucide-arrow-down-up', label: t('change_position') },
+      { action: 'toggleSource', icon: 'lucide-replace', label: t('toggle_source') },
+      { action: 'copyName', icon: 'lucide-copy', label: t('copy_name') },
+      { action: 'musicSourceDetail', icon: 'lucide-info', disabled: isLocal, label: t('music_source_detail') },
+      { action: 'removeCache', icon: 'lucide-refresh-cw', disabled: true, label: t('list_remove_cache') },
+      { action: 'dislike', icon: 'lucide-x', disabled: hasDislike(musicInfo), label: t('dislike') },
+      { action: 'remove', icon: 'lucide-trash-2', danger: true, label: t('delete') },
+    )
+    return actions
+  }
+
+  const updateAction = (action: string, disabled: boolean) => {
+    setSheetState(state => ({
+      ...state,
+      actions: state.actions.map(item => item.action == action ? { ...item, disabled } : item),
+    }))
+  }
 
   useImperativeHandle(ref, () => ({
-    show(selectInfo, position) {
+    show(selectInfo) {
       selectInfoRef.current = selectInfo
-      handleSetMenu(selectInfo.musicInfo)
-      if (visible) menuRef.current?.show(position)
-      else {
-        setVisible(true)
-        requestAnimationFrame(() => {
-          menuRef.current?.show(position)
-        })
-      }
+      const musicInfo = selectInfo.musicInfo
+      setSheetState({
+        header: {
+          title: musicInfo.name,
+          subtitle: [musicInfo.singer, musicInfo.interval, musicInfo.source == 'local' ? t('car_local_source') : t(`source_alias_${musicInfo.source}`)].filter(Boolean).join(' · '),
+          pic: musicInfo.meta.picUrl,
+        },
+        quick: [
+          { action: 'play', icon: 'lucide-play', label: t('play'), primary: true },
+          { action: 'playLater', icon: 'lucide-list-start', label: t('play_later') },
+          { action: 'add', icon: 'lucide-folder-plus', label: t('add_to') },
+        ],
+        actions: buildActions(musicInfo),
+      })
+      requestAnimationFrame(() => { sheetRef.current?.show() })
+      void Promise.all([
+        musicInfo.source == 'local' ? hasEditMetadata(musicInfo) : Promise.resolve(false),
+        hasUrlCache(musicInfo),
+      ]).then(([editMetadata, hasCache]) => {
+        if (musicInfo.source == 'local') updateAction('editMetadata', editMetadata)
+        updateAction('removeCache', hasCache)
+      })
     },
   }))
 
-  const handleSetMenu = (musicInfo: LX.Music.MusicInfo) => {
-    let edit_metadata = false
-    let has_url_cache = false
-    const isLocal = musicInfo.source == 'local'
-    const menu = [
-      { action: 'play', label: t('play') },
-      { action: 'playLater', label: t('play_later') },
-      // { action: 'download', label: '下载' },
-      { action: 'add', label: t('add_to') },
-      { action: 'move', label: t('move_to') },
-      { action: 'changePosition', label: t('change_position') },
-      { action: 'toggleSource', label: t('toggle_source') },
-      { action: 'copyName', label: t('copy_name') },
-      { action: 'musicSourceDetail', disabled: isLocal, label: t('music_source_detail') },
-      { action: 'removeCache', disabled: !has_url_cache, label: t('list_remove_cache') },
-      // { action: 'musicSearch', label: t('music_search') },
-      { action: 'dislike', disabled: hasDislike(musicInfo), label: t('dislike') },
-      { action: 'remove', label: t('delete') },
-    ]
-    if (isLocal) menu.splice(5, 0, { action: 'editMetadata', disabled: !edit_metadata, label: t('edit_metadata') })
-    setMenus(menu)
-    void Promise.all([isLocal ? hasEditMetadata(musicInfo) : Promise.resolve(false), hasUrlCache(musicInfo)]).then(([_edit_metadata, _has_url_cache]) => {
-      // console.log(_edit_metadata)
-      let isUpdated = false
-      if (edit_metadata != _edit_metadata) {
-        edit_metadata = _edit_metadata
-        menu[menu.findIndex(m => m.action == 'editMetadata')].disabled = !edit_metadata
-        isUpdated ||= true
-      }
-      if (has_url_cache != _has_url_cache) {
-        has_url_cache = _has_url_cache
-        menu[menu.findIndex(m => m.action == 'removeCache')].disabled = !has_url_cache
-        isUpdated ||= true
-      }
-
-      if (isUpdated) setMenus([...menu])
-    })
-  }
-
-  const handleMenuPress = ({ action }: typeof menus[number]) => {
+  const handlePress = (action: string) => {
     const selectInfo = selectInfoRef.current
     switch (action) {
       case 'play':
@@ -111,21 +117,12 @@ export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
         break
       case 'playLater':
         props.onPlayLater(selectInfo)
-
         break
       case 'add':
         props.onAdd(selectInfo)
-        // isMoveRef.current = false
-        // selectedListRef.current.length
-        //   ? setVisibleMusicMultiAddModal(true)
-        //   : setVisibleMusicAddModal(true)
         break
       case 'move':
         props.onMove(selectInfo)
-        // isMoveRef.current = true
-        // selectedListRef.current.length
-        //   ? setVisibleMusicMultiAddModal(true)
-        //   : setVisibleMusicAddModal(true)
         break
       case 'editMetadata':
         props.onEditMetadata(selectInfo)
@@ -135,15 +132,12 @@ export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
         break
       case 'changePosition':
         props.onChangePosition(selectInfo)
-        // setVIsibleMusicPosition(true)
         break
       case 'toggleSource':
         props.onToggleSource(selectInfo)
-        // setVIsibleMusicPosition(true)
         break
       case 'musicSourceDetail':
         props.onMusicSourceDetail(selectInfo)
-        // setVIsibleMusicPosition(true)
         break
       case 'removeCache':
         props.onRemoveCache(selectInfo)
@@ -160,8 +154,12 @@ export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
   }
 
   return (
-    visible
-      ? <Menu ref={menuRef} menus={menus} onPress={handleMenuPress} />
-      : null
+    <Sheet
+      ref={sheetRef}
+      header={sheetState.header}
+      quick={sheetState.quick}
+      actions={sheetState.actions}
+      onPress={handlePress}
+    />
   )
 })
