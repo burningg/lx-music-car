@@ -1,31 +1,28 @@
 import { memo, useEffect } from 'react'
 import { View, AppState } from 'react-native'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
-import { CarShell } from '@/components/car'
-import MoreBtn from './MoreBtn'
-
-import Header from './components/Header'
+import { AmbientBackground, CarShell } from '@/components/car'
 import { setComponentId } from '@/core/common'
 import { COMPONENT_IDS } from '@/config/constant'
 import PageContent from '@/components/PageContent'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
+import { pop } from '@/navigation'
+import { px } from '@/utils/pixelRatio'
 
-import Pic from './Pic'
-// import ControlBtn from './ControlBtn'
+import TopBar from './TopBar'
+import Cover from './Cover'
+import Meta from './Meta'
+import ProgressRow from './ProgressRow'
+import Transport from './Transport'
+import Secondary from './Secondary'
 import Lyric from './Lyric'
-import Player from './Player'
-import { createStyle } from '@/utils/tools'
-import { marginLeftRaw } from './constant'
-import { useStatusbarHeight } from '@/store/common/hook'
-// import MoreBtn from './MoreBtn2'
 
+// 设计稿正在播放：顶部工具行 → 封面 448 + 信息 616 + 歌词 440
 export default memo(({ componentId }: { componentId: string }) => {
-  const statusBarHeight = useStatusbarHeight()
-
   useEffect(() => {
     setComponentId(COMPONENT_IDS.playDetail, componentId)
     screenkeepAwake()
-    let appstateListener = AppState.addEventListener('change', (state) => {
+    const appstateListener = AppState.addEventListener('change', (state) => {
       switch (state) {
         case 'active':
           if (!commonState.componentIds.comment) screenkeepAwake()
@@ -51,56 +48,34 @@ export default memo(({ componentId }: { componentId: string }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const back = () => {
+    void pop(componentId)
+  }
+
   return (
     <PageContent>
       <CarShell componentId={componentId} activeId="now">
-        <View style={{ ...styles.container, paddingTop: statusBarHeight }}>
-          <View style={styles.left}>
-            <Header />
-            <View style={styles.leftContent}>
-              <MoreBtn />
-              <Pic componentId={componentId} />
+        <View style={{ flex: 1 }}>
+          <AmbientBackground />
+          <View style={{ flex: 1, paddingHorizontal: px(80), paddingTop: px(48) }}>
+            <TopBar onBack={back} />
+            <View style={{ flex: 1, flexDirection: 'row' }}>
+              <View style={{ marginTop: px(32) }}>
+                <Cover componentId={componentId} />
+              </View>
+              <View style={{ width: px(616), marginLeft: px(72), marginTop: px(17), gap: px(40) }}>
+                <Meta />
+                <ProgressRow />
+                <Transport />
+                <Secondary />
+              </View>
+              <View style={{ flex: 1, marginLeft: px(72), marginTop: px(101) }}>
+                <Lyric />
+              </View>
             </View>
-            <Player />
-          </View>
-          <View style={styles.right}>
-            <Lyric />
           </View>
         </View>
       </CarShell>
     </PageContent>
   )
-})
-
-const styles = createStyle({
-  container: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  left: {
-    flex: 1,
-    width: '45%',
-    paddingBottom: 10,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-  leftContent: {
-    flexShrink: 1,
-    flexGrow: 0,
-    marginLeft: marginLeftRaw,
-    // flexDirection: 'row',
-    // backgroundColor: 'rgba(0,0,0,0.1)',
-    // alignItems: 'center',
-  },
-  right: {
-    width: '55%',
-    flexGrow: 0,
-    flexShrink: 0,
-  },
-  controlBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    // backgroundColor: '#eee',
-  },
 })

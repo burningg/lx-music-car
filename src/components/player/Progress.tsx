@@ -95,11 +95,13 @@ export const ProgressPlain = ({ progress, duration, buffered, paddingTop }: {
   )
 }
 
-const Progress = ({ progress, duration, buffered, paddingTop }: {
+const Progress = ({ progress, duration, buffered, paddingTop, thickness }: {
   progress: number
   duration: number
   buffered: number
   paddingTop?: number
+  /** 进度条视觉高度，不传则撑满容器（保持旧布局） */
+  thickness?: number
 }) => {
   // const { progress } = usePlayTimeBuffer()
   const theme = useTheme()
@@ -116,25 +118,34 @@ const Progress = ({ progress, duration, buffered, paddingTop }: {
     global.app_event.setProgress(progress * durationRef.current)
   }, [])
 
+  const bars = (
+    <View style={{ flex: 1 }}>
+      <DefaultBar />
+      <BufferedBar progress={buffered} />
+      {
+        draging
+          ? (
+              <>
+                <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-light-200-alpha-900'], width: progressStr, position: 'absolute', left: 0, top: 0 }} />
+                <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-light-100-alpha-800'], width: `${dragProgress * 100}%`, position: 'absolute', left: 0, top: 0 }} />
+              </>
+            ) : (
+              <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-alpha-900'], width: progressStr, position: 'absolute', left: 0, top: 0 }} />
+            )
+      }
+    </View>
+  )
+
   return (
     <View style={{ ...styles.progress, paddingTop }}>
-      <View style={{ flex: 1 }}>
-        <DefaultBar />
-        <BufferedBar progress={buffered} />
-        {
-          draging
-            ? (
-                <>
-                  <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-light-200-alpha-900'], width: progressStr, position: 'absolute', left: 0, top: 0 }} />
-                  <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-light-100-alpha-800'], width: `${dragProgress * 100}%`, position: 'absolute', left: 0, top: 0 }} />
-                </>
-              ) : (
-                <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-alpha-900'], width: progressStr, position: 'absolute', left: 0, top: 0 }} />
-              )
-        }
-      </View>
+      {thickness
+        ? (
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <View style={{ height: thickness, borderRadius: thickness / 2, overflow: 'hidden' }}>{bars}</View>
+          </View>
+          )
+        : bars}
       <PreassBar onDragState={setDraging} setDragProgress={setDragProgress} onSetProgress={onSetProgress} />
-      {/* <View style={{ ...styles.progressBar, height: '100%', width: progressStr }}><Pressable style={styles.progressDot}></Pressable></View> */}
     </View>
   )
 }
