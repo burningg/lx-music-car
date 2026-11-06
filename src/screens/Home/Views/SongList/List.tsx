@@ -7,9 +7,10 @@ import { type Source } from '@/store/songlist/state'
 
 export interface ListType {
   loadList: (source: Source, sortId: string, tagId: string) => void
+  refresh: () => void
 }
 
-export default forwardRef<ListType, {}>((props, ref) => {
+export default forwardRef<ListType, { featuredTag: string }>(({ featuredTag }, ref) => {
   const listRef = useRef<SonglistType>(null)
   const isUnmountedRef = useRef(false)
   useImperativeHandle(ref, () => ({
@@ -37,7 +38,10 @@ export default forwardRef<ListType, {}>((props, ref) => {
         })
       }
     },
-  }), [])
+    refresh() {
+      handleRefresh()
+    },
+  }))
 
   useEffect(() => {
     isUnmountedRef.current = false
@@ -76,6 +80,8 @@ export default forwardRef<ListType, {}>((props, ref) => {
 
   return <Songlist
     ref={listRef}
+    layout="shelf"
+    featuredTag={featuredTag}
     onRefresh={handleRefresh}
     onLoadMore={handleLoadMore}
    />

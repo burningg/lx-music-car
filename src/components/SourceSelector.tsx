@@ -16,8 +16,8 @@ type Sources = Readonly<Array<LX.OnlineSource | 'all'>>
 export interface SourceSelectorProps<S extends Sources> {
   fontSize?: number
   center?: _DorpDownMenuProps<any>['center']
-  /** text：原样式；pill：车机设计稿胶囊按钮 */
-  variant?: 'text' | 'pill'
+  /** text：原样式；pill：车机设计稿胶囊按钮；segment：分段组里的一段 */
+  variant?: 'text' | 'pill' | 'segment'
   onSourceChange: (source: S[number]) => void
 }
 
@@ -57,6 +57,36 @@ const Component = <S extends Sources>({ fontSize = 15, center, variant = 'text',
     setSource(action)
   }
 
+  const label = t(`source_${sourceNameType}_${source}`)
+  let button: JSX.Element
+  switch (variant) {
+    case 'segment':
+      // 分段组里的一段：无边框，名称 + 下拉箭头
+      button = (
+        <View style={{ minHeight: px(48), flexDirection: 'row', alignItems: 'center', gap: px(6), paddingLeft: px(26), paddingRight: px(18), borderRadius: 999 }}>
+          <CarText size={18} color={theme['text-2']} numberOfLines={1}>{label}</CarText>
+          <CarIcon name="lucide-chevron-down" size={18} color={theme['text-3']} />
+        </View>
+      )
+      break
+    case 'pill':
+      // 设计稿来源胶囊：高 64，强调色圆点 + 名称 + 下拉箭头
+      button = (
+        <View style={{ height: px(64), flexDirection: 'row', alignItems: 'center', gap: px(10), paddingLeft: px(24), paddingRight: px(22), borderRadius: 999, borderWidth: 1, borderColor: theme.hairline, backgroundColor: theme.glass }}>
+          <View style={{ width: px(8), height: px(8), borderRadius: px(4), backgroundColor: theme.accent }} />
+          <CarText size={18} weight="600" numberOfLines={1}>{label}</CarText>
+          <CarIcon name="lucide-chevron-down" size={20} color={theme['text-2']} />
+        </View>
+      )
+      break
+    default:
+      button = (
+        <View style={styles.sourceMenu}>
+          <Text style={{ textAlign: center ? 'center' : 'left' }} numberOfLines={1} size={fontSize}>{label}</Text>
+        </View>
+      )
+  }
+
   return (
     <DorpDownMenu
       menus={sourceList_t}
@@ -65,22 +95,7 @@ const Component = <S extends Sources>({ fontSize = 15, center, variant = 'text',
       fontSize={fontSize}
       activeId={source}
     >
-      {
-        variant == 'pill'
-          ? (
-              // 设计稿来源胶囊：高 64，强调色圆点 + 名称 + 下拉箭头
-              <View style={{ height: px(64), flexDirection: 'row', alignItems: 'center', gap: px(10), paddingLeft: px(24), paddingRight: px(22), borderRadius: 999, borderWidth: 1, borderColor: theme.hairline, backgroundColor: theme.glass }}>
-                <View style={{ width: px(8), height: px(8), borderRadius: px(4), backgroundColor: theme.accent }} />
-                <CarText size={18} weight="600" numberOfLines={1}>{t(`source_${sourceNameType}_${source}`)}</CarText>
-                <CarIcon name="lucide-chevron-down" size={20} color={theme['text-2']} />
-              </View>
-            )
-          : (
-              <View style={styles.sourceMenu}>
-                <Text style={{ textAlign: center ? 'center' : 'left' }} numberOfLines={1} size={fontSize}>{t(`source_${sourceNameType}_${source}`)}</Text>
-              </View>
-            )
-      }
+      {button}
     </DorpDownMenu>
   )
 }

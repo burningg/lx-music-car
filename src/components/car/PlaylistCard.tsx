@@ -9,6 +9,8 @@ import CarIcon from './CarIcon'
 export interface PlaylistCardProps {
   /** 设计稿宽度，封面为正方形 */
   width?: number
+  /** 直接指定 dp 宽度（网格按容器宽度计算时使用），优先于 width */
+  rawWidth?: number
   title: string
   subtitle?: string
   pic?: string | null
@@ -19,9 +21,9 @@ export interface PlaylistCardProps {
 }
 
 // 设计稿 Playlist Card：封面圆角 20，右下角 52 圆形播放键，标题两行
-export default memo(({ width = 300, title, subtitle, pic, nativeID, onPress, onPlay }: PlaylistCardProps) => {
+export default memo(({ width = 300, rawWidth, title, subtitle, pic, nativeID, onPress, onPlay }: PlaylistCardProps) => {
   const theme = useTheme()
-  const size = px(width)
+  const size = rawWidth ?? px(width)
   const playSize = px(52)
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={{ width: size, gap: px(16) }}>

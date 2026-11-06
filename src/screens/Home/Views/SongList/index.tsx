@@ -49,7 +49,7 @@ export default () => {
       widthPercentageMax={MAX_WIDTH}
       drawerPosition={settingState.setting['common.drawerLayoutPosition']}
       renderNavigationView={navigationView}
-      drawerBackgroundColor={theme['c-content-background']}
+      drawerBackgroundColor={theme.elevated}
       style={{ elevation: 1 }}
     >
       <Content />

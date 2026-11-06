@@ -1,84 +1,65 @@
 import { memo } from 'react'
-import { View, Platform, TouchableOpacity } from 'react-native'
-import { createStyle } from '@/utils/tools'
+import { View } from 'react-native'
 import { type ListInfoItem } from '@/store/songlist/state'
-import Text from '@/components/common/Text'
-import { scaleSizeW } from '@/utils/pixelRatio'
 import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
-import { useTheme } from '@/store/theme/hook'
-import Image from '@/components/common/Image'
+import { useI18n } from '@/lang'
+import { PlaylistCard, HeroCard } from '@/components/car'
 
-const gap = scaleSizeW(15)
-export default memo(({ item, index, width, showSource, onPress }: {
+export const getSonglistNativeId = (item: ListInfoItem) => `${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_from_${item.id}`
+
+const useSubtitle = (item: ListInfoItem, showSource: boolean) => {
+  const t = useI18n()
+  const parts: string[] = []
+  if (item.author) parts.push(item.author)
+  if (item.play_count) parts.push(t('songlist_play_count', { num: item.play_count }))
+  if (showSource) parts.push(item.source)
+  return parts.join(' · ')
+}
+
+export interface ListItemProps {
   item: ListInfoItem
   index: number
-  showSource: boolean
+  /** 卡片 dp 宽度 */
   width: number
+  showSource: boolean
   onPress: (item: ListInfoItem, index: number) => void
-}) => {
-  const theme = useTheme()
-  const itemWidth = width - gap
-  const handlePress = () => {
-    onPress(item, index)
-  }
+  onPlay: (item: ListInfoItem, index: number) => void
+}
+
+export default memo(({ item, index, width, showSource, onPress, onPlay }: ListItemProps) => {
+  const subtitle = useSubtitle(item, showSource)
+  // 网格末行的占位项
+  if (!item.source) return <View style={{ width }} />
   return (
-    item.source
-      ? (
-          <View style={{ ...styles.listItem, width: itemWidth }}>
-            <View style={{ ...styles.listItemImg, backgroundColor: theme['c-content-background'] }}>
-              <TouchableOpacity activeOpacity={0.5} onPress={handlePress}>
-                <Image url={item.img} nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_from_${item.id}`} style={{ width: itemWidth, height: itemWidth, borderRadius: 4 }} />
-                { showSource ? <Text style={styles.sourceLabel} size={9} color="#fff" >{item.source}</Text> : null }
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity activeOpacity={0.5} onPress={handlePress}>
-              <Text style={styles.listItemTitle} numberOfLines={ 2 }>{item.name}</Text>
-            </TouchableOpacity>
-            {/* <Text>{JSON.stringify(item)}</Text> */}
-          </View>
-        )
-      : <View style={{ ...styles.listItem, width: itemWidth }} />
+    <PlaylistCard
+      rawWidth={width}
+      title={item.name}
+      subtitle={subtitle}
+      pic={item.img}
+      nativeID={getSonglistNativeId(item)}
+      onPress={() => { onPress(item, index) }}
+      onPlay={() => { onPlay(item, index) }}
+    />
   )
 })
 
-const styles = createStyle({
-  listItem: {
-    // width: 90,
-    margin: 10,
-  },
-  listItemImg: {
-    // backgroundColor: '#eee',
-    borderRadius: 4,
-    marginBottom: 5,
-    overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 1,
-        },
-        shadowOpacity: 0.20,
-        shadowRadius: 1.41,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-  },
-  sourceLabel: {
-    paddingLeft: 4,
-    paddingBottom: 2,
-    paddingRight: 4,
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    borderBottomLeftRadius: 3,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-  },
-  listItemTitle: {
-    fontSize: 12,
-    // overflow: 'hidden',
-    marginBottom: 5,
-  },
+/** 歌单广场首张推荐大卡 */
+export const FeaturedItem = memo(({ item, index, tag, showSource, onPress, onPlay }: Omit<ListItemProps, 'width'> & { tag: string }) => {
+  const subtitle = useSubtitle(item, showSource)
+  return (
+    <HeroCard
+      width={540}
+      height={368}
+      tagIcon="lucide-moon"
+      tag={tag}
+      title={item.name}
+      titleSize={30}
+      titleLines={2}
+      subtitle={subtitle}
+      pic={item.img}
+      nativeID={getSonglistNativeId(item)}
+      onPress={() => { onPress(item, index) }}
+      onPlay={() => { onPlay(item, index) }}
+    />
+  )
 })

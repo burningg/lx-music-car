@@ -1,11 +1,12 @@
 import { useRef, forwardRef, useImperativeHandle } from 'react'
 // import { Icon } from '@/components/common/Icon'
-import Button from '@/components/common/Button'
+import { TouchableOpacity } from 'react-native'
 // import { navigations } from '@/navigation'
 import Modal, { type ModalType } from './Modal'
 import { type Source } from '@/store/songlist/state'
-import { createStyle } from '@/utils/tools'
-import Text from '@/components/common/Text'
+import { useTheme } from '@/store/theme/hook'
+import { CarText } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
 import { useI18n } from '@/lang'
 import { navigations } from '@/navigation'
 import commonState from '@/store/common/state'
@@ -20,6 +21,7 @@ export interface OpenListType {
 
 export default forwardRef<OpenListType, {}>((props, ref) => {
   const t = useI18n()
+  const theme = useTheme()
   const modalRef = useRef<ModalType>(null)
   const songlistInfoRef = useRef<{ source: Source }>({ source: 'kw' })
 
@@ -49,20 +51,10 @@ export default forwardRef<OpenListType, {}>((props, ref) => {
 
   return (
     <>
-      <Button style={styles.button} onPress={() => modalRef.current?.show(songlistInfoRef.current.source)}>
-        <Text>{t('songlist_open')}</Text>
-      </Button>
+      <TouchableOpacity activeOpacity={0.7} style={{ minHeight: px(48), justifyContent: 'center', paddingHorizontal: px(26), borderRadius: 999 }} onPress={() => modalRef.current?.show(songlistInfoRef.current.source)}>
+        <CarText size={18} color={theme['text-2']}>{t('songlist_open')}</CarText>
+      </TouchableOpacity>
       <Modal ref={modalRef} onOpenId={handleOpenSonglist} />
     </>
   )
-})
-
-const styles = createStyle({
-  button: {
-    // backgroundColor: '#ccc',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingLeft: 12,
-    paddingRight: 12,
-  },
 })

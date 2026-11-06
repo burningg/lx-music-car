@@ -1,11 +1,13 @@
 import { useRef, forwardRef, useImperativeHandle } from 'react'
 import { type ListInfoItem } from '@/store/songlist/state'
-// import LoadingMask, { LoadingMaskType } from '@/components/common/LoadingMask'
 import List, { type ListProps, type ListType, type Status } from './List'
 import { navigations } from '@/navigation'
 import commonState from '@/store/common/state'
+import { handlePlay } from '@/screens/SonglistDetail/listAction'
 
 export interface SonglistProps {
+  layout?: ListProps['layout']
+  featuredTag?: ListProps['featuredTag']
   onRefresh: ListProps['onRefresh']
   onLoadMore: ListProps['onLoadMore']
 }
@@ -14,12 +16,20 @@ export interface SonglistType {
   setStatus: (val: Status) => void
 }
 
+const handleOpenDetail = (item: ListInfoItem) => {
+  navigations.pushSonglistDetailScreen(commonState.componentIds.home!, item)
+}
+const handlePlaySonglist = (item: ListInfoItem) => {
+  void handlePlay(item.id, item.source)
+}
+
 export default forwardRef<SonglistType, SonglistProps>(({
+  layout,
+  featuredTag,
   onRefresh,
   onLoadMore,
 }, ref) => {
   const listRef = useRef<ListType>(null)
-  // const loadingMaskRef = useRef<LoadingMaskType>(null)
 
   useImperativeHandle(ref, () => ({
     setList(list, showSource) {
@@ -30,16 +40,15 @@ export default forwardRef<SonglistType, SonglistProps>(({
     },
   }))
 
-  const handleOpenDetail = (item: ListInfoItem, index: number) => {
-    navigations.pushSonglistDetailScreen(commonState.componentIds.home!, item)
-  }
-
   return (
     <List
       ref={listRef}
+      layout={layout}
+      featuredTag={featuredTag}
       onRefresh={onRefresh}
       onLoadMore={onLoadMore}
       onOpenDetail={handleOpenDetail}
+      onPlay={handlePlaySonglist}
     />
   )
 })

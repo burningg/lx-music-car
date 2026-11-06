@@ -33,7 +33,7 @@ export default forwardRef<SourceSelectorType, SourceSelectorProps>(({ style, onS
 
   return (
     <View style={StyleSheet.compose<ViewStyle>(styles.selector, style)}>
-      <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} center />
+      <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} variant="segment" />
     </View>
   )
 })

@@ -16,14 +16,18 @@ export interface HeroCardProps {
   tagIcon?: string
   tag?: string
   title: string
+  titleSize?: number
+  titleLines?: number
   subtitle?: string
+  /** 共享元素转场锚点，必须直接落在 Image 上 */
+  nativeID?: string
   onPress?: () => void
   onPlay?: () => void
 }
 
 // 设计稿「最佳匹配」大卡：封面铺满，底部压暗，左上标签，左下标题，右下 72 圆形播放键
 // 卡片压在封面上，文字固定用浅色，不随日夜主题变化
-export default memo(({ width = 480, height = 358, pic, tagIcon = 'lucide-sparkles', tag, title, subtitle, onPress, onPlay }: HeroCardProps) => {
+export default memo(({ width = 480, height = 358, pic, tagIcon = 'lucide-sparkles', tag, title, titleSize = 40, titleLines = 1, subtitle, nativeID, onPress, onPlay }: HeroCardProps) => {
   const theme = useTheme()
   return (
     <TouchableOpacity
@@ -31,7 +35,7 @@ export default memo(({ width = 480, height = 358, pic, tagIcon = 'lucide-sparkle
       onPress={onPress}
       style={{ width: px(width), height: px(height), borderRadius: px(24), borderWidth: 1, borderColor: theme['art-stroke'], overflow: 'hidden' }}
     >
-      <Image url={pic} style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }} />
+      <Image url={pic} nativeID={nativeID} style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }} />
       <RNImage source={FADE_V} tintColor="#000000" resizeMode="stretch" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '70%', opacity: 0.75 }} />
       <View style={{ flex: 1, padding: px(32), justifyContent: 'space-between' }}>
         {tag ? (
@@ -42,7 +46,7 @@ export default memo(({ width = 480, height = 358, pic, tagIcon = 'lucide-sparkle
         ) : <View />}
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: px(20) }}>
           <View style={{ flex: 1, gap: px(8) }}>
-            <CarText size={40} weight="700" color="#F5F5F7" numberOfLines={1}>{title}</CarText>
+            <CarText size={titleSize} weight="700" color="#F5F5F7" lineHeight={titleLines > 1 ? 1.25 : undefined} numberOfLines={titleLines}>{title}</CarText>
             {subtitle ? <CarText size={17} color="rgba(255, 255, 255, 0.7)" numberOfLines={1}>{subtitle}</CarText> : null}
           </View>
           {onPlay ? (

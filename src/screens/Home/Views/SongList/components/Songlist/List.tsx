@@ -1,26 +1,32 @@
 import { useRef, useState, useMemo, forwardRef, useImperativeHandle } from 'react'
 import { FlatList, View, RefreshControl, type FlatListProps } from 'react-native'
 
-import ListItem from './ListItem'
-// import { navigations } from '@/navigation'
+import ListItem, { FeaturedItem } from './ListItem'
 import { type ListInfoItem } from '@/store/songlist/state'
 import { useLayout } from '@/utils/hooks'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
-import { scaleSizeW } from '@/utils/pixelRatio'
-import { createStyle } from '@/utils/tools'
-import Text from '@/components/common/Text'
+import { px } from '@/utils/pixelRatio'
+import { CarText } from '@/components/car'
 
 type FlatListType = FlatListProps<ListInfoItem>
 
-// const MAX_WIDTH = scaleSizeW(110)
-const MIN_WIDTH = scaleSizeW(110)
-const GAP = scaleSizeW(20)
+const CARD_WIDTH = 300
+const GRID_MIN_WIDTH = 240
+const GAP = 24
 
 export interface ListProps {
+  /**
+   * shelf：横向一排（歌单广场），首项为推荐大卡
+   * grid：多列网格（搜索歌单结果）
+   */
+  layout?: 'shelf' | 'grid'
+  /** shelf 首张大卡的标签文字 */
+  featuredTag?: string
   onRefresh: () => void
   onLoadMore: () => void
   onOpenDetail: (item: ListInfoItem, index: number) => void
+  onPlay: (item: ListInfoItem, index: number) => void
 }
 export type Status = 'loading' | 'refreshing' | 'end' | 'error' | 'idle'
 
@@ -29,20 +35,19 @@ export interface ListType {
   setStatus: (val: Status) => void
 }
 
-export default forwardRef<ListType, ListProps>(({ onRefresh, onLoadMore, onOpenDetail }, ref) => {
+export default forwardRef<ListType, ListProps>(({ layout = 'grid', featuredTag = '', onRefresh, onLoadMore, onOpenDetail, onPlay }, ref) => {
   const flatListRef = useRef<FlatList>(null)
   const [currentList, setList] = useState<ListInfoItem[]>([])
   const [showSource, setShowSource] = useState(false)
   const [status, setStatus] = useState<Status>('idle')
   const { onLayout, width } = useLayout()
   const theme = useTheme()
-  // console.log('render songlist')
 
   useImperativeHandle(ref, () => ({
     setList(list, showSource = false) {
-      // rawListRef.current = list
       setList(list)
       setShowSource(showSource)
+      if (!list.length) flatListRef.current?.scrollToOffset({ offset: 0, animated: false })
     },
     setStatus(val) {
       setStatus(val)
@@ -54,122 +59,89 @@ export default forwardRef<ListType, ListProps>(({ onRefresh, onLoadMore, onOpenD
     onLoadMore()
   }
 
-  const renderItem: FlatListType['renderItem'] = ({ item, index }) => (
-    <ListItem
-      item={item}
-      index={index}
-      width={rowInfo.width}
-      showSource={showSource}
-      onPress={onOpenDetail}
-    />
-  )
+  const gap = px(GAP)
+  const rowInfo = useMemo(() => {
+    const num = Math.max(Math.floor((width + gap) / (px(GRID_MIN_WIDTH) + gap)), 2)
+    return { num, width: Math.floor((width - gap * (num - 1)) / num) }
+  }, [width, gap])
+
+  const gridList = useMemo(() => {
+    if (layout != 'grid') return currentList
+    const list = [...currentList]
+    let whiteItemNum = list.length % rowInfo.num
+    if (whiteItemNum > 0) whiteItemNum = rowInfo.num - whiteItemNum
+    for (let i = 0; i < whiteItemNum; i++) {
+      list.push({ id: `white__${i}`, play_count: '', author: '', name: '', img: '', desc: '', source: '' as LX.OnlineSource })
+    }
+    return list
+  }, [currentList, rowInfo, layout])
+
+  const renderItem: FlatListType['renderItem'] = ({ item, index }) => {
+    if (layout == 'shelf' && index == 0) {
+      return <FeaturedItem item={item} index={index} tag={featuredTag} showSource={showSource} onPress={onOpenDetail} onPlay={onPlay} />
+    }
+    return (
+      <ListItem
+        item={item}
+        index={index}
+        width={layout == 'shelf' ? px(CARD_WIDTH) : rowInfo.width}
+        showSource={showSource}
+        onPress={onOpenDetail}
+        onPlay={onPlay}
+      />
+    )
+  }
   const getkey: FlatListType['keyExtractor'] = item => item.id
-  // const getItemLayout: FlatListType['getItemLayout'] = (data, index) => {
-  //   return { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
-  // }
   const refreshControl = useMemo(() => (
     <RefreshControl
-      colors={[theme['c-primary']]}
-      // progressBackgroundColor={theme.primary}
+      colors={[theme.accent]}
       refreshing={status == 'refreshing'}
       onRefresh={onRefresh} />
   ), [status, onRefresh, theme])
-  const footerComponent = useMemo(() => {
-    let label: FooterLabel
-    switch (status) {
-      case 'refreshing': return null
-      case 'loading':
-        label = 'list_loading'
-        break
-      case 'end':
-        label = 'list_end'
-        break
-      case 'error':
-        label = 'list_error'
-        break
-      case 'idle':
-        label = null
-        break
-    }
-    return (
-      <View style={{ width: '100%' }}>
-        <Footer label={label} onLoadMore={onLoadMore} />
-      </View>
-    )
-  }, [onLoadMore, status])
+  const footer = <Footer status={status} onLoadMore={onLoadMore} />
 
-
-  // const itemWidth = useMemo(() => {
-  //   let itemWidth = Math.max(Math.trunc(width * 0.125), MAX_WIDTH)
-  //   // if (itemWidth < )
-  // }, [width])
-  // const computedItemWidth = useMemo(() => {
-  //   let w = width - GAP
-  //   let n = width / (MIN_WIDTH + GAP)
-  //   if (n > 10) n = 10
-  //   return Math.floor(w / n)
-  // }, [width])
-  // console.log(Math.trunc(width * 0.125), itemWidth)
-  // console.log(itemWidth, MIN_WIDTH, GAP, width)
-  const rowInfo = useMemo(() => {
-    let w = width - GAP
-    let n = width / (MIN_WIDTH + GAP)
-    if (n > 10) n = 10
-    let computedItemWidth = Math.floor(w / n)
-    const num = Math.max(Math.floor(width / computedItemWidth), 2)
-    return {
-      num,
-      width: (width - GAP) / num,
-    }
-  }, [width])
-  // console.log(rowNum)
-  const list = useMemo(() => {
-    const list = [...currentList]
-    let whiteItemNum = (list.length % rowInfo.num)
-    if (whiteItemNum > 0) whiteItemNum = rowInfo.num - whiteItemNum
-    for (let i = 0; i < whiteItemNum; i++) {
-      list.push({
-        id: `white__${i}`,
-        play_count: '',
-        author: '',
-        name: '',
-        img: '',
-        desc: '',
-        // @ts-expect-error
-        source: '',
-      })
-    }
-    return list
-  }, [currentList, rowInfo])
-  // console.log(listInfo.list.map((item) => item.id))
+  if (width == 0) return <View style={{ flex: 1 }} onLayout={onLayout} />
 
   return (
-    <View style={styles.container} onLayout={onLayout}>
+    <View style={{ flex: 1 }} onLayout={onLayout}>
       {
-        width == 0
-          ? null
+        layout == 'shelf'
+          ? (
+              // 横向列表无法下拉刷新，刷新入口在页面顶栏
+              <FlatList
+                ref={flatListRef}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={currentList}
+                renderItem={renderItem}
+                keyExtractor={getkey}
+                contentContainerStyle={{ gap, paddingRight: px(72), alignItems: 'flex-start' }}
+                maxToRenderPerBatch={4}
+                windowSize={5}
+                removeClippedSubviews={true}
+                onEndReachedThreshold={0.6}
+                onEndReached={handleLoadMore}
+                ListFooterComponent={footer}
+                ListFooterComponentStyle={{ alignSelf: 'center' }}
+              />
+            )
           : (
               <FlatList
                 key={String(rowInfo.num)}
                 ref={flatListRef}
-                style={styles.list}
-                columnWrapperStyle={{ justifyContent: 'space-evenly' }}
                 numColumns={rowInfo.num}
-                data={list}
+                columnWrapperStyle={{ gap }}
+                contentContainerStyle={{ gap: px(32), paddingBottom: px(120) }}
+                data={gridList}
                 maxToRenderPerBatch={4}
-                // updateCellsBatchingPeriod={80}
                 windowSize={8}
                 removeClippedSubviews={true}
-                // initialNumToRender={12}
                 renderItem={renderItem}
                 keyExtractor={getkey}
-                // getItemLayout={getItemLayout}
-                // onRefresh={onRefresh}
-                // refreshing={refreshing}
                 onEndReachedThreshold={0.6}
                 onEndReached={handleLoadMore}
                 refreshControl={refreshControl}
-                ListFooterComponent={footerComponent}
+                ListFooterComponent={footer}
               />
             )
       }
@@ -177,41 +149,31 @@ export default forwardRef<ListType, ListProps>(({ onRefresh, onLoadMore, onOpenD
   )
 })
 
-type FooterLabel = 'list_loading' | 'list_end' | 'list_error' | null
-const Footer = ({ label, onLoadMore }: {
-  label: FooterLabel
+const Footer = ({ status, onLoadMore }: {
+  status: Status
   onLoadMore: () => void
 }) => {
   const theme = useTheme()
   const t = useI18n()
-  const handlePress = () => {
-    if (label != 'list_error') return
-    onLoadMore()
+  let label: 'list_loading' | 'list_end' | 'list_error' | null = null
+  switch (status) {
+    case 'loading':
+      label = 'list_loading'
+      break
+    case 'end':
+      label = 'list_end'
+      break
+    case 'error':
+      label = 'list_error'
+      break
   }
+  if (!label) return null
   return (
-    label
-      ? (
-          <View>
-            <Text onPress={handlePress} style={styles.footer} color={theme['c-font-label']}>{t(label)}</Text>
-          </View>
-        )
-      : null
+    <CarText
+      size={16}
+      color={theme['text-3']}
+      onPress={label == 'list_error' ? onLoadMore : undefined}
+      style={{ textAlign: 'center', padding: px(20) }}
+    >{t(label)}</CarText>
   )
 }
-
-
-const styles = createStyle({
-  container: {
-    flex: 1,
-    overflow: 'hidden',
-  },
-  list: {
-    flex: 1,
-    paddingLeft: 10,
-    paddingRight: 10,
-  },
-  footer: {
-    textAlign: 'center',
-    padding: 10,
-  },
-})

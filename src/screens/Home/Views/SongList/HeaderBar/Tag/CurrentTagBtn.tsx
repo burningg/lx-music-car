@@ -1,7 +1,8 @@
-import Button from '@/components/common/Button'
-import Text from '@/components/common/Text'
+import { TouchableOpacity } from 'react-native'
 import { useI18n } from '@/lang'
-import { createStyle } from '@/utils/tools'
+import { useTheme } from '@/store/theme/hook'
+import { CarText } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
 import { forwardRef, useImperativeHandle, useState } from 'react'
 
 
@@ -16,6 +17,7 @@ export interface CurrentTagBtnType {
 export default forwardRef<CurrentTagBtnType, CurrentTagBtnProps>(({ onShowList }, ref) => {
   const t = useI18n()
   const [name, setName] = useState('')
+  const theme = useTheme()
 
   useImperativeHandle(ref, () => ({
     setCurrentTagInfo(name) {
@@ -25,25 +27,9 @@ export default forwardRef<CurrentTagBtnType, CurrentTagBtnProps>(({ onShowList }
   }))
 
   return (
-    <Button style={styles.btn} onPress={onShowList}>
-      <Text style={styles.sourceMenu}>{name}</Text>
-    </Button>
+    // 当前标签是分段组里的选中段
+    <TouchableOpacity activeOpacity={0.7} onPress={onShowList} style={{ minHeight: px(48), justifyContent: 'center', paddingHorizontal: px(26), borderRadius: 999, backgroundColor: theme.elevated }}>
+      <CarText size={18} weight="600" numberOfLines={1}>{name}</CarText>
+    </TouchableOpacity>
   )
-})
-
-
-const styles = createStyle({
-  btn: {
-    paddingLeft: 15,
-    paddingRight: 15,
-    justifyContent: 'center',
-  },
-  sourceMenu: {
-    // height: 38,
-    // lineHeight: 38,
-    textAlign: 'center',
-    // minWidth: 70,
-    // paddingTop: 10,
-    // paddingBottom: 10,
-  },
 })
