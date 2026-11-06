@@ -93,3 +93,35 @@ export const scaleSizeAbsHR = (size: number) => {
   let scaleHeight = size * scale
   return size * 2 - Math.floor(scaleHeight / pixelRatio)
 }
+
+
+// 车机设计稿基准：1920×720
+const CAR_DESIGN_WIDTH = 1920
+const CAR_DESIGN_HEIGHT = 720
+let carScale = 0
+windowSizeTools.onSizeChanged(() => {
+  carScale = 0
+})
+const getCarScale = () => {
+  if (carScale) return carScale
+  const { width, height } = windowSizeTools.getSize()
+  if (!width || !height) return 1
+  carScale = Math.min(Math.max(width, height) / CAR_DESIGN_WIDTH, Math.min(width, height) / CAR_DESIGN_HEIGHT)
+  return carScale
+}
+
+/**
+ * 设计稿尺寸转 dp，用于间距、圆角、图片等布局尺寸，不随界面字号设置变化
+ * @param size 设计稿 px
+ */
+export const px = (size: number) => {
+  return Math.round(size * getCarScale())
+}
+
+/**
+ * 设计稿字号转 dp，随界面字号设置（global.lx.fontSize）缩放
+ * @param size 设计稿 px
+ */
+export const sp = (size: number) => {
+  return Math.round(size * getCarScale() * global.lx.fontSize / fontScale)
+}

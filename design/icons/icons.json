@@ -1,0 +1,267 @@
+[
+  {
+    "name": "lucide-archive",
+    "source": "lucide:archive",
+    "size": 22
+  },
+  {
+    "name": "lucide-arrow-down-up",
+    "source": "lucide:arrow-down-up",
+    "size": 22
+  },
+  {
+    "name": "lucide-audio-lines",
+    "source": "lucide:audio-lines",
+    "size": 28
+  },
+  {
+    "name": "lucide-bluetooth",
+    "source": "lucide:bluetooth",
+    "size": 14
+  },
+  {
+    "name": "lucide-captions",
+    "source": "lucide:captions",
+    "size": 22
+  },
+  {
+    "name": "lucide-check",
+    "source": "lucide:check",
+    "size": 18
+  },
+  {
+    "name": "lucide-chevron-down",
+    "source": "lucide:chevron-down",
+    "size": 20
+  },
+  {
+    "name": "lucide-chevron-left",
+    "source": "lucide:chevron-left",
+    "size": 22
+  },
+  {
+    "name": "lucide-chevron-right",
+    "source": "lucide:chevron-right",
+    "size": 20
+  },
+  {
+    "name": "lucide-circle-check",
+    "source": "lucide:circle-check",
+    "size": 22
+  },
+  {
+    "name": "lucide-copy",
+    "source": "lucide:copy",
+    "size": 24
+  },
+  {
+    "name": "lucide-crosshair",
+    "source": "lucide:crosshair",
+    "size": 24
+  },
+  {
+    "name": "lucide-download",
+    "source": "lucide:download",
+    "size": 22
+  },
+  {
+    "name": "lucide-ellipsis",
+    "source": "lucide:ellipsis",
+    "size": 24
+  },
+  {
+    "name": "lucide-folder-input",
+    "source": "lucide:folder-input",
+    "size": 24
+  },
+  {
+    "name": "lucide-folder-plus",
+    "source": "lucide:folder-plus",
+    "size": 24
+  },
+  {
+    "name": "lucide-headphones",
+    "source": "lucide:headphones",
+    "size": 24
+  },
+  {
+    "name": "lucide-heart",
+    "source": "lucide:heart",
+    "size": 28
+  },
+  {
+    "name": "lucide-info",
+    "source": "lucide:info",
+    "size": 22
+  },
+  {
+    "name": "lucide-layout-grid",
+    "source": "lucide:layout-grid",
+    "size": 24
+  },
+  {
+    "name": "lucide-library-big",
+    "source": "lucide:library-big",
+    "size": 28
+  },
+  {
+    "name": "lucide-list",
+    "source": "lucide:list",
+    "size": 22
+  },
+  {
+    "name": "lucide-list-checks",
+    "source": "lucide:list-checks",
+    "size": 24
+  },
+  {
+    "name": "lucide-list-music",
+    "source": "lucide:list-music",
+    "size": 26
+  },
+  {
+    "name": "lucide-list-plus",
+    "source": "lucide:list-plus",
+    "size": 24
+  },
+  {
+    "name": "lucide-list-start",
+    "source": "lucide:list-start",
+    "size": 24
+  },
+  {
+    "name": "lucide-message-circle",
+    "source": "lucide:message-circle",
+    "size": 20
+  },
+  {
+    "name": "lucide-message-square-quote",
+    "source": "lucide:message-square-quote",
+    "size": 26
+  },
+  {
+    "name": "lucide-mic",
+    "source": "lucide:mic",
+    "size": 24
+  },
+  {
+    "name": "lucide-moon",
+    "source": "lucide:moon",
+    "size": 15
+  },
+  {
+    "name": "lucide-palette",
+    "source": "lucide:palette",
+    "size": 22
+  },
+  {
+    "name": "lucide-pin",
+    "source": "lucide:pin",
+    "size": 18
+  },
+  {
+    "name": "lucide-play",
+    "source": "lucide:play",
+    "size": 22
+  },
+  {
+    "name": "lucide-plus",
+    "source": "lucide:plus",
+    "size": 24
+  },
+  {
+    "name": "lucide-refresh-cw",
+    "source": "lucide:refresh-cw",
+    "size": 22
+  },
+  {
+    "name": "lucide-replace",
+    "source": "lucide:replace",
+    "size": 24
+  },
+  {
+    "name": "lucide-search",
+    "source": "lucide:search",
+    "size": 28
+  },
+  {
+    "name": "lucide-signal",
+    "source": "lucide:signal",
+    "size": 14
+  },
+  {
+    "name": "lucide-sliders-horizontal",
+    "source": "lucide:sliders-horizontal",
+    "size": 22
+  },
+  {
+    "name": "lucide-sparkles",
+    "source": "lucide:sparkles",
+    "size": 16
+  },
+  {
+    "name": "lucide-speaker",
+    "source": "lucide:speaker",
+    "size": 18
+  },
+  {
+    "name": "lucide-trash-2",
+    "source": "lucide:trash-2",
+    "size": 24
+  },
+  {
+    "name": "lucide-trophy",
+    "source": "lucide:trophy",
+    "size": 28
+  },
+  {
+    "name": "lucide-x",
+    "source": "lucide:x",
+    "size": 18
+  },
+  {
+    "name": "ms-repeat",
+    "source": "Material Symbols Rounded:repeat",
+    "size": 32
+  },
+  {
+    "name": "ms-shuffle",
+    "source": "Material Symbols Rounded:shuffle",
+    "size": 32
+  },
+  {
+    "name": "ph-heart",
+    "source": "phosphor:heart",
+    "size": 26
+  },
+  {
+    "name": "ph-heart-fill",
+    "source": "phosphor:heart-fill",
+    "size": 28
+  },
+  {
+    "name": "ph-pause-fill",
+    "source": "phosphor:pause-fill",
+    "size": 44
+  },
+  {
+    "name": "ph-play-fill",
+    "source": "phosphor:play-fill",
+    "size": 22
+  },
+  {
+    "name": "ph-shuffle-bold",
+    "source": "phosphor:shuffle-bold",
+    "size": 22
+  },
+  {
+    "name": "ph-skip-back-fill",
+    "source": "phosphor:skip-back-fill",
+    "size": 48
+  },
+  {
+    "name": "ph-skip-forward-fill",
+    "source": "phosphor:skip-forward-fill",
+    "size": 48
+  }
+]

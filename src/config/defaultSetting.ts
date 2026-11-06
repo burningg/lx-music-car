@@ -1,6 +1,6 @@
 const defaultSetting: LX.AppSetting = {
   version: '2.1',
-  'common.isAutoTheme': false,
+  'common.isAutoTheme': true,
   'common.langId': null,
   'common.apiSource': '',
   'common.sourceNameType': 'alias',
@@ -73,19 +73,13 @@ const defaultSetting: LX.AppSetting = {
   'sync.enable': false,
 
   // 'theme.id': 'blue_plus',
-  'theme.id': 'green',
-  'theme.lightId': 'green',
-  'theme.darkId': 'black',
+  'theme.id': 'nocturne',
+  'theme.lightId': 'daylight',
+  'theme.darkId': 'nocturne',
   'theme.hideBgDark': false,
   'theme.dynamicBg': false,
   'theme.fontShadow': false,
 }
 
-
-// 使用新年皮肤
-if (new Date().getMonth() < 2) {
-  defaultSetting['theme.id'] = 'happy_new_year'
-  defaultSetting['desktopLyric.style.lyricPlayedColor'] = 'rgba(255, 18, 34, 1)'
-}
 
 export default defaultSetting

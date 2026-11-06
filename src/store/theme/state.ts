@@ -1,4 +1,5 @@
 import { createContext } from 'react'
+import { NOCTURNE_TOKENS } from '@/theme/tokens'
 // import type { RootState } from '@/store'
 
 
@@ -251,6 +252,7 @@ const state: InitState = {
   shouldUseDarkColors: false,
   theme: {
     ...theme,
+    ...NOCTURNE_TOKENS,
     'c-app-background': theme['c-primary-light-600-alpha-600'],
     'c-main-background': 'rgba(255, 255, 255, 0.9)',
 

@@ -6,6 +6,42 @@ const { createThemeColors } = require('./utils')
 
 const defaultThemes = [
   {
+    id: 'nocturne',
+    name: '夜曲',
+    isDark: true,
+    config: {
+      primary: 'rgb(255, 122, 80)',
+      font: 'rgb(245, 245, 247)',
+      'c-app-background': 'rgba(0, 0, 0, 0)',
+      'c-main-background': 'rgba(8, 8, 10, 1)',
+      'bg-image': '',
+      'bg-image-position': 'center',
+      'bg-image-size': 'cover',
+
+      'c-badge-primary': 'var(c-primary)',
+      'c-badge-secondary': 'rgb(161, 161, 166)',
+      'c-badge-tertiary': 'rgb(108, 108, 114)',
+    },
+  },
+  {
+    id: 'daylight',
+    name: '白昼',
+    isDark: false,
+    config: {
+      primary: 'rgb(232, 86, 42)',
+      font: 'rgb(26, 23, 20)',
+      'c-app-background': 'rgba(0, 0, 0, 0)',
+      'c-main-background': 'rgba(245, 243, 239, 1)',
+      'bg-image': '',
+      'bg-image-position': 'center',
+      'bg-image-size': 'cover',
+
+      'c-badge-primary': 'var(c-primary)',
+      'c-badge-secondary': 'rgb(107, 102, 95)',
+      'c-badge-tertiary': 'rgb(142, 137, 130)',
+    },
+  },
+  {
     id: 'green',
     name: '绿意盎然',
     isDark: false,
