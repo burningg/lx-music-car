@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import MusicList, { type MusicListType } from './MusicList'
 import PageContent from '@/components/PageContent'
-import StatusBar from '@/components/common/StatusBar'
+import { CarShell } from '@/components/car'
 import { setComponentId } from '@/core/common'
 import { COMPONENT_IDS } from '@/config/constant'
 import { type ListInfoItem } from '@/store/songlist/state'
@@ -31,11 +31,12 @@ export default ({ componentId, info }: { componentId: string, info: ListInfoItem
 
   return (
     <PageContent>
-      <StatusBar />
-      <ListInfoContext.Provider value={info}>
-        <MusicList ref={musicListRef} componentId={componentId} />
-      </ListInfoContext.Provider>
-      <PlayerBar />
+      <CarShell componentId={componentId}>
+        <ListInfoContext.Provider value={info}>
+          <MusicList ref={musicListRef} componentId={componentId} />
+        </ListInfoContext.Provider>
+        <PlayerBar />
+      </CarShell>
     </PageContent>
   )
 }

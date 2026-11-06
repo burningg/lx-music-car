@@ -4,7 +4,6 @@ import { useIsPlay } from '@/store/player/hook'
 import { useTheme } from '@/store/theme/hook'
 import { playNext, playPrev, togglePlay } from '@/core/player/player'
 import { createStyle } from '@/utils/tools'
-import { useHorizontalMode } from '@/utils/hooks'
 
 const BTN_SIZE = 24
 const handlePlayPrev = () => {
@@ -46,7 +45,6 @@ const TogglePlayBtn = () => {
 }
 
 export default () => {
-  const isHorizontalMode = useHorizontalMode()
   return (
     <>
       {/* <TouchableOpacity activeOpacity={0.5} onPress={toggleNextPlayMode}>
@@ -56,7 +54,7 @@ export default () => {
       </TouchableOpacity>
     */}
       {/* {btnPrev} */}
-      { isHorizontalMode ? <PlayPrevBtn /> : null }
+      <PlayPrevBtn />
       <TogglePlayBtn />
       <PlayNextBtn />
     </>

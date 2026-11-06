@@ -1,34 +1,33 @@
 import { View } from 'react-native'
-import Aside from './Aside'
-import PlayerBar from '@/components/player/PlayerBar'
-import StatusBar from '@/components/common/StatusBar'
+import { CarShell, MiniPlayer } from '@/components/car'
+import { useNavActiveId } from '@/store/common/hook'
+import { px } from '@/utils/pixelRatio'
 import Header from './Header'
 import Main from './Main'
-import { createStyle } from '@/utils/tools'
 
-const styles = createStyle({
-  container: {
-    flex: 1,
-    flexDirection: 'row',
-  },
-  content: {
-    flex: 1,
-    overflow: 'hidden',
-  },
-})
+// 迷你播放条位置随页面变化（设计稿）：歌单、搜索居中；排行榜、我的音乐靠右；设置页不显示
+const MiniPlayerSlot = () => {
+  const id = useNavActiveId()
+  if (id == 'nav_setting') return null
+  const alignRight = id == 'nav_top' || id == 'nav_love'
+  return (
+    <View style={{
+      alignItems: alignRight ? 'flex-end' : 'center',
+      paddingRight: alignRight ? px(134) : 0,
+      paddingTop: px(12),
+      paddingBottom: px(24),
+    }}>
+      <MiniPlayer isHome />
+    </View>
+  )
+}
 
 export default () => {
   return (
-    <>
-      <StatusBar />
-      <View style={styles.container}>
-        <Aside />
-        <View style={styles.content}>
-          <Header />
-          <Main />
-          <PlayerBar isHome />
-        </View>
-      </View>
-    </>
+    <CarShell>
+      <Header />
+      <Main />
+      <MiniPlayerSlot />
+    </CarShell>
   )
 }

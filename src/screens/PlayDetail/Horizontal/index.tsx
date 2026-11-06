@@ -1,7 +1,7 @@
 import { memo, useEffect } from 'react'
 import { View, AppState } from 'react-native'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
-import StatusBar from '@/components/common/StatusBar'
+import { CarShell } from '@/components/car'
 import MoreBtn from './MoreBtn'
 
 import Header from './components/Header'
@@ -53,24 +53,21 @@ export default memo(({ componentId }: { componentId: string }) => {
 
   return (
     <PageContent>
-      <StatusBar />
-      <View style={{ ...styles.container, paddingTop: statusBarHeight }}>
-        <View style={styles.left}>
-          <Header />
-          <View style={styles.leftContent}>
-            <MoreBtn />
-            <Pic componentId={componentId} />
+      <CarShell componentId={componentId} activeId="now">
+        <View style={{ ...styles.container, paddingTop: statusBarHeight }}>
+          <View style={styles.left}>
+            <Header />
+            <View style={styles.leftContent}>
+              <MoreBtn />
+              <Pic componentId={componentId} />
+            </View>
+            <Player />
           </View>
-          <Player />
-          {/* <View style={styles.controlBtn} nativeID="pageIndicator">
-            <MoreBtn />
-            <ControlBtn />
-          </View> */}
+          <View style={styles.right}>
+            <Lyric />
+          </View>
         </View>
-        <View style={styles.right}>
-          <Lyric />
-        </View>
-      </View>
+      </CarShell>
     </PageContent>
   )
 })

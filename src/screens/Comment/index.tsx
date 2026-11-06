@@ -12,6 +12,7 @@ import { useI18n } from '@/lang'
 import { COMPONENT_IDS } from '@/config/constant'
 import { setComponentId } from '@/core/common'
 import PageContent from '@/components/PageContent'
+import { CarShell } from '@/components/car'
 import playerState from '@/store/player/state'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { BorderWidths } from '@/theme'
@@ -159,23 +160,24 @@ export default memo(({ componentId }: {
 
   return (
     <PageContent>
-      {
-        musicInfo == null
-          ? null
-          : <>
-            <Header musicInfo={musicInfo} />
-            {
-              musicInfo.source == 'local'
-                ? (
-                <View style={{ ...styles.container, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text>{t('comment_not support')}</Text>
-                </View>
-                  )
-                : commentComponent
-            }
-        </>
-      }
-
+      <CarShell componentId={componentId} activeId="now">
+        {
+          musicInfo == null
+            ? null
+            : <>
+              <Header musicInfo={musicInfo} />
+              {
+                musicInfo.source == 'local'
+                  ? (
+                  <View style={{ ...styles.container, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text>{t('comment_not support')}</Text>
+                  </View>
+                    )
+                  : commentComponent
+              }
+          </>
+        }
+      </CarShell>
     </PageContent>
   )
 })
