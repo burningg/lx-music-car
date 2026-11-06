@@ -7,7 +7,8 @@ import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { type Comment } from '../utils'
 import { useI18n } from '@/lang'
-import Text from '@/components/common/Text'
+import { CarText } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
 
 type FlatListType = FlatListProps<Comment>
 
@@ -57,7 +58,7 @@ const List = forwardRef<ListType, ListProps>(({
 
   const refreshControl = useMemo(() => (
     <RefreshControl
-      colors={[theme['c-primary']]}
+      colors={[theme.accent]}
       // progressBackgroundColor={theme.primary}
       refreshing={status == 'refreshing'}
       onRefresh={onRefresh} />
@@ -118,8 +119,8 @@ const Footer = ({ label, onLoadMore }: {
   return (
     label
       ? (
-          <View>
-            <Text onPress={handlePress} style={styles.footer} color={theme['c-font-label']}>{t(label)}</Text>
+          <View style={{ alignItems: 'center', paddingVertical: px(16) }}>
+            <CarText onPress={handlePress} size={16} color={theme['text-3']}>{t(label)}</CarText>
           </View>
         )
       : null
@@ -133,12 +134,6 @@ const styles = createStyle({
   list: {
     flexGrow: 1,
     flexShrink: 1,
-    paddingLeft: 15,
-    paddingRight: 15,
-  },
-  footer: {
-    textAlign: 'center',
-    padding: 10,
   },
 })
 

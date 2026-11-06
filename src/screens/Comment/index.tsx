@@ -1,42 +1,21 @@
 import { memo, useMemo, useEffect, useRef, useState, useCallback } from 'react'
-import { View, TouchableOpacity } from 'react-native'
+import { View } from 'react-native'
 import PagerView, { type PagerViewOnPageSelectedEvent } from 'react-native-pager-view'
-import Header from './components/Header'
-import { Icon } from '@/components/common/Icon'
 import CommentHot from './CommentHot'
 import CommentNew from './CommentNew'
 import { createStyle, toast } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
-import Text from '@/components/common/Text'
+import { CarText, AmbientBackground, CarShell, IconButton, ListFade, SegmentTabs } from '@/components/car'
 import { useI18n } from '@/lang'
 import { COMPONENT_IDS } from '@/config/constant'
 import { setComponentId } from '@/core/common'
 import PageContent from '@/components/PageContent'
-import { CarShell } from '@/components/car'
 import playerState from '@/store/player/state'
-import { scaleSizeH } from '@/utils/pixelRatio'
-import { BorderWidths } from '@/theme'
+import { pop } from '@/navigation'
+import { px } from '@/utils/pixelRatio'
+import SongPanel from './components/SongPanel'
 
 type ActiveId = 'hot' | 'new'
-
-const BAR_HEIGHT = scaleSizeH(34)
-
-const HeaderItem = ({ id, label, isActive, onPress }: {
-  id: ActiveId
-  label: string
-  isActive: boolean
-  onPress: (id: ActiveId) => void
-}) => {
-  const theme = useTheme()
-  // console.log(theme)
-  const components = useMemo(() => (
-    <TouchableOpacity style={styles.tabBtn} onPress={() => { !isActive && onPress(id) }}>
-      <Text color={isActive ? theme['c-primary-font-active'] : theme['c-font']}>{label}</Text>
-    </TouchableOpacity>
-  ), [isActive, theme, label, onPress, id])
-
-  return components
-}
 
 const HotCommentPage = memo(({ activeId, musicInfo, onUpdateTotal }: {
   activeId: ActiveId
@@ -74,10 +53,13 @@ const TABS = [
   'hot',
   'new',
 ] as const
+
 const getMusicInfo = (musicInfo: LX.Player.PlayMusic | null) => {
   if (!musicInfo) return null
   return 'progress' in musicInfo ? musicInfo.metadata.musicInfo : musicInfo
 }
+
+// 设计稿评论页：左歌曲信息 400 + 右评论 1184（标题/标签 + 列表）
 export default memo(({ componentId }: {
   componentId: string
 }) => {
@@ -93,12 +75,12 @@ export default memo(({ componentId }: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const tabs = useMemo(() => {
+  const tabItems = useMemo(() => {
     return [
-      { id: TABS[0], label: t('comment_tab_hot', { total: total.hot ? `(${total.hot})` : '' }) },
-      { id: TABS[1], label: t('comment_tab_new', { total: total.new ? `(${total.new})` : '' }) },
+      { id: TABS[0], label: t('comment_tab_hot', { total: '' }).trim() },
+      { id: TABS[1], label: t('comment_tab_new', { total: '' }).trim() },
     ] as const
-  }, [total, t])
+  }, [t])
 
   const toggleTab = useCallback((id: ActiveId) => {
     setActiveId(id)
@@ -128,94 +110,70 @@ export default memo(({ componentId }: {
     setTotal(totalInfo => ({ ...totalInfo, new: total }))
   }, [])
 
-  const commentComponent = useMemo(() => {
-    return (
-      <View style={styles.container}>
-        <View style={{ ...styles.tabHeader, borderBottomColor: theme['c-border-background'], height: BAR_HEIGHT }}>
-          <View style={styles.left}>
-            {tabs.map(({ id, label }) => <HeaderItem id={id} label={label} key={id} isActive={activeId == id} onPress={toggleTab} />)}
-          </View>
-          <View>
-            <TouchableOpacity onPress={refreshComment} style={{ ...styles.btn, width: BAR_HEIGHT }}>
-              <Icon name="available_updates" size={20} color={theme['c-600']} />
-            </TouchableOpacity>
-          </View>
-        </View>
-        <PagerView
-          ref={pagerViewRef}
-          onPageSelected={onPageSelected}
-          // onPageScrollStateChanged={onPageScrollStateChanged}
-          style={styles.pagerView}
-        >
-          <View collapsable={false} style={styles.pageStyle}>
-            <HotCommentPage activeId={activeId} musicInfo={musicInfo as LX.Music.MusicInfoOnline} onUpdateTotal={setHotTotal} />
-          </View>
-          <View collapsable={false} style={styles.pageStyle}>
-            <NewCommentPage activeId={activeId} musicInfo={musicInfo as LX.Music.MusicInfoOnline} onUpdateTotal={setNewTotal} />
-          </View>
-        </PagerView>
-      </View>
-    )
-  }, [activeId, musicInfo, onPageSelected, refreshComment, setHotTotal, setNewTotal, tabs, theme, toggleTab])
+  const back = useCallback(() => {
+    void pop(componentId)
+  }, [componentId])
 
   return (
     <PageContent>
       <CarShell componentId={componentId} activeId="now">
-        {
-          musicInfo == null
-            ? null
-            : <>
-              <Header musicInfo={musicInfo} />
-              {
-                musicInfo.source == 'local'
-                  ? (
-                  <View style={{ ...styles.container, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text>{t('comment_not support')}</Text>
+        <View style={{ flex: 1 }}>
+          <AmbientBackground />
+          {
+            musicInfo == null
+              ? null
+              : (
+                <View style={{ flex: 1, flexDirection: 'row', gap: px(80), paddingTop: px(48), paddingHorizontal: px(72) }}>
+                  <SongPanel musicInfo={musicInfo} total={activeId == 'hot' ? total.hot : total.new} onBack={back} />
+                  <View style={{ flex: 1 }}>
+                    <View style={{ height: px(58), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <CarText size={32} weight="700">{t('car_comments')}</CarText>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(12) }}>
+                        <IconButton icon="lucide-refresh-cw" iconSize={22} size={52} background={theme.glass} onPress={refreshComment} />
+                        <SegmentTabs items={tabItems} activeId={activeId} onChange={toggleTab} />
+                      </View>
+                    </View>
+                    {
+                      musicInfo.source == 'local'
+                        ? (
+                          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                            <CarText size={19} color={theme['text-2']}>{t('comment_not support')}</CarText>
+                          </View>
+                          )
+                        : (
+                          <View style={{ flex: 1, marginTop: px(20) }}>
+                            <PagerView
+                              ref={pagerViewRef}
+                              onPageSelected={onPageSelected}
+                              style={styles.pagerView}
+                            >
+                              <View collapsable={false} style={styles.pageStyle}>
+                                <HotCommentPage activeId={activeId} musicInfo={musicInfo} onUpdateTotal={setHotTotal} />
+                              </View>
+                              <View collapsable={false} style={styles.pageStyle}>
+                                <NewCommentPage activeId={activeId} musicInfo={musicInfo} onUpdateTotal={setNewTotal} />
+                              </View>
+                            </PagerView>
+                            <ListFade height={100} />
+                          </View>
+                          )
+                    }
                   </View>
-                    )
-                  : commentComponent
-              }
-          </>
-        }
+                </View>
+                )
+          }
+        </View>
       </CarShell>
     </PageContent>
   )
 })
 
 const styles = createStyle({
-  container: {
-    flex: 1,
-  },
-  tabHeader: {
-    flexDirection: 'row',
-    // paddingLeft: 10,
-    paddingRight: 10,
-    // justifyContent: 'center',
-    borderBottomWidth: BorderWidths.normal,
-  },
-  left: {
-    flex: 1,
-    flexDirection: 'row',
-    paddingLeft: 5,
-  },
-  tabBtn: {
-    // flex: 1,
-    paddingLeft: 10,
-    paddingRight: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
-  btn: {
-    // flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
   pagerView: {
     flex: 1,
   },
   pageStyle: {
+    flex: 1,
     overflow: 'hidden',
   },
 })
