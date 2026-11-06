@@ -186,6 +186,11 @@ export class AppEvent extends Event {
     this.emit('changeLoveListVisible', visible)
   }
 
+  /** 我的音乐进入/退出多选（多选浮条会顶掉迷你播放条） */
+  myListMultiSelectChanged(visible: boolean) {
+    this.emit('myListMultiSelectChanged', visible)
+  }
+
   showSonglistTagList(source: SonglistSource, activeId: string) {
     this.emit('showSonglistTagList', source, activeId)
   }

@@ -79,7 +79,7 @@ const RightHeader = () => {
 }
 
 // 已按车机设计稿重写的页面自带标题，不再显示旧顶栏
-const REDESIGNED_NAV_IDS: Array<CommonState['navActiveId']> = ['nav_setting', 'nav_search', 'nav_songlist', 'nav_top']
+const REDESIGNED_NAV_IDS: Array<CommonState['navActiveId']> = ['nav_setting', 'nav_search', 'nav_songlist', 'nav_top', 'nav_love']
 
 const Header = () => {
   const drawerLayoutPosition = useSettingValue('common.drawerLayoutPosition')

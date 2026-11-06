@@ -1,113 +1,100 @@
-import { memo, useEffect, useRef } from 'react'
-import { View, TouchableOpacity, FlatList, type NativeScrollEvent, type NativeSyntheticEvent, type FlatListProps } from 'react-native'
+import { memo, useRef } from 'react'
+import { FlatList, TouchableOpacity, View, type FlatListProps } from 'react-native'
 
-import { Icon } from '@/components/common/Icon'
-
-import { useTheme } from '@/store/theme/hook'
 import { useActiveListId, useListFetching, useMyList } from '@/store/list/hook'
-import { createStyle } from '@/utils/tools'
-import { LIST_SCROLL_POSITION_KEY } from '@/config/constant'
-import { getListPosition, saveListPosition } from '@/utils/data'
+import { useTheme } from '@/store/theme/hook'
+import { useI18n } from '@/lang'
+import { CarIcon, CarText } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
+import { getListMusicSync } from '@/utils/listManage'
 import { setActiveList } from '@/core/list'
-import Text from '@/components/common/Text'
-import { type Position } from './ListMenu'
-import { scaleSizeH } from '@/utils/pixelRatio'
+import { LIST_IDS } from '@/config/constant'
 import Loading from '@/components/common/Loading'
+import { type Position } from './ListMenu'
 
 type FlatListType = FlatListProps<LX.List.MyListInfo>
 
-const ITEM_HEIGHT = scaleSizeH(40)
+const ITEM_HEIGHT = px(80)
 
-const ListItem = memo(({ item, index, activeId, onPress, onShowMenu }: {
-  onPress: (item: LX.List.MyListInfo) => void
-  index: number
-  activeId: string
+const getListIcon = (id: string) => {
+  switch (id) {
+    case LIST_IDS.DEFAULT:
+      return { icon: 'lucide-headphones', accent: false }
+    case LIST_IDS.LOVE:
+      return { icon: 'ph-heart-fill', accent: true }
+    default:
+      return { icon: 'lucide-list-music', accent: false }
+  }
+}
+
+const ListRow = memo(({ item, active, onPress, onMore }: {
   item: LX.List.MyListInfo
-  onShowMenu: (item: LX.List.MyListInfo, index: number, position: { x: number, y: number, w: number, h: number }) => void
+  active: boolean
+  onPress: () => void
+  onMore: () => void
 }) => {
   const theme = useTheme()
-  const moreButtonRef = useRef<TouchableOpacity>(null)
+  const t = useI18n()
   const fetching = useListFetching(item.id)
-
-  const active = activeId == item.id
-
-  const handleShowMenu = () => {
-    if (moreButtonRef.current?.measure) {
-      moreButtonRef.current.measure((fx, fy, width, height, px, py) => {
-        // console.log(fx, fy, width, height, px, py)
-        onShowMenu(item, index, { x: Math.ceil(px), y: Math.ceil(py), w: Math.ceil(width), h: Math.ceil(height) })
-      })
-    }
-  }
-
-  const handlePress = () => {
-    onPress(item)
-  }
+  const { icon, accent } = getListIcon(item.id)
+  const count = getListMusicSync(item.id).length
+  const name = item.id == LIST_IDS.DEFAULT
+    ? t('list_name_default')
+    : item.id == LIST_IDS.LOVE ? t('list_name_love') : item.name
 
   return (
-    <View style={{ ...styles.listItem, height: ITEM_HEIGHT }}>
-      {
-        active
-          ? <Icon style={styles.listActiveIcon} name="chevron-right" size={12} color={theme['c-primary-font']} />
-          : null
-      }
-      { fetching ? <Loading color={active ? theme['c-primary-font'] : theme['c-font']} style={styles.loading} /> : null }
-      <TouchableOpacity style={styles.listName} onPress={handlePress}>
-        <Text numberOfLines={1} color={active ? theme['c-primary-font'] : theme['c-font']}>{item.name}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.listMoreBtn}>
-        <Icon name="dots-vertical" color={theme['c-350']} size={12} />
-      </TouchableOpacity>
-    </View>
-  )
-}, (prevProps, nextProps) => {
-  return !!(prevProps.item === nextProps.item &&
-    prevProps.index === nextProps.index &&
-    prevProps.item.name == nextProps.item.name &&
-    prevProps.activeId != nextProps.item.id &&
-    nextProps.activeId != nextProps.item.id
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={onPress}
+      onLongPress={onMore}
+      style={{
+        height: px(76),
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: px(16),
+        paddingHorizontal: px(10),
+        borderRadius: px(18),
+        backgroundColor: active ? theme['glass-strong'] : undefined,
+      }}
+    >
+      <View style={{
+        width: px(56),
+        height: px(56),
+        borderRadius: px(12),
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: accent ? theme['accent-soft'] : theme.glass,
+      }}>
+        {fetching
+          ? <Loading color={theme['text-2']} />
+          : <CarIcon name={icon} size={24} color={accent ? theme.accent : theme['text-2']} />}
+      </View>
+      <View style={{ flex: 1, gap: px(3) }}>
+        <CarText size={19} weight={active ? '600' : '500'} numberOfLines={1}>{name}</CarText>
+        {count ? <CarText size={14} color={theme['text-3']}>{t('board_track_count', { num: count })}</CarText> : null}
+      </View>
+    </TouchableOpacity>
   )
 })
 
-
 export default ({ onShowMenu }: {
-  onShowMenu: (info: { listInfo: LX.List.MyListInfo, index: number }, position: Position) => void
+  onShowMenu: (info: { listInfo: LX.List.MyListInfo, index: number }, position?: Position) => void
 }) => {
   const flatListRef = useRef<FlatList>(null)
   const allList = useMyList()
   const activeListId = useActiveListId()
 
   const handleToggleList = (item: LX.List.MyListInfo) => {
-    // setVisiblePanel(false)
-    global.app_event.changeLoveListVisible(false)
-    requestAnimationFrame(() => {
-      setActiveList(item.id)
-    })
+    setActiveList(item.id)
   }
-
-
-  const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
-    void saveListPosition(LIST_SCROLL_POSITION_KEY, nativeEvent.contentOffset.y)
-  }
-
-  const showMenu = (listInfo: LX.List.MyListInfo, index: number, position: Position) => {
-    onShowMenu({ listInfo, index }, position)
-  }
-
-  useEffect(() => {
-    void getListPosition(LIST_SCROLL_POSITION_KEY).then((offset) => {
-      flatListRef.current?.scrollToOffset({ offset, animated: false })
-    })
-  }, [])
 
   const renderItem: FlatListType['renderItem'] = ({ item, index }) => (
-    <ListItem
+    <ListRow
       key={item.id}
       item={item}
-      index={index}
-      activeId={activeListId}
-      onPress={handleToggleList}
-      onShowMenu={showMenu}
+      active={activeListId == item.id}
+      onPress={() => { handleToggleList(item) }}
+      onMore={() => { onShowMenu({ listInfo: item, index }) }}
     />
   )
   const getkey: FlatListType['keyExtractor'] = item => item.id
@@ -118,73 +105,17 @@ export default ({ onShowMenu }: {
   return (
     <FlatList
       ref={flatListRef}
-      onScroll={handleScroll}
-      style={styles.container}
+      style={{ flexGrow: 0, flexShrink: 1 }}
+      contentContainerStyle={{ gap: px(4), paddingBottom: px(140) }}
       data={allList}
       maxToRenderPerBatch={9}
-      // updateCellsBatchingPeriod={80}
       windowSize={9}
       removeClippedSubviews={true}
       initialNumToRender={18}
       renderItem={renderItem}
       keyExtractor={getkey}
-      // extraData={activeIndex}
+      extraData={activeListId}
       getItemLayout={getItemLayout}
     />
   )
 }
-
-
-const styles = createStyle({
-  container: {
-    flexShrink: 1,
-    flexGrow: 0,
-  },
-  // listContainer: {
-  //   // borderBottomWidth: BorderWidths.normal2,
-  // },
-
-  listItem: {
-    height: 'auto',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingRight: 5,
-    paddingLeft: 5,
-    // borderBottomWidth: BorderWidths.normal,
-  },
-  listActiveIcon: {
-    // width: 18,
-    marginLeft: 3,
-    // paddingRight: 5,
-    textAlign: 'center',
-  },
-  loading: {
-    marginLeft: 5,
-  },
-  listName: {
-    height: '100%',
-    // height: 46,
-    // paddingTop: 12,
-    // paddingBottom: 12,
-    justifyContent: 'center',
-    flexGrow: 1,
-    flexShrink: 1,
-    paddingLeft: 5,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-  // listNameText: {
-  //   // height: 46,
-  //   fontSize: 14,
-  // },
-  listMoreBtn: {
-    height: '100%',
-    width: 36,
-    // height: 46,
-    // paddingTop: 12,
-    // paddingBottom: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-})
-

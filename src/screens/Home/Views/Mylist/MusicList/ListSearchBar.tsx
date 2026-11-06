@@ -1,13 +1,12 @@
 import { useState, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react'
 import { Animated, View, TouchableOpacity } from 'react-native'
 
-import Text from '@/components/common/Text'
 import Input, { type InputType } from '@/components/common/Input'
+import { CarText } from '@/components/car'
 
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
-import { BorderWidths } from '@/theme'
 
 interface SearchInputProps {
   onSearch: (keywork: string) => void
@@ -116,8 +115,7 @@ export default forwardRef<ListSearchBarType, ListSearchBarProps>(({ onSearch, on
 
   const animaStyle = useMemo(() => ({
     ...styles.container,
-    // backgroundColor: theme['c-content-background'],
-    borderBottomColor: theme['c-border-background'],
+    backgroundColor: theme.bg,
     opacity: animFade, // Bind opacity to animated value
     transform: [
       { translateY: animTranslateY },
@@ -131,7 +129,7 @@ export default forwardRef<ListSearchBarType, ListSearchBarProps>(({ onSearch, on
           <SearchInput ref={searchInputRef} onSearch={onSearch} />
         </View>
         <TouchableOpacity onPress={onExitSearch} style={styles.btn}>
-          <Text color={theme['c-button-font']}>{t('list_select_cancel')}</Text>
+          <CarText size={18} weight="600" color={theme['text-1']}>{t('car_done')}</CarText>
         </TouchableOpacity>
       </Animated.View>
     )
@@ -150,7 +148,7 @@ const styles = createStyle({
     height: '100%',
     flexDirection: 'row',
     paddingLeft: 10,
-    borderBottomWidth: BorderWidths.normal,
+    borderRadius: 18,
   },
   content: {
     flexDirection: 'row',

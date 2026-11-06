@@ -1,11 +1,10 @@
 import { useState, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react'
-import { Animated, View, TouchableOpacity } from 'react-native'
+import { Animated, TouchableOpacity, View } from 'react-native'
 
-import Text from '@/components/common/Text'
-import Button from '@/components/common/Button'
+import { CarIcon, CarText } from '@/components/car'
 import { useTheme } from '@/store/theme/hook'
-import { createStyle } from '@/utils/tools'
-import { BorderWidths } from '@/theme'
+import { useI18n } from '@/lang'
+import { px } from '@/utils/pixelRatio'
 
 export type SelectMode = 'single' | 'range'
 
@@ -13,6 +12,10 @@ export interface MultipleModeBarProps {
   onSwitchMode: (mode: SelectMode) => void
   onSelectAll: (isAll: boolean) => void
   onExitSelectMode: () => void
+  onPlayLater: () => void
+  onAdd: () => void
+  onMove: () => void
+  onRemove: () => void
 }
 export interface MultipleModeBarType {
   show: () => void
@@ -22,8 +25,18 @@ export interface MultipleModeBarType {
   exitSelectMode: () => void
 }
 
-export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelectAll, onSwitchMode, onExitSelectMode }, ref) => {
-  // const isGetDetailFailedRef = useRef(false)
+// 设计稿多选浮条：1200×92，圆角 26，左侧模式分段，右侧批量操作
+export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({
+  onSelectAll,
+  onSwitchMode,
+  onExitSelectMode,
+  onPlayLater,
+  onAdd,
+  onMove,
+  onRemove,
+}, ref) => {
+  const theme = useTheme()
+  const t = useI18n()
   const [visible, setVisible] = useState(false)
   const [animatePlayed, setAnimatPlayed] = useState(true)
   const animFade = useRef(new Animated.Value(0)).current
@@ -31,7 +44,6 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
   const [selectMode, setSelectMode] = useState<SelectMode>('single')
   const [isSelectAll, setIsSelectAll] = useState(false)
   const [visibleBar, setVisibleBar] = useState(true)
-  const theme = useTheme()
 
   useImperativeHandle(ref, () => ({
     show() {
@@ -52,15 +64,13 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
   }))
 
   const handleShow = useCallback(() => {
-    // console.log('show List')
     setVisible(true)
     setAnimatPlayed(false)
     requestAnimationFrame(() => {
-      animTranslateY.setValue(-20)
-
+      animTranslateY.setValue(20)
       Animated.parallel([
         Animated.timing(animFade, {
-          toValue: 0.92,
+          toValue: 1,
           duration: 200,
           useNativeDriver: true,
         }),
@@ -84,7 +94,7 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
         useNativeDriver: true,
       }),
       Animated.timing(animTranslateY, {
-        toValue: -20,
+        toValue: 20,
         duration: 200,
         useNativeDriver: true,
       }),
@@ -95,67 +105,83 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
     })
   }, [animFade, animTranslateY])
 
-
-  const animaStyle = useMemo(() => ({
-    ...styles.container,
-    // backgroundColor: theme['c-content-background'],
-    borderBottomColor: theme['c-border-background'],
-    opacity: visibleBar ? animFade : 0, // Bind opacity to animated value
-    transform: [
-      { translateY: animTranslateY },
-    ],
-  }), [animFade, animTranslateY, theme, visibleBar])
-
   const handleSelectAll = useCallback(() => {
     const selectAll = !isSelectAll
     setIsSelectAll(selectAll)
     onSelectAll(selectAll)
   }, [isSelectAll, onSelectAll])
 
+  const segStyle = {
+    height: px(45),
+    minWidth: px(78),
+    paddingHorizontal: px(22),
+    borderRadius: 999,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  }
+  const actionStyle = {
+    height: px(64),
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: px(10),
+    paddingHorizontal: px(20),
+    borderRadius: px(18),
+  }
+
   const component = useMemo(() => {
     return (
-      <Animated.View style={animaStyle}>
-        <View style={styles.switchBtn}>
-          <Button onPress={() => { onSwitchMode('single') }} style={{ ...styles.btn, backgroundColor: selectMode == 'single' ? theme['c-button-background'] : 'rgba(0,0,0,0)' }}>
-            <Text color={theme['c-button-font']}>{global.i18n.t('list_select_single')}</Text>
-          </Button>
-          <Button onPress={() => { onSwitchMode('range') }} style={{ ...styles.btn, backgroundColor: selectMode == 'range' ? theme['c-button-background'] : 'rgba(0,0,0,0)' }}>
-            <Text color={theme['c-button-font']}>{global.i18n.t('list_select_range')}</Text>
-          </Button>
+      <Animated.View style={{
+        position: 'absolute',
+        left: px(48),
+        right: px(72),
+        bottom: px(24),
+        height: px(92),
+        borderRadius: px(26),
+        borderWidth: 1,
+        borderColor: theme['art-stroke'],
+        backgroundColor: theme['mini-bg'],
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: px(20),
+        gap: px(12),
+        elevation: 16,
+        opacity: visibleBar ? animFade : 0,
+        transform: [{ translateY: animTranslateY }],
+      }}>
+        <View style={{ height: px(55), flexDirection: 'row', gap: px(4), padding: px(5), borderRadius: 999, backgroundColor: theme.glass }}>
+          <TouchableOpacity onPress={() => { onSwitchMode('single') }} style={{ ...segStyle, backgroundColor: selectMode == 'single' ? theme.elevated : undefined }}>
+            <CarText size={17} weight={selectMode == 'single' ? '600' : '400'} color={selectMode == 'single' ? theme['text-1'] : theme['text-2']}>{t('list_select_single')}</CarText>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { onSwitchMode('range') }} style={{ ...segStyle, backgroundColor: selectMode == 'range' ? theme.elevated : undefined }}>
+            <CarText size={17} weight={selectMode == 'range' ? '600' : '400'} color={selectMode == 'range' ? theme['text-1'] : theme['text-2']}>{t('car_select_range')}</CarText>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSelectAll} style={{ ...segStyle, backgroundColor: isSelectAll ? theme.elevated : undefined }}>
+            <CarText size={17} weight={isSelectAll ? '600' : '400'} color={isSelectAll ? theme['text-1'] : theme['text-2']}>
+              {t(isSelectAll ? 'list_select_unall' : 'list_select_all')}
+            </CarText>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={handleSelectAll} style={styles.btn}>
-          <Text color={theme['c-button-font']}>{global.i18n.t(isSelectAll ? 'list_select_unall' : 'list_select_all')}</Text>
+        <View style={{ flex: 1 }} />
+        <TouchableOpacity onPress={onPlayLater} style={actionStyle}>
+          <CarIcon name="lucide-list-start" size={24} color={theme['text-1']} />
+          <CarText size={18} weight="500">{t('play_later')}</CarText>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onExitSelectMode} style={styles.btn}>
-          <Text color={theme['c-button-font']}>{global.i18n.t('list_select_cancel')}</Text>
+        <TouchableOpacity onPress={onAdd} style={actionStyle}>
+          <CarIcon name="lucide-folder-plus" size={24} color={theme['text-1']} />
+          <CarText size={18} weight="500">{t('add_to')}</CarText>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onMove} style={actionStyle}>
+          <CarIcon name="lucide-folder-input" size={24} color={theme['text-1']} />
+          <CarText size={18} weight="500">{t('move_to')}</CarText>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onRemove} style={{ ...actionStyle, backgroundColor: '#FF4D4F24' }}>
+          <CarIcon name="lucide-trash-2" size={24} color="#FF6B6B" />
+          <CarText size={18} weight="600" color="#FF6B6B">{t('list_remove')}</CarText>
         </TouchableOpacity>
       </Animated.View>
     )
-  }, [animaStyle, selectMode, theme, handleSelectAll, isSelectAll, onExitSelectMode, onSwitchMode])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animFade, animTranslateY, theme, visibleBar, selectMode, isSelectAll, handleSelectAll, onSwitchMode, onPlayLater, onAdd, onMove, onRemove, t])
 
   return !visible && animatePlayed ? null : component
-})
-
-const styles = createStyle({
-  container: {
-    flex: 1,
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: '100%',
-    height: '100%',
-    flexDirection: 'row',
-    borderBottomWidth: BorderWidths.normal,
-  },
-  switchBtn: {
-    flexDirection: 'row',
-    flex: 1,
-  },
-  btn: {
-    // flex: 1,
-    paddingLeft: 18,
-    paddingRight: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 })

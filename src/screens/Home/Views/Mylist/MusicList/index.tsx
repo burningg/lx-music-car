@@ -1,6 +1,7 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import listState from '@/store/list/state'
+import playerState from '@/store/player/state'
 import ListMenu, { type ListMenuType, type Position, type SelectInfo } from './ListMenu'
 import { clearMusicUrl, handleDislikeMusic, handlePlay, handlePlayLater, handleRemove, handleShare, handleShowMusicSourceDetail, handleUpdateMusicInfo, handleUpdateMusicPosition } from './listAction'
 import List, { type ListType } from './List'
@@ -8,18 +9,24 @@ import ListMusicAdd, { type MusicAddModalType as ListMusicAddType } from '@/comp
 import ListMusicMultiAdd, { type MusicMultiAddModalType as ListAddMultiType } from '@/components/MusicMultiAddModal'
 import { createStyle } from '@/utils/tools'
 import { type LayoutChangeEvent, View } from 'react-native'
-import ActiveList, { type ActiveListType } from './ActiveList'
 import MultipleModeBar, { type SelectMode, type MultipleModeBarType } from './MultipleModeBar'
 import ListSearchBar, { type ListSearchBarType } from './ListSearchBar'
 import ListMusicSearch, { type ListMusicSearchType } from './ListMusicSearch'
 import MusicPositionModal, { type MusicPositionModalType } from './MusicPositionModal'
 import MetadataEditModal, { type MetadataEditType, type MetadataEditProps } from '@/components/MetadataEditModal'
 import MusicToggleModal, { type MusicToggleModalType } from './MusicToggleModal'
+import ListHeader from './ListHeader'
+import { ListFade } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
 
+export interface MusicListProps {
+  /** 打开当前歌单的「更多」菜单 */
+  onShowListMenu: () => void
+  /** 打开当前歌单的排序弹层 */
+  onShowSort: () => void
+}
 
-export default () => {
-  // const t = useI18n()
-  const activeListRef = useRef<ActiveListType>(null)
+export default ({ onShowListMenu, onShowSort }: MusicListProps) => {
   const listMusicSearchRef = useRef<ListMusicSearchType>(null)
   const listRef = useRef<ListType>(null)
   const multipleModeBarRef = useRef<MultipleModeBarType>(null)
@@ -34,32 +41,61 @@ export default () => {
   const isShowMultipleModeBar = useRef(false)
   const isShowSearchBarModeBar = useRef(false)
   const selectedInfoRef = useRef<SelectInfo>()
-  // console.log('render index list')
+  const [multiSelect, setMultiSelect] = useState(false)
 
   const hancelMultiSelect = useCallback(() => {
     if (isShowSearchBarModeBar.current) {
       multipleModeBarRef.current?.setVisibleBar(false)
-    } else activeListRef.current?.setVisibleBar(false)
+    }
     isShowMultipleModeBar.current = true
+    setMultiSelect(true)
+    global.app_event.myListMultiSelectChanged(true)
     multipleModeBarRef.current?.show()
     listRef.current?.setIsMultiSelectMode(true)
   }, [])
   const hancelExitSelect = useCallback(() => {
     if (isShowSearchBarModeBar.current) {
       multipleModeBarRef.current?.setVisibleBar(true)
-    } else activeListRef.current?.setVisibleBar(true)
-    // console.log('hancelExitSelect', isShowSearchBarModeBar.current)
+    }
     multipleModeBarRef.current?.exitSelectMode()
     listRef.current?.setIsMultiSelectMode(false)
     isShowMultipleModeBar.current = false
+    setMultiSelect(false)
+    global.app_event.myListMultiSelectChanged(false)
   }, [])
   const hancelSwitchSelectMode = useCallback((mode: SelectMode) => {
     multipleModeBarRef.current?.setSwitchMode(mode)
     listRef.current?.setSelectMode(mode)
   }, [])
-  const hancelScrollToTop = useCallback(() => {
-    listRef.current?.scrollToTop()
+
+  const getSelectedList = useCallback(() => listRef.current?.getSelectedList() ?? [], [])
+
+  const handleLocate = useCallback(() => {
+    const playMusicInfo = playerState.playMusicInfo.musicInfo
+    if (!playMusicInfo) return
+    listRef.current?.scrollToInfo('progress' in playMusicInfo ? playMusicInfo.metadata.musicInfo : playMusicInfo)
   }, [])
+
+  const handleBulkPlayLater = useCallback(() => {
+    const selected = getSelectedList()
+    if (!selected.length) return
+    handlePlayLater(listState.activeListId, selected[0], selected, hancelExitSelect)
+  }, [getSelectedList, hancelExitSelect])
+  const handleBulkAdd = useCallback(() => {
+    const selected = getSelectedList()
+    if (!selected.length) return
+    listMusicMultiAddRef.current?.show({ selectedList: selected, listId: listState.activeListId, isMove: false })
+  }, [getSelectedList])
+  const handleBulkMove = useCallback(() => {
+    const selected = getSelectedList()
+    if (!selected.length) return
+    listMusicMultiAddRef.current?.show({ selectedList: selected, listId: listState.activeListId, isMove: true })
+  }, [getSelectedList])
+  const handleBulkRemove = useCallback(() => {
+    const selected = getSelectedList()
+    if (!selected.length) return
+    handleRemove(listState.activeListId, selected[0], selected, hancelExitSelect)
+  }, [getSelectedList, hancelExitSelect])
 
   const showMenu = useCallback((musicInfo: LX.Music.MusicInfo, index: number, position: Position) => {
     listMenuRef.current?.show({
@@ -67,24 +103,23 @@ export default () => {
       index,
       listId: listState.activeListId,
       single: false,
-      selectedList: listRef.current!.getSelectedList(),
+      selectedList: getSelectedList(),
     }, position)
-  }, [])
+  }, [getSelectedList])
   const handleShowSearch = useCallback(() => {
     isShowSearchBarModeBar.current = true
     if (isShowMultipleModeBar.current) {
       multipleModeBarRef.current?.setVisibleBar(false)
-    } else activeListRef.current?.setVisibleBar(false)
+    }
     listSearchBarRef.current?.show()
   }, [])
   const handleExitSearch = useCallback(() => {
     isShowSearchBarModeBar.current = false
     listMusicSearchRef.current?.hide()
     listSearchBarRef.current?.hide()
-    // console.log('handleExitSearch', isShowMultipleModeBar.current)
     if (isShowMultipleModeBar.current) {
       multipleModeBarRef.current?.setVisibleBar(true)
-    } else activeListRef.current?.setVisibleBar(true)
+    }
   }, [])
   const handleScrollToInfo = useCallback((info: LX.Music.MusicInfo) => {
     listRef.current?.scrollToInfo(info)
@@ -121,13 +156,15 @@ export default () => {
 
   return (
     <View style={styles.container}>
-      <View style={{ zIndex: 2 }}>
-        <ActiveList ref={activeListRef} onShowSearchBar={handleShowSearch} onScrollToTop={hancelScrollToTop} />
-        <MultipleModeBar
-          ref={multipleModeBarRef}
-          onSwitchMode={hancelSwitchSelectMode}
-          onSelectAll={isAll => listRef.current?.selectAll(isAll)}
-          onExitSelectMode={hancelExitSelect}
+      <View style={{ paddingTop: px(44), paddingLeft: px(56), paddingRight: px(72) }}>
+        <ListHeader
+          multiSelect={multiSelect}
+          onLocate={handleLocate}
+          onSearch={handleShowSearch}
+          onSort={onShowSort}
+          onMultiSelect={hancelMultiSelect}
+          onMore={onShowListMenu}
+          onExitMultiSelect={hancelExitSelect}
         />
         <ListSearchBar
           ref={listSearchBarRef}
@@ -135,7 +172,7 @@ export default () => {
           onExitSearch={handleExitSearch}
         />
       </View>
-      <View style={{ flex: 1 }} onLayout={onLayout}>
+      <View style={{ flex: 1, marginTop: px(20), paddingLeft: px(56), paddingRight: px(72) }} onLayout={onLayout}>
         <List
           ref={listRef}
           onShowMenu={showMenu}
@@ -146,7 +183,18 @@ export default () => {
           ref={listMusicSearchRef}
           onScrollToInfo={handleScrollToInfo}
         />
+        <ListFade height={120} />
       </View>
+      <MultipleModeBar
+        ref={multipleModeBarRef}
+        onSwitchMode={hancelSwitchSelectMode}
+        onSelectAll={isAll => listRef.current?.selectAll(isAll)}
+        onExitSelectMode={hancelExitSelect}
+        onPlayLater={handleBulkPlayLater}
+        onAdd={handleBulkAdd}
+        onMove={handleBulkMove}
+        onRemove={handleBulkRemove}
+      />
       <ListMusicAdd ref={listMusicAddRef} onAdded={hancelExitSelect} />
       <ListMusicMultiAdd ref={listMusicMultiAddRef} onAdded={hancelExitSelect} />
       <MusicPositionModal ref={musicPositionModalRef}
