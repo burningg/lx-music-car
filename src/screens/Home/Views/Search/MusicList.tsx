@@ -13,7 +13,17 @@ export interface MusicListType {
   loadList: (text: string, source: Source) => void
 }
 
-export default forwardRef<MusicListType, {}>((props, ref) => {
+export interface MusicResultInfo {
+  list: LX.Music.MusicInfoOnline[]
+  total: number
+}
+
+const getResultInfo = (): MusicResultInfo => {
+  const info = searchMusicState.listInfos[searchMusicState.source]
+  return { list: info?.list ?? [], total: info?.total ?? 0 }
+}
+
+export default forwardRef<MusicListType, { onResult?: (info: MusicResultInfo | null) => void }>(({ onResult }, ref) => {
   const listRef = useRef<OnlineListType>(null)
   const searchInfoRef = useRef<{ text: string, source: Source }>({ text: '', source: 'kw' })
   const isUnmountedRef = useRef(false)
@@ -21,9 +31,11 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
     async loadList(text, source) {
       // const listDetailInfo = searchMusicState.listDetailInfo
       listRef.current?.setList([], false, source == 'all')
+      onResult?.(null)
       if (searchMusicState.searchText == text && searchMusicState.source == source && searchMusicState.listInfos[searchMusicState.source]!.list.length) {
         requestAnimationFrame(() => {
           listRef.current?.setList(searchMusicState.listInfos[searchMusicState.source]!.list, false, source == 'all')
+          onResult?.(getResultInfo())
         })
       } else {
         listRef.current?.setStatus('loading')
@@ -36,13 +48,14 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
           requestAnimationFrame(() => {
             listRef.current?.setList(list, false, source == 'all')
             listRef.current?.setStatus(searchMusicState.listInfos[searchMusicState.source]!.maxPage <= page ? 'end' : 'idle')
+            onResult?.(getResultInfo())
           })
         }).catch(() => {
           listRef.current?.setStatus('error')
         })
       }
     },
-  }), [])
+  }), [onResult])
 
   useEffect(() => {
     isUnmountedRef.current = false
@@ -60,6 +73,7 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
       if (isUnmountedRef.current) return
       listRef.current?.setList(list, false, searchInfoRef.current.source == 'all')
       listRef.current?.setStatus(searchMusicState.listInfos[searchInfoRef.current.source]!.maxPage <= page ? 'end' : 'idle')
+      onResult?.(getResultInfo())
     }).catch(() => {
       listRef.current?.setStatus('error')
     })

@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useRef } from 'react'
 import { TouchableOpacity, View } from 'react-native'
 import Image from '@/components/common/Image'
 import { useTheme } from '@/store/theme/hook'
@@ -9,6 +9,9 @@ import IconButton from './IconButton'
 
 /** 行高固定，供 FlatList getItemLayout 使用 */
 export const TRACK_ROW_HEIGHT = 76
+
+/** 更多按钮在屏幕上的位置，用于弹出菜单定位 */
+export interface TrackRowMorePosition { x: number, y: number, w: number, h: number }
 
 export interface TrackRowProps {
   index: number
@@ -23,12 +26,18 @@ export interface TrackRowProps {
   selected?: boolean
   onPress?: () => void
   onLongPress?: () => void
-  onMore?: () => void
+  onMore?: (position: TrackRowMorePosition) => void
 }
 
 // 设计稿 Track Row：高 76，内边距 0/20，间距 20，圆角 16
 export default memo(({ index, title, artist, pic, badge, duration, playing, selectMode, selected, onPress, onLongPress, onMore }: TrackRowProps) => {
   const theme = useTheme()
+  const moreRef = useRef<TouchableOpacity>(null)
+  const handleMore = () => {
+    moreRef.current?.measure((fx, fy, width, height, pageX, pageY) => {
+      onMore?.({ x: Math.ceil(pageX), y: Math.ceil(pageY), w: Math.ceil(width), h: Math.ceil(height) })
+    })
+  }
   const backgroundColor = selected ? theme['accent-soft'] : playing ? theme.glass : undefined
 
   let lead
@@ -80,7 +89,7 @@ export default memo(({ index, title, artist, pic, badge, duration, playing, sele
         </View>
       ) : null}
       {duration ? <CarText size={16} num color={theme['text-3']}>{duration}</CarText> : null}
-      {onMore && !selectMode ? <IconButton icon="lucide-ellipsis" iconSize={24} size={52} color={theme['text-3']} onPress={onMore} /> : null}
+      {onMore && !selectMode ? <IconButton ref={moreRef} icon="lucide-ellipsis" iconSize={24} size={52} color={theme['text-3']} onPress={handleMore} /> : null}
     </TouchableOpacity>
   )
 })

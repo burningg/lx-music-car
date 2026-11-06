@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { forwardRef, memo } from 'react'
 import { TouchableOpacity, type ColorValue, type StyleProp, type ViewStyle } from 'react-native'
 import { px } from '@/utils/pixelRatio'
 import CarIcon from './CarIcon'
@@ -18,10 +18,11 @@ export interface IconButtonProps {
   onLongPress?: () => void
 }
 
-export default memo(({ icon, iconSize = 28, size = 64, color, background, disabled, style, onPress, onLongPress }: IconButtonProps) => {
+export default memo(forwardRef<TouchableOpacity, IconButtonProps>(({ icon, iconSize = 28, size = 64, color, background, disabled, style, onPress, onLongPress }, ref) => {
   const boxSize = px(size)
   return (
     <TouchableOpacity
+      ref={ref}
       activeOpacity={0.6}
       disabled={disabled}
       onPress={onPress}
@@ -39,4 +40,4 @@ export default memo(({ icon, iconSize = 28, size = 64, color, background, disabl
       <CarIcon name={icon} size={iconSize} color={color} />
     </TouchableOpacity>
   )
-})
+}))

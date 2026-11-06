@@ -1,16 +1,13 @@
 import { useRef, forwardRef, useImperativeHandle } from 'react'
 import { View } from 'react-native'
-
-// import music from '@/utils/musicSdk'
-import { BorderWidths } from '@/theme'
-// import InsetShadow from 'react-native-inset-shadow'
 import SourceSelector, {
   type SourceSelectorType as _SourceSelectorType,
   type SourceSelectorProps as _SourceSelectorProps,
 } from '@/components/SourceSelector'
 import SearchInput, { type SearchInputType, type SearchInputProps } from './SearchInput'
-import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
+import { useI18n } from '@/lang'
+import { CarText } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
 import { type Source as MusicSource } from '@/store/search/music/state'
 import { type Source as SonglistSource } from '@/store/search/songlist/state'
 
@@ -32,11 +29,11 @@ export interface HeaderBarType {
   blur: SearchInputType['blur']
 }
 
-
+// 设计稿顶栏：标题 48/700 + 搜索框 + 来源胶囊（语音搜索暂无对应功能，未加入）
 export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTipSearch, onSearch, onHideTipList, onShowTipList }, ref) => {
+  const t = useI18n()
   const sourceSelectorRef = useRef<SourceSelectorType>(null)
   const searchInputRef = useRef<SearchInputType>(null)
-  const theme = useTheme()
 
   useImperativeHandle(ref, () => ({
     setSourceList(list, source) {
@@ -50,12 +47,9 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
     },
   }), [])
 
-
   return (
-    <View style={{ ...styles.searchBar, borderBottomColor: theme['c-border-background'] }}>
-      <View style={styles.selector}>
-        <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} center />
-      </View>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(20), zIndex: 2 }}>
+      <CarText size={48} weight="700" style={{ marginRight: px(16) }}>{t('nav_search')}</CarText>
       <SearchInput
         ref={searchInputRef}
         onChangeText={onTipSearch}
@@ -63,19 +57,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
         onBlur={onHideTipList}
         onTouchStart={onShowTipList}
       />
+      <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} variant="pill" />
     </View>
   )
-})
-
-const styles = createStyle({
-  searchBar: {
-    flexDirection: 'row',
-    height: 38,
-    zIndex: 2,
-    paddingRight: 10,
-    borderBottomWidth: BorderWidths.normal,
-  },
-  selector: {
-    // width: 86,
-  },
 })

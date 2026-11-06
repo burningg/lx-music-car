@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import { type LayoutChangeEvent, View } from 'react-native'
 
 // import music from '@/utils/musicSdk'
@@ -11,6 +11,13 @@ import searchMusicState from '@/store/search/music/state'
 import searchSonglistState from '@/store/search/songlist/state'
 import { getSearchSetting, saveSearchSetting } from '@/utils/data'
 import { createStyle } from '@/utils/tools'
+import { useI18n } from '@/lang'
+import { useTheme } from '@/store/theme/hook'
+import { AmbientBackground, CarText, HeroCard, ListFade } from '@/components/car'
+import { handlePlay } from '@/components/OnlineList/listAction'
+import { px } from '@/utils/pixelRatio'
+import SearchTypeSelector from './SearchTypeSelector'
+import type { MusicResultInfo } from './MusicList'
 import TipList, { type TipListType } from './TipList'
 import List, { type ListType } from './List'
 import { addHistoryWord } from '@/core/search/search'
@@ -22,7 +29,26 @@ interface SearchInfo {
   searchType: 'music' | 'songlist'
 }
 
+const BestMatch = ({ info }: { info: LX.Music.MusicInfoOnline }) => {
+  const t = useI18n()
+  return (
+    <HeroCard
+      pic={info.meta.picUrl}
+      tag={t('search_best_match')}
+      title={info.name}
+      subtitle={[t('search_type_music'), info.singer, info.meta.albumName].filter(Boolean).join(' · ')}
+      onPlay={() => { handlePlay(info) }}
+    />
+  )
+}
+
 export default () => {
+  const t = useI18n()
+  const theme = useTheme()
+  const [result, setResult] = useState<MusicResultInfo | null>(null)
+  const handleResult = useCallback((info: MusicResultInfo | null) => {
+    setResult(info?.list.length ? info : null)
+  }, [])
   const headerBarRef = useRef<HeaderBarType>(null)
   const searchTipListRef = useRef<TipListType>(null)
   const listRef = useRef<ListType>(null)
@@ -97,19 +123,33 @@ export default () => {
     }, 500)
   }
 
+  // 设计稿：内边距 44/72/0/72；顶栏 → 类型切换 + 结果数 → 左侧最佳匹配 + 右侧歌曲列表
   return (
     <View style={styles.container}>
-      <HeaderBar
-        ref={headerBarRef}
-        onSourceChange={handleSourceChange}
-        onTipSearch={handleTipSearch}
-        onSearch={handleSearch}
-        onHideTipList={handleHideTipList}
-        onShowTipList={handleShowTipList}
-      />
-      <View style={styles.content} onLayout={handleLayout}>
-        <TipList ref={searchTipListRef} onSearch={handleSearch} />
-        <List ref={listRef} onSearch={handleSearch} />
+      <AmbientBackground variant="glow" />
+      <View style={{ flex: 1, paddingTop: px(44), paddingHorizontal: px(72), gap: px(28) }}>
+        <HeaderBar
+          ref={headerBarRef}
+          onSourceChange={handleSourceChange}
+          onTipSearch={handleTipSearch}
+          onSearch={handleSearch}
+          onHideTipList={handleHideTipList}
+          onShowTipList={handleShowTipList}
+        />
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <SearchTypeSelector />
+          {result ? <CarText size={17} color={theme['text-2']}>{t('search_result_count', { total: result.total })}</CarText> : null}
+        </View>
+        <View style={styles.content} onLayout={handleLayout}>
+          <View style={{ flex: 1, flexDirection: 'row', gap: px(36) }}>
+            {result ? <BestMatch info={result.list[0]} /> : null}
+            <View style={{ flex: 1 }}>
+              <List ref={listRef} onSearch={handleSearch} onResult={handleResult} />
+              <ListFade />
+            </View>
+          </View>
+          <TipList ref={searchTipListRef} onSearch={handleSearch} />
+        </View>
       </View>
     </View>
   )

@@ -3,7 +3,7 @@ import { FlatList, type FlatListProps, RefreshControl, View } from 'react-native
 
 // import { useMusicList } from '@/store/list/hook'
 import ListItem, { ITEM_HEIGHT } from './ListItem'
-import { createStyle, getRowInfo, type RowInfoType } from '@/utils/tools'
+import { createStyle, type RowInfoType } from '@/utils/tools'
 import type { Position } from './ListMenu'
 import type { SelectMode } from './MultipleModeBar'
 import { useTheme } from '@/store/theme/hook'
@@ -13,6 +13,7 @@ import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
 import { handlePlay } from './listAction'
 import { useSettingValue } from '@/store/setting/hook'
+import { usePlayerMusicInfo } from '@/store/player/hook'
 
 type FlatListType = FlatListProps<LX.Music.MusicInfoOnline>
 
@@ -54,7 +55,6 @@ const List = forwardRef<ListType, ListProps>(({
   progressViewOffset,
   ListHeaderComponent,
   checkHomePagerIdle,
-  rowType,
 }, ref) => {
   // const t = useI18n()
   const theme = useTheme()
@@ -68,9 +68,9 @@ const List = forwardRef<ListType, ListProps>(({
   const selectedListRef = useRef<LX.Music.MusicInfoOnline[]>([])
   const [visibleMultiSelect, setVisibleMultiSelect] = useState(false)
   const [status, setStatus] = useState<Status>('idle')
-  const rowInfo = useRef(getRowInfo(rowType))
   const isShowAlbumName = useSettingValue('list.isShowAlbumName')
   const isShowInterval = useSettingValue('list.isShowInterval')
+  const playingId = usePlayerMusicInfo().id
   // const currentListIdRef = useRef('')
   // console.log('render music list')
 
@@ -189,7 +189,8 @@ const List = forwardRef<ListType, ListProps>(({
       onLongPress={handleLongPress}
       onShowMenu={onShowMenu}
       selectedList={selectedList}
-      rowInfo={rowInfo.current}
+      isMultiSelectMode={visibleMultiSelect}
+      playingId={playingId}
       isShowAlbumName={isShowAlbumName}
       isShowInterval={isShowInterval}
     />
@@ -234,7 +235,7 @@ const List = forwardRef<ListType, ListProps>(({
       ref={flatListRef}
       style={styles.list}
       data={currentList}
-      numColumns={rowInfo.current.rowNum}
+      extraData={playingId}
       horizontal={false}
       maxToRenderPerBatch={4}
       // updateCellsBatchingPeriod={80}
