@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import listState from '@/store/list/state'
 import playerState from '@/store/player/state'
@@ -42,6 +42,11 @@ export default ({ onShowListMenu, onShowSort }: MusicListProps) => {
   const isShowSearchBarModeBar = useRef(false)
   const selectedInfoRef = useRef<SelectInfo>()
   const [multiSelect, setMultiSelect] = useState(false)
+
+  // 离开页面时复位多选状态，避免迷你播放条一直隐藏
+  useEffect(() => () => {
+    global.app_event.myListMultiSelectChanged(false)
+  }, [])
 
   const hancelMultiSelect = useCallback(() => {
     if (isShowSearchBarModeBar.current) {
