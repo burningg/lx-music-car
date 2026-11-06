@@ -26,17 +26,17 @@ export default memo(({ musicInfo, total, onBack }: SongPanelProps) => {
         <CarIcon name="lucide-chevron-left" size={22} color={theme['text-2']} />
         <CarText size={17} color={theme['text-2']}>{t('car_now_playing')}</CarText>
       </TouchableOpacity>
-      <View style={{ marginTop: px(28), width: px(240), height: px(240), borderRadius: px(24), overflow: 'hidden', borderWidth: 1, borderColor: theme['art-stroke'] }}>
+      <View style={{ marginTop: px(32), width: px(360), height: px(360), borderRadius: px(24), overflow: 'hidden', borderWidth: 1, borderColor: theme['art-stroke'] }}>
         <Image url={musicInfo.meta.picUrl} style={{ width: '100%', height: '100%' }} />
       </View>
-      <View style={{ marginTop: px(28), gap: px(8) }}>
+      <View style={{ marginTop: px(32), gap: px(8) }}>
         <CarText size={40} weight="700" numberOfLines={2}>{musicInfo.name}</CarText>
         <CarText size={18} color={theme['text-2']} numberOfLines={1}>
           {album ? `${musicInfo.singer} — 《${album}》` : musicInfo.singer}
         </CarText>
       </View>
       <View style={{
-        marginTop: px(28),
+        marginTop: px(32),
         alignSelf: 'flex-start',
         height: px(43),
         flexDirection: 'row',

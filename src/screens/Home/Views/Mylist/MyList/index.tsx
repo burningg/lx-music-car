@@ -69,7 +69,7 @@ export default forwardRef<ListsPanelType, {}>((props, ref) => {
       borderRightWidth: 1,
       borderRightColor: theme.hairline,
     }}>
-      <View style={{ paddingTop: px(44), paddingLeft: px(40), paddingRight: px(24) }}>
+      <View style={{ paddingTop: px(60), paddingLeft: px(40), paddingRight: px(24) }}>
         <View style={{ height: px(52), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <CarText size={36} weight="700">{t('nav_love')}</CarText>
           <IconButton
@@ -81,7 +81,7 @@ export default forwardRef<ListsPanelType, {}>((props, ref) => {
           />
         </View>
       </View>
-      <View style={{ flex: 1, paddingTop: px(24), paddingLeft: px(40), paddingRight: px(24) }}>
+      <View style={{ flex: 1, paddingTop: px(32), paddingLeft: px(40), paddingRight: px(24) }}>
         <List onShowMenu={showMenu} />
       </View>
       <ListNameEdit ref={listNameEditRef} />

@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
-import { type LayoutChangeEvent, View } from 'react-native'
+import { type LayoutChangeEvent, type LayoutRectangle, View } from 'react-native'
 
 // import music from '@/utils/musicSdk'
 // import InsetShadow from 'react-native-inset-shadow'
@@ -52,9 +52,9 @@ export default () => {
   const headerBarRef = useRef<HeaderBarType>(null)
   const searchTipListRef = useRef<TipListType>(null)
   const listRef = useRef<ListType>(null)
-  const layoutHeightRef = useRef<number>(0)
+  const [availableHeight, setAvailableHeight] = useState(0)
+  const [inputLayout, setInputLayout] = useState<LayoutRectangle | null>(null)
   const searchInfo = useRef<SearchInfo>({ temp_source: 'kw', source: 'kw', searchType: 'music' })
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     void getSearchSetting().then(info => {
@@ -88,7 +88,7 @@ export default () => {
 
 
   const handleLayout = (e: LayoutChangeEvent) => {
-    layoutHeightRef.current = e.nativeEvent.layout.height
+    setAvailableHeight(e.nativeEvent.layout.height)
   }
 
   const handleSourceChange: HeaderBarProps['onSourceChange'] = (source) => {
@@ -97,58 +97,53 @@ export default () => {
     listRef.current?.loadList(searchState.searchText, source, searchInfo.current.searchType)
   }
   const handleTipSearch: HeaderBarProps['onTipSearch'] = (text) => {
-    setTimeout(() => {
-      searchTipListRef.current?.search(text, layoutHeightRef.current)
-    }, 500)
+    searchTipListRef.current?.search(text)
+    searchTipListRef.current?.show()
   }
   const handleHideTipList = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
     searchTipListRef.current?.hide()
   }
   const handleSearch: HeaderBarProps['onSearch'] = (text) => {
     handleHideTipList()
-    searchTipListRef.current?.search(text, layoutHeightRef.current)
+    searchTipListRef.current?.search(text)
     headerBarRef.current?.setText(text)
     headerBarRef.current?.blur()
     void addHistoryWord(text)
     listRef.current?.loadList(text, searchInfo.current.source, searchInfo.current.searchType)
   }
   const handleShowTipList: HeaderBarProps['onShowTipList'] = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    timeoutRef.current = setTimeout(() => {
-      searchTipListRef.current?.show(layoutHeightRef.current)
-    }, 500)
+    searchTipListRef.current?.show()
   }
 
-  // 设计稿：内边距 44/72/0/72；顶栏 → 类型切换 + 结果数 → 左侧最佳匹配 + 右侧歌曲列表
+  // 设计稿：内边距 60/72/152/72；顶栏 → 类型切换 + 结果数 → 左侧最佳匹配 + 右侧歌曲列表
   return (
     <View style={styles.container}>
       <AmbientBackground variant="glow" />
-      <View style={{ flex: 1, paddingTop: px(44), paddingHorizontal: px(72), gap: px(28) }}>
-        <HeaderBar
-          ref={headerBarRef}
-          onSourceChange={handleSourceChange}
-          onTipSearch={handleTipSearch}
-          onSearch={handleSearch}
-          onHideTipList={handleHideTipList}
-          onShowTipList={handleShowTipList}
-        />
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <SearchTypeSelector />
-          {result ? <CarText size={17} color={theme['text-2']}>{t('search_result_count', { total: result.total })}</CarText> : null}
-        </View>
-        <View style={styles.content} onLayout={handleLayout}>
-          <View style={{ flex: 1, flexDirection: 'row', gap: px(36) }}>
-            {result ? <BestMatch info={result.list[0]} /> : null}
-            <View style={{ flex: 1 }}>
-              <List ref={listRef} onSearch={handleSearch} onResult={handleResult} />
-              <ListFade />
+      <View style={{ flex: 1, paddingTop: px(60), paddingHorizontal: px(72), paddingBottom: px(152) }}>
+        <View style={{ flex: 1, gap: px(32) }} onLayout={handleLayout}>
+          <HeaderBar
+            ref={headerBarRef}
+            onSearchInputLayout={({ nativeEvent: { layout } }) => { setInputLayout(layout) }}
+            onSourceChange={handleSourceChange}
+            onTipSearch={handleTipSearch}
+            onSearch={handleSearch}
+            onHideTipList={handleHideTipList}
+            onShowTipList={handleShowTipList}
+          />
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <SearchTypeSelector />
+            {result ? <CarText size={17} color={theme['text-2']}>{t('search_result_count', { total: result.total })}</CarText> : null}
+          </View>
+          <View style={styles.content}>
+            <View style={{ flex: 1, flexDirection: 'row', gap: px(36) }}>
+              {result ? <BestMatch info={result.list[0]} /> : null}
+              <View style={{ flex: 1 }}>
+                <List ref={listRef} onSearch={handleSearch} onResult={handleResult} />
+                <ListFade height={32} />
+              </View>
             </View>
           </View>
-          <TipList ref={searchTipListRef} onSearch={handleSearch} />
+          <TipList ref={searchTipListRef} anchor={inputLayout} availableHeight={availableHeight} onSearch={handleSearch} />
         </View>
       </View>
     </View>

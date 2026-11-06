@@ -95,9 +95,9 @@ export const scaleSizeAbsHR = (size: number) => {
 }
 
 
-// 车机设计稿基准：1920×720
+// 车机设计稿基准：1920×1080
 const CAR_DESIGN_WIDTH = 1920
-const CAR_DESIGN_HEIGHT = 720
+const CAR_DESIGN_HEIGHT = 1080
 let carScale = 0
 windowSizeTools.onSizeChanged(() => {
   carScale = 0
@@ -114,8 +114,9 @@ const getCarScale = () => {
  * 设计稿尺寸转 dp，用于间距、圆角、图片等布局尺寸，不随界面字号设置变化
  * @param size 设计稿 px
  */
+// 按物理像素取整，避免高密度屏上整 dp 舍入累积成按钮/间距偏差。
 export const px = (size: number) => {
-  return Math.round(size * getCarScale())
+  return PixelRatio.roundToNearestPixel(size * getCarScale())
 }
 
 /**
@@ -123,5 +124,5 @@ export const px = (size: number) => {
  * @param size 设计稿 px
  */
 export const sp = (size: number) => {
-  return Math.round(size * getCarScale() * global.lx.fontSize / fontScale)
+  return PixelRatio.roundToNearestPixel(size * getCarScale() * global.lx.fontSize / fontScale)
 }

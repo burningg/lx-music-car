@@ -10,6 +10,7 @@ import { clearMusicUrl, handleDislikeMusic, handlePlay, handlePlayLater, handleS
 import { createStyle } from '@/utils/tools'
 
 export interface OnlineListProps {
+  trackRowSize?: ListProps['trackRowSize']
   onRefresh: ListProps['onRefresh']
   onLoadMore: ListProps['onLoadMore']
   onPlayList?: ListProps['onPlayList']
@@ -33,6 +34,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
   checkHomePagerIdle = false,
   rowType,
   contentInsetBottom,
+  trackRowSize,
 }, ref) => {
   const listRef = useRef<ListType>(null)
   const multipleModeBarRef = useRef<MultipleModeBarType>(null)
@@ -95,6 +97,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
           ListHeaderComponent={ListHeaderComponent}
           checkHomePagerIdle={checkHomePagerIdle}
           rowType={rowType}
+          trackRowSize={trackRowSize}
           contentInsetBottom={contentInsetBottom}
         />
         <MultipleModeBar

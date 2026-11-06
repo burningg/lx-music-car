@@ -1,7 +1,7 @@
 import { useTheme } from '@/store/theme/hook'
 import { BorderRadius } from '@/theme'
 import { createStyle } from '@/utils/tools'
-import { type ComponentProps, memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { type ComponentProps, type ReactNode, memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { View, type ViewProps, StyleSheet, Image as FastImage } from 'react-native'
 // import FastImage, { type FastImageProps } from 'react-native-fast-image'
 import Text from './Text'
@@ -11,6 +11,8 @@ import { useLayout } from '@/utils/hooks'
 export interface ImageProps extends ViewProps {
   style: ComponentProps<typeof FastImage>['style']
   url?: string | number | null
+  /** Optional themed placeholder for missing or failed artwork. */
+  fallback?: ReactNode
   cache?: boolean
   resizeMode?: ComponentProps<typeof FastImage>['resizeMode']
   onError?: (url: string | number) => void
@@ -34,7 +36,7 @@ const EmptyPic = memo(({ style, nativeID }: { style: ImageProps['style'], native
   )
 })
 
-const Image = memo(({ url, cache, resizeMode = 'cover', style, onError, nativeID }: ImageProps) => {
+const Image = memo(({ url, cache, resizeMode = 'cover', style, onError, nativeID, fallback }: ImageProps) => {
   const [isError, setError] = useState(false)
   const handleError = useCallback(() => {
     setError(true)
@@ -50,7 +52,7 @@ const Image = memo(({ url, cache, resizeMode = 'cover', style, onError, nativeID
       : url
   const showDefault = useMemo(() => !uri || isError, [isError, uri])
   return (
-    showDefault ? <EmptyPic style={style} nativeID={nativeID} />
+    showDefault ? fallback ?? <EmptyPic style={style} nativeID={nativeID} />
       : (
           <FastImage
             style={style}
@@ -70,7 +72,11 @@ const Image = memo(({ url, cache, resizeMode = 'cover', style, onError, nativeID
 }, (prevProps, nextProps) => {
   return prevProps.url == nextProps.url &&
     prevProps.style == nextProps.style &&
-    prevProps.nativeID == nextProps.nativeID
+    prevProps.nativeID == nextProps.nativeID &&
+    prevProps.fallback === nextProps.fallback &&
+    prevProps.onError === nextProps.onError &&
+    prevProps.cache === nextProps.cache &&
+    prevProps.resizeMode === nextProps.resizeMode
 })
 
 export const getSize = (uri: string, success: (width: number, height: number) => void, failure?: (error: any) => void) => {

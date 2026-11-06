@@ -7,6 +7,7 @@ import { px } from '@/utils/pixelRatio'
 export interface SeekBarProps {
   progress: number
   duration: number
+  buffered?: number
   /** 可见条高度（设计稿 px） */
   barHeight?: number
   /** 触控区高度（设计稿 px） */
@@ -26,7 +27,7 @@ const Bar = ({ width, color }: { width: `${number}%`, color?: ColorValue }) => (
  * 进度条：触控层与可见条同宽，onLayout 测的就是可见条宽度，
  * 加大触控区不影响点击位置换算
  */
-export default memo(({ progress, duration, barHeight = 3, touchHeight = 24, align = 'center', seekable = true, color, trackColor }: SeekBarProps) => {
+export default memo(({ progress, duration, buffered, barHeight = 3, touchHeight = 24, align = 'center', seekable = true, color, trackColor }: SeekBarProps) => {
   const theme = useTheme()
   const [dragging, setDragging] = useState(false)
   const [dragProgress, setDragProgress] = useState(0)
@@ -62,6 +63,7 @@ export default memo(({ progress, duration, barHeight = 3, touchHeight = 24, alig
       {...(seekable ? panResponder.panHandlers : null)}
     >
       <View style={{ height: px(barHeight), borderRadius: 99, backgroundColor: trackColor ?? theme['track-bg'], overflow: 'hidden' }}>
+        {buffered != null ? <Bar width={`${Math.min(Math.max(buffered, 0), 1) * 100}%`} color={theme['glass-strong']} /> : null}
         <Bar width={`${Math.min(Math.max(current, 0), 1) * 100}%`} color={color ?? theme.accent} />
       </View>
     </View>

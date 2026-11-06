@@ -24,10 +24,6 @@ export const MINI_PLAYER_HEIGHT = 92
 
 const handlePlayPrev = () => { void playPrev() }
 const handlePlayNext = () => { void playNext() }
-const handleOpenDetail = () => {
-  if (!playerState.musicInfo.id) return
-  navigations.pushPlayDetailScreen(commonState.componentIds.home!)
-}
 const handleJumpPosition = () => {
   const listId = playerState.playMusicInfo.listId
   if (!listId || listId == LIST_IDS.DOWNLOAD) return
@@ -49,17 +45,17 @@ const Controls = () => {
   const isPlay = useIsPlay()
   const loved = useCurrentMusicLoved()
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(12) }}>
-      <IconButton icon={loved ? 'ph-heart-fill' : 'ph-heart'} iconSize={26} color={loved ? theme.accent : theme['text-2']} onPress={loved ? uncollectMusic : collectMusic} />
-      <IconButton icon="ph-skip-back-fill" iconSize={32} onPress={handlePlayPrev} />
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(36) }}>
+      <IconButton icon={loved ? 'ph-heart-fill' : 'ph-heart'} iconSize={26} size={26} color={loved ? theme.accent : theme['text-2']} onPress={loved ? uncollectMusic : collectMusic} />
+      <IconButton icon="ph-skip-back-fill" iconSize={32} size={32} onPress={handlePlayPrev} />
       <IconButton icon={isPlay ? 'ph-pause-fill' : 'ph-play-fill'} iconSize={26} size={60} color={theme['on-primary']} background={theme['text-1']} onPress={togglePlay} />
-      <IconButton icon="ph-skip-forward-fill" iconSize={32} onPress={handlePlayNext} />
+      <IconButton icon="ph-skip-forward-fill" iconSize={32} size={32} onPress={handlePlayNext} />
     </View>
   )
 }
 
 // 设计稿 Mini Player：1100×92，圆角 26，左封面 64，右控制区，底部 3px 进度
-export default memo(({ isHome = false }: { isHome?: boolean }) => {
+export default memo(({ isHome = false, componentId }: { isHome?: boolean, componentId?: string }) => {
   const theme = useTheme()
   const musicInfo = usePlayerMusicInfo()
   const { keyboardShown } = useKeyboard()
@@ -69,6 +65,12 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
   usePageVisible([COMPONENT_IDS.home], useCallback((visible) => {
     if (isHome) setAutoUpdate(visible)
   }, [isHome]))
+
+  const handleOpenDetail = useCallback(() => {
+    const targetId = componentId ?? commonState.componentIds.home
+    if (!playerState.musicInfo.id || !targetId) return
+    navigations.pushPlayDetailScreen(targetId)
+  }, [componentId])
 
   const handlePicError = useCallback((url: string | number) => {
     setLoadErrorPicUrl(url as string)
@@ -83,8 +85,6 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
       width: px(MINI_PLAYER_WIDTH),
       height: px(MINI_PLAYER_HEIGHT),
       borderRadius: px(26),
-      borderWidth: 1,
-      borderColor: theme['art-stroke'],
       backgroundColor: theme['mini-bg'],
       overflow: 'hidden',
       elevation: 16,
@@ -93,13 +93,14 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
         <TouchableOpacity activeOpacity={0.7} onPress={handleOpenDetail} onLongPress={isHome ? handleJumpPosition : undefined}>
           <Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} onError={handlePicError} style={{ width: px(64), height: px(64), borderRadius: px(14) }} />
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.7} onPress={handleOpenDetail} onLongPress={handleJumpPosition} style={{ flex: 1, gap: px(4) }}>
+        <TouchableOpacity activeOpacity={0.7} onPress={handleOpenDetail} onLongPress={isHome ? handleJumpPosition : undefined} style={{ flex: 1, gap: px(4) }}>
           <CarText size={20} weight="600" numberOfLines={1}>{musicInfo.name}</CarText>
           <CarText size={15} numberOfLines={1} color={theme['text-2']}>{subtitle}</CarText>
         </TouchableOpacity>
         <Controls />
       </View>
       <Progress autoUpdate={autoUpdate} />
+      <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, borderRadius: px(26), borderWidth: px(1), borderColor: theme['art-stroke'] }} />
     </View>
   )
 })

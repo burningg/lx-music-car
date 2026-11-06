@@ -16,7 +16,7 @@ export interface ListItemProps {
   onLongPress: (item: BoardItem, position: { x: number, y: number, w: number, h: number }) => void
 }
 
-// 设计稿榜单行：400×80，封面 60，选中行玻璃底 + 右侧 4×28 强调色标记
+// 设计稿榜单行：400×104，封面 60，选中行玻璃底 + 右侧 4×28 强调色标记
 export default ({ item, index, active, source, onPress, onLongPress }: ListItemProps) => {
   const theme = useTheme()
   const t = useI18n()
@@ -37,11 +37,11 @@ export default ({ item, index, active, source, onPress, onLongPress }: ListItemP
       onPress={() => { onPress(item) }}
       onLongPress={handleLongPress}
       style={{
-        height: px(80),
+        height: px(104),
         flexDirection: 'row',
         alignItems: 'center',
         gap: px(16),
-        paddingHorizontal: px(10),
+        paddingHorizontal: px(16),
         borderRadius: px(18),
         backgroundColor: active ? theme['glass-strong'] : undefined,
       }}

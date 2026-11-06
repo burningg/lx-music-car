@@ -115,25 +115,27 @@ export default forwardRef<MusicListType, MusicListProps>(({ onInfo }, ref) => {
   return (
     <View style={{ flex: 1 }}>
       <View style={{
-        height: px(46),
-        marginTop: px(8),
+        height: px(52),
+        marginTop: 0,
+        marginBottom: px(24),
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: px(20),
+        paddingHorizontal: px(22),
       }}>
-        <CarText size={22} weight="600">{t('car_all_songs')}</CarText>
-        {total ? <CarText size={17} num color={theme['text-3']}>{String(total)}</CarText> : null}
+        <CarText size={27} weight="600">{t('car_all_songs')}</CarText>
+        {total ? <CarText size={20} num color={theme['text-3']}>{String(total)}</CarText> : null}
       </View>
       <View style={{ flex: 1 }}>
         <OnlineList
           ref={listRef}
+          trackRowSize="large"
           onPlayList={handlePlayList}
           onRefresh={handleRefresh}
           onLoadMore={handleLoadMore}
           contentInsetBottom={px(40)}
         />
-        <ListFade height={140} />
+        <ListFade height={64} />
       </View>
     </View>
   )

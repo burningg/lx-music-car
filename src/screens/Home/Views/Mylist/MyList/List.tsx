@@ -14,7 +14,7 @@ import { type Position } from './ListMenu'
 
 type FlatListType = FlatListProps<LX.List.MyListInfo>
 
-const ITEM_HEIGHT = px(80)
+const ITEM_HEIGHT = px(104)
 
 const getListIcon = (id: string) => {
   switch (id) {
@@ -48,11 +48,12 @@ const ListRow = memo(({ item, active, onPress, onMore }: {
       onPress={onPress}
       onLongPress={onMore}
       style={{
-        height: px(76),
+        height: px(92),
         flexDirection: 'row',
         alignItems: 'center',
         gap: px(16),
-        paddingHorizontal: px(10),
+        paddingLeft: px(10),
+        paddingRight: px(16),
         borderRadius: px(18),
         backgroundColor: active ? theme['glass-strong'] : undefined,
       }}
@@ -106,7 +107,7 @@ export default ({ onShowMenu }: {
     <FlatList
       ref={flatListRef}
       style={{ flexGrow: 0, flexShrink: 1 }}
-      contentContainerStyle={{ gap: px(4), paddingBottom: px(140) }}
+      contentContainerStyle={{ gap: px(12), paddingBottom: px(40) }}
       data={allList}
       maxToRenderPerBatch={9}
       windowSize={9}

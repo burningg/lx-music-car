@@ -50,11 +50,11 @@ export default memo(() => {
       <IconButton
         icon="ms-shuffle"
         iconSize={32}
-        size={56}
+        size={32}
         color={playMode == MUSIC_TOGGLE_MODE.random ? theme.accent : theme['text-3']}
         onPress={toggleShuffle}
       />
-      <IconButton icon="ph-skip-back-fill" iconSize={48} size={72} color={theme['text-1']} onPress={handlePlayPrev} />
+      <IconButton icon="ph-skip-back-fill" iconSize={48} size={48} color={theme['text-1']} onPress={handlePlayPrev} />
       <IconButton
         icon={isPlay ? 'ph-pause-fill' : 'ph-play-fill'}
         iconSize={44}
@@ -63,11 +63,11 @@ export default memo(() => {
         color={theme['on-primary']}
         onPress={togglePlay}
       />
-      <IconButton icon="ph-skip-forward-fill" iconSize={48} size={72} color={theme['text-1']} onPress={handlePlayNext} />
+      <IconButton icon="ph-skip-forward-fill" iconSize={48} size={48} color={theme['text-1']} onPress={handlePlayNext} />
       <IconButton
         icon="ms-repeat"
         iconSize={32}
-        size={56}
+        size={32}
         color={loopActive ? theme.accent : theme['text-3']}
         onPress={nextPlayMode}
       />

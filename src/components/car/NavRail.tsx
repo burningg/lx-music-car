@@ -95,7 +95,7 @@ export default memo(({ componentId, activeId }: NavRailProps) => {
     <View style={{
       width: px(NAV_RAIL_WIDTH),
       height: '100%',
-      paddingVertical: px(28),
+      paddingVertical: px(40),
       alignItems: 'center',
       justifyContent: 'space-between',
       backgroundColor: theme['rail-bg'],

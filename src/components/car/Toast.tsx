@@ -31,7 +31,7 @@ export default memo(({ message, duration, onHide }: { message: string, duration:
   }, [])
 
   return (
-    <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: px(48), alignItems: 'center' }}>
+    <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: px(60), alignItems: 'center' }}>
       <Animated.View style={{
         minWidth: px(400),
         maxWidth: px(900),

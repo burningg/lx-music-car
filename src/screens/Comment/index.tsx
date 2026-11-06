@@ -123,7 +123,7 @@ export default memo(({ componentId }: {
             musicInfo == null
               ? null
               : (
-                <View style={{ flex: 1, flexDirection: 'row', gap: px(80), paddingTop: px(48), paddingHorizontal: px(72) }}>
+                <View style={{ flex: 1, flexDirection: 'row', gap: px(80), paddingVertical: px(64), paddingHorizontal: px(72) }}>
                   <SongPanel musicInfo={musicInfo} total={activeId == 'hot' ? total.hot : total.new} onBack={back} />
                   <View style={{ flex: 1 }}>
                     <View style={{ height: px(58), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -141,7 +141,7 @@ export default memo(({ componentId }: {
                           </View>
                           )
                         : (
-                          <View style={{ flex: 1, marginTop: px(20) }}>
+                          <View style={{ flex: 1, marginTop: px(28) }}>
                             <PagerView
                               ref={pagerViewRef}
                               onPageSelected={onPageSelected}
@@ -154,7 +154,7 @@ export default memo(({ componentId }: {
                                 <NewCommentPage activeId={activeId} musicInfo={musicInfo} onUpdateTotal={setNewTotal} />
                               </View>
                             </PagerView>
-                            <ListFade height={100} />
+                            <ListFade height={64} />
                           </View>
                           )
                     }

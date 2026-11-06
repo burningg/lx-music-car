@@ -43,14 +43,12 @@ export default memo(({ options, onCancel, onConfirm }: {
         padding: px(40),
         gap: px(28),
         backgroundColor: theme.elevated,
-        borderWidth: 1,
-        borderColor: theme['art-stroke'],
         elevation: 24,
       }}>
         <View style={{ width: px(64), height: px(64), borderRadius: px(20), backgroundColor: iconBg, alignItems: 'center', justifyContent: 'center' }}>
           <CarIcon name={danger ? 'lucide-trash-2' : 'lucide-info'} size={30} color={iconColor} />
         </View>
-        <View style={{ gap: px(12) }}>
+        <View style={{ gap: px(10) }}>
           {options.title ? <CarText size={30} weight="700">{options.title}</CarText> : null}
           <CarText size={18} color={theme['text-2']} lineHeight={1.5}>{options.message}</CarText>
         </View>
@@ -72,6 +70,7 @@ export default memo(({ options, onCancel, onConfirm }: {
               </>
               )}
         </View>
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, borderRadius: px(32), borderWidth: px(1), borderColor: theme['art-stroke'] }} />
       </View>
     </View>
   )

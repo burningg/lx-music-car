@@ -42,20 +42,20 @@ export default memo(() => {
 
   return (
     <View style={{ height: px(42), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <View style={{ height: px(42), flexDirection: 'row', alignItems: 'center', gap: px(10), paddingHorizontal: px(16), borderRadius: 999, backgroundColor: theme.glass }}>
+      <View style={{ height: px(42), flexShrink: 1, marginRight: px(20), flexDirection: 'row', alignItems: 'center', gap: px(10), paddingHorizontal: px(16), borderRadius: 999, backgroundColor: theme.glass }}>
         <CarIcon name="lucide-speaker" size={18} color={theme['text-2']} />
-        <CarText size={15} color={theme['text-2']} numberOfLines={1}>{statusText || sourceLabel}</CarText>
+        <CarText size={15} style={{ flexShrink: 1 }} color={theme['text-2']} numberOfLines={1}>{statusText || sourceLabel}</CarText>
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(12) }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(28) }}>
         <IconButton
           icon={loved ? 'ph-heart-fill' : 'ph-heart'}
           iconSize={28}
-          size={44}
+          size={28}
           color={loved ? theme.accent : theme['text-2']}
           onPress={loved ? uncollectMusic : collectMusic}
         />
-        <IconButton icon="lucide-message-square-quote" iconSize={26} size={44} color={theme['text-2']} onPress={openComment} />
-        <IconButton icon="lucide-list-music" iconSize={26} size={44} color={theme['text-2']} onPress={showAddMusic} />
+        <IconButton icon="lucide-message-square-quote" iconSize={26} size={26} color={theme['text-2']} onPress={openComment} />
+        <IconButton icon="lucide-list-music" iconSize={26} size={26} color={theme['text-2']} onPress={showAddMusic} />
       </View>
       <MusicAddModal ref={musicAddModalRef} />
     </View>

@@ -79,7 +79,7 @@ export default () => {
   return (
     <View style={{ flex: 1 }}>
       <AmbientBackground />
-      <View style={{ flex: 1, paddingTop: px(44), paddingHorizontal: px(72), gap: px(28) }}>
+      <View style={{ flex: 1, paddingTop: px(60), paddingHorizontal: px(72), paddingBottom: px(152), gap: px(32) }}>
         <Header source={source} sources={boardState.sources} onSourceChange={handleSourceChange} />
         <View style={{ flex: 1, flexDirection: 'row', gap: px(40) }}>
           <View style={{ width: px(400) }}>
@@ -92,7 +92,7 @@ export default () => {
               onCollect={handleCollectBoard}
             />
           </View>
-          <View style={{ flex: 1, gap: px(20) }}>
+          <View style={{ flex: 1, gap: px(28) }}>
             <BoardInfo
               board={board}
               source={source}
@@ -103,7 +103,7 @@ export default () => {
             />
             <View style={{ flex: 1 }}>
               <MusicList ref={musicListRef} onLoaded={setLoaded} />
-              <ListFade />
+              <ListFade height={32} />
             </View>
           </View>
         </View>

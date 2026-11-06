@@ -11,13 +11,14 @@ import { CarText } from '@/components/car'
 
 type FlatListType = FlatListProps<ListInfoItem>
 
-const CARD_WIDTH = 300
+const FEATURED_WIDTH = 592
+const SHELF_GAP = 32
 const GRID_MIN_WIDTH = 240
 const GAP = 24
 
 export interface ListProps {
   /**
-   * shelf：横向一排（歌单广场），首项为推荐大卡
+   * shelf：左侧推荐大卡 + 右侧双列列表（歌单广场）
    * grid：多列网格（搜索歌单结果）
    */
   layout?: 'shelf' | 'grid'
@@ -77,14 +78,13 @@ export default forwardRef<ListType, ListProps>(({ layout = 'grid', featuredTag =
   }, [currentList, rowInfo, layout])
 
   const renderItem: FlatListType['renderItem'] = ({ item, index }) => {
-    if (layout == 'shelf' && index == 0) {
-      return <FeaturedItem item={item} index={index} tag={featuredTag} showSource={showSource} onPress={onOpenDetail} onPlay={onPlay} />
-    }
     return (
       <ListItem
         item={item}
-        index={index}
-        width={layout == 'shelf' ? px(CARD_WIDTH) : rowInfo.width}
+        index={layout == 'shelf' ? index + 1 : index}
+        width={layout == 'shelf' ? (width - px(FEATURED_WIDTH + SHELF_GAP) - gap) / 2 : rowInfo.width}
+        artHeight={layout == 'shelf' ? 303 : undefined}
+        titleLines={layout == 'shelf' ? 1 : 2}
         showSource={showSource}
         onPress={onOpenDetail}
         onPlay={onPlay}
@@ -107,23 +107,30 @@ export default forwardRef<ListType, ListProps>(({ layout = 'grid', featuredTag =
       {
         layout == 'shelf'
           ? (
-              // 横向列表无法下拉刷新，刷新入口在页面顶栏
-              <FlatList
-                ref={flatListRef}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={currentList}
-                renderItem={renderItem}
-                keyExtractor={getkey}
-                contentContainerStyle={{ gap, paddingRight: px(72), alignItems: 'flex-start' }}
-                maxToRenderPerBatch={4}
-                windowSize={5}
-                removeClippedSubviews={true}
-                onEndReachedThreshold={0.6}
-                onEndReached={handleLoadMore}
-                ListFooterComponent={footer}
-                ListFooterComponentStyle={{ alignSelf: 'center' }}
-              />
+              <View style={{ flex: 1, flexDirection: 'row', gap: px(SHELF_GAP) }}>
+                {currentList[0] ? (
+                  <FeaturedItem item={currentList[0]} index={0} tag={featuredTag} showSource={showSource} onPress={onOpenDetail} onPlay={onPlay} />
+                ) : <View style={{ width: px(FEATURED_WIDTH) }} />}
+                <FlatList
+                  key="shelf"
+                  ref={flatListRef}
+                  style={{ flex: 1 }}
+                  numColumns={2}
+                  columnWrapperStyle={{ gap }}
+                  contentContainerStyle={{ gap }}
+                  showsVerticalScrollIndicator={false}
+                  data={currentList.slice(1)}
+                  renderItem={renderItem}
+                  keyExtractor={getkey}
+                  maxToRenderPerBatch={4}
+                  windowSize={5}
+                  removeClippedSubviews={true}
+                  onEndReachedThreshold={0.6}
+                  onEndReached={handleLoadMore}
+                  refreshControl={refreshControl}
+                  ListFooterComponent={footer}
+                />
+              </View>
             )
           : (
               <FlatList
@@ -131,7 +138,7 @@ export default forwardRef<ListType, ListProps>(({ layout = 'grid', featuredTag =
                 ref={flatListRef}
                 numColumns={rowInfo.num}
                 columnWrapperStyle={{ gap }}
-                contentContainerStyle={{ gap: px(32), paddingBottom: px(120) }}
+                contentContainerStyle={{ gap: px(32) }}
                 data={gridList}
                 maxToRenderPerBatch={4}
                 windowSize={8}

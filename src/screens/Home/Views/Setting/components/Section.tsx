@@ -17,14 +17,15 @@ export default ({ title, desc, header, children }: Props) => {
   const theme = useTheme()
 
   return (
-    <View style={{ gap: px(28), paddingBottom: px(48) }}>
+    <View style={{ gap: px(40), paddingBottom: px(48) }}>
       <View style={{ gap: px(6) }}>
         <CarText size={40} weight="700">{title}</CarText>
         {desc ? <CarText size={16} color={theme['text-2']}>{desc}</CarText> : null}
       </View>
       {header}
       <View style={{
-        padding: px(6),
+        paddingHorizontal: px(6),
+        paddingVertical: px(12),
         borderRadius: px(22),
         borderWidth: 1,
         borderColor: theme.hairline,

@@ -17,7 +17,7 @@ import Transport from './Transport'
 import Secondary from './Secondary'
 import Lyric from './Lyric'
 
-// 设计稿正在播放：顶部工具行 → 封面 448 + 信息 616 + 歌词 440
+// 设计稿正在播放：1920×1080，垂直居中的封面 512 + 信息 552 + 歌词 440
 export default memo(({ componentId }: { componentId: string }) => {
   useEffect(() => {
     setComponentId(COMPONENT_IDS.playDetail, componentId)
@@ -54,22 +54,23 @@ export default memo(({ componentId }: { componentId: string }) => {
 
   return (
     <PageContent>
-      <CarShell componentId={componentId} activeId="now">
+      <CarShell componentId={componentId} activeId="now" background={<AmbientBackground />}>
         <View style={{ flex: 1 }}>
-          <AmbientBackground />
-          <View style={{ flex: 1, paddingHorizontal: px(80), paddingTop: px(48) }}>
-            <TopBar onBack={back} />
-            <View style={{ flex: 1, flexDirection: 'row' }}>
-              <View style={{ marginTop: px(32) }}>
+          <View style={{ flex: 1, paddingHorizontal: px(80) }}>
+            <View style={{ position: 'absolute', top: px(40), left: px(80), right: px(80), zIndex: 1 }}>
+              <TopBar onBack={back} />
+            </View>
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: px(72) }}>
+              <View>
                 <Cover componentId={componentId} />
               </View>
-              <View style={{ width: px(616), marginLeft: px(72), marginTop: px(17), gap: px(40) }}>
+              <View style={{ flex: 1, minWidth: 0, gap: px(48) }}>
                 <Meta />
                 <ProgressRow />
                 <Transport />
                 <Secondary />
               </View>
-              <View style={{ flex: 1, marginLeft: px(72), marginTop: px(101) }}>
+              <View style={{ width: px(440), height: px(340) }}>
                 <Lyric />
               </View>
             </View>

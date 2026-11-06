@@ -77,7 +77,7 @@ export default () => {
   }
 
   return (
-    <View style={{ flex: 1, paddingTop: px(44), paddingLeft: px(72), gap: px(36) }}>
+    <View style={{ flex: 1, paddingTop: px(60), paddingHorizontal: px(72), paddingBottom: px(152), gap: px(32) }}>
       <HeaderBar
         ref={headerBarRef}
         onSortChange={handleSortChange}

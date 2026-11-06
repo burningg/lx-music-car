@@ -25,7 +25,7 @@ export interface HeaderBarType {
 }
 
 // 设计稿顶栏：左「歌单」+ 排序分段，右 标签 / 打开 / 来源 分段组 + 圆形按钮
-// 设计稿右侧圆形按钮是语音，暂无对应功能；横向书架不能下拉刷新，这里放刷新
+// 设计稿右侧圆形按钮是语音，暂无对应功能；保留独立刷新入口
 export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSortChange, onTagChange, onSourceChange, onRefresh }, ref) => {
   const t = useI18n()
   const theme = useTheme()
@@ -44,7 +44,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSortChange, onTagC
   }), [])
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingRight: px(72), zIndex: 2 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: px(70), zIndex: 2 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(36) }}>
         <CarText size={48} weight="700">{t('nav_songlist')}</CarText>
         <SortTab ref={sortTabRef} onSortChange={onSortChange} />

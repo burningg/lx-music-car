@@ -5,7 +5,7 @@ import Main, { type MainType } from '../Main'
 import { ListFade } from '@/components/car'
 import { px } from '@/utils/pixelRatio'
 
-// 设计稿设置页：左侧分区栏 + 右侧内容（内边距 44/72/0/56），底部渐隐
+// 设计稿设置页：左侧分区栏 + 右侧内容（内边距 60/72/64/56），底部渐隐
 export default () => {
   const mainRef = useRef<MainType>(null)
   const scrollRef = useRef<ScrollView>(null)
@@ -17,10 +17,10 @@ export default () => {
         scrollRef.current?.scrollTo({ y: 0, animated: false })
       }} />
       <View style={{ flex: 1 }}>
-        <ScrollView ref={scrollRef} keyboardShouldPersistTaps={'always'} contentContainerStyle={{ paddingTop: px(44), paddingLeft: px(56), paddingRight: px(72) }}>
+        <ScrollView ref={scrollRef} keyboardShouldPersistTaps={'always'} contentContainerStyle={{ paddingTop: px(60), paddingLeft: px(56), paddingRight: px(72), paddingBottom: px(64) }}>
           <Main ref={mainRef} />
         </ScrollView>
-        <ListFade height={80} />
+        <ListFade height={64} />
       </View>
     </View>
   )

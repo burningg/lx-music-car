@@ -12,6 +12,7 @@ const FADE_V = require('@/resources/images/ambient/fade-v.png')
 export interface HeroCardProps {
   width?: number
   height?: number
+  playSize?: number
   pic?: string | null
   tagIcon?: string
   tag?: string
@@ -27,7 +28,7 @@ export interface HeroCardProps {
 
 // 设计稿「最佳匹配」大卡：封面铺满，底部压暗，左上标签，左下标题，右下 72 圆形播放键
 // 卡片压在封面上，文字固定用浅色，不随日夜主题变化
-export default memo(({ width = 480, height = 358, pic, tagIcon = 'lucide-sparkles', tag, title, titleSize = 40, titleLines = 1, subtitle, nativeID, onPress, onPlay }: HeroCardProps) => {
+export default memo(({ width = 480, height = 676, playSize = 72, pic, tagIcon = 'lucide-sparkles', tag, title, titleSize = 40, titleLines = 1, subtitle, nativeID, onPress, onPlay }: HeroCardProps) => {
   const theme = useTheme()
   return (
     <TouchableOpacity
@@ -50,7 +51,7 @@ export default memo(({ width = 480, height = 358, pic, tagIcon = 'lucide-sparkle
             {subtitle ? <CarText size={17} color="rgba(255, 255, 255, 0.7)" numberOfLines={1}>{subtitle}</CarText> : null}
           </View>
           {onPlay ? (
-            <TouchableOpacity activeOpacity={0.7} onPress={onPlay} style={{ width: px(72), height: px(72), borderRadius: px(36), backgroundColor: '#F5F5F7', alignItems: 'center', justifyContent: 'center' }}>
+            <TouchableOpacity activeOpacity={0.7} onPress={onPlay} style={{ width: px(playSize), height: px(playSize), borderRadius: px(playSize / 2), backgroundColor: '#F5F5F7', alignItems: 'center', justifyContent: 'center' }}>
               <CarIcon name="ph-play-fill" size={30} color="#08080A" />
             </TouchableOpacity>
           ) : null}

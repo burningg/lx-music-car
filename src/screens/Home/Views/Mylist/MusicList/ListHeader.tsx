@@ -75,7 +75,7 @@ export default memo(({ multiSelect, onLocate, onSearch, onSort, onMultiSelect, o
 
   return (
     <View style={{ height: px(87), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: px(24) }}>
-      <View style={{ flex: 1, gap: px(6) }}>
+      <View style={{ flex: 1, gap: px(6), paddingLeft: px(20) }}>
         <CarText size={40} weight="700" numberOfLines={1}>{name}</CarText>
         <CarText size={16} color={theme['text-2']} numberOfLines={1}>{t('board_track_count', { num: count })}</CarText>
       </View>
@@ -85,15 +85,15 @@ export default memo(({ multiSelect, onLocate, onSearch, onSort, onMultiSelect, o
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={onExitMultiSelect}
-              style={{ height: px(56), paddingHorizontal: px(26), borderRadius: px(18), alignItems: 'center', justifyContent: 'center', backgroundColor: theme['text-1'] }}
+              style={{ height: px(56), minWidth: px(95), paddingHorizontal: px(24), borderRadius: px(18), alignItems: 'center', justifyContent: 'center', backgroundColor: theme['text-1'] }}
             >
-              <CarText size={18} weight="600" color={theme['on-primary']}>{t('car_done')}</CarText>
+              <CarText size={18} weight="600" color={theme['on-primary']}>{t('cancel')}</CarText>
             </TouchableOpacity>
             )
           : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(12) }}>
               {tools.map(tool => (
-                <IconButton key={tool.key} icon={tool.icon} iconSize={24} size={56} color={theme['text-2']} background={theme.glass} onPress={tool.onPress} />
+                <IconButton key={tool.key} icon={tool.icon} iconSize={24} size={56} radius={18} color={theme['text-2']} background={theme.glass} onPress={tool.onPress} />
               ))}
             </View>
             )

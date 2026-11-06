@@ -27,7 +27,7 @@ export default ({ list, activeId, source, onPress, onPlay, onCollect }: BoardsLi
     <>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ gap: px(6), paddingBottom: px(140) }}
+        contentContainerStyle={{ gap: px(12) }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps={'always'}
       >

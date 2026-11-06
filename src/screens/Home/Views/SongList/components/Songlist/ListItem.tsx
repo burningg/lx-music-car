@@ -21,18 +21,22 @@ export interface ListItemProps {
   index: number
   /** 卡片 dp 宽度 */
   width: number
+  artHeight?: number
+  titleLines?: number
   showSource: boolean
   onPress: (item: ListInfoItem, index: number) => void
   onPlay: (item: ListInfoItem, index: number) => void
 }
 
-export default memo(({ item, index, width, showSource, onPress, onPlay }: ListItemProps) => {
+export default memo(({ item, index, width, artHeight, titleLines, showSource, onPress, onPlay }: ListItemProps) => {
   const subtitle = useSubtitle(item, showSource)
   // 网格末行的占位项
   if (!item.source) return <View style={{ width }} />
   return (
     <PlaylistCard
       rawWidth={width}
+      artHeight={artHeight}
+      titleLines={titleLines}
       title={item.name}
       subtitle={subtitle}
       pic={item.img}
@@ -48,8 +52,9 @@ export const FeaturedItem = memo(({ item, index, tag, showSource, onPress, onPla
   const subtitle = useSubtitle(item, showSource)
   return (
     <HeroCard
-      width={540}
-      height={368}
+      width={592}
+      height={766}
+      playSize={68}
       tagIcon="lucide-moon"
       tag={tag}
       title={item.name}

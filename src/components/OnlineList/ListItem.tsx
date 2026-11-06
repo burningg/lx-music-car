@@ -1,12 +1,13 @@
 import { memo } from 'react'
 import { View } from 'react-native'
 import { useI18n } from '@/lang'
-import { TrackRow, TRACK_ROW_HEIGHT } from '@/components/car'
+import { TrackRow, TRACK_ROW_HEIGHT, TRACK_ROW_GAP, TRACK_ROW_LARGE_HEIGHT, type TrackRowProps } from '@/components/car'
 import { px } from '@/utils/pixelRatio'
+import useTrackCover from './useTrackCover'
 
-const ROW_GAP = 4
 /** 行高 + 行间距，供 getItemLayout 使用 */
-export const ITEM_HEIGHT = px(TRACK_ROW_HEIGHT + ROW_GAP)
+export const getItemHeight = (size: TrackRowProps['size'] = 'default') => px((size == 'large' ? TRACK_ROW_LARGE_HEIGHT : TRACK_ROW_HEIGHT) + TRACK_ROW_GAP)
+export const ITEM_HEIGHT = getItemHeight()
 
 const useQualityTag = (musicInfo: LX.Music.MusicInfoOnline) => {
   const t = useI18n()
@@ -16,7 +17,8 @@ const useQualityTag = (musicInfo: LX.Music.MusicInfoOnline) => {
   return undefined
 }
 
-export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu, selectedList, isMultiSelectMode, playingId, isShowAlbumName, isShowInterval }: {
+export default memo(({ trackRowSize = 'default', item, index, showSource, onPress, onLongPress, onShowMenu, selectedList, isMultiSelectMode, playingId, isShowAlbumName, isShowInterval }: {
+  trackRowSize?: TrackRowProps['size']
   item: LX.Music.MusicInfoOnline
   index: number
   showSource?: boolean
@@ -30,17 +32,19 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
   isShowInterval: boolean
 }) => {
   const badge = useQualityTag(item)
+  const pic = useTrackCover(item)
   let artist = item.singer
   if (isShowAlbumName && item.meta.albumName) artist += ` · ${item.meta.albumName}`
   if (showSource) artist += ` · ${item.source}`
 
   return (
-    <View style={{ height: ITEM_HEIGHT, paddingBottom: px(ROW_GAP) }}>
+    <View style={{ height: getItemHeight(trackRowSize), paddingBottom: px(TRACK_ROW_GAP) }}>
       <TrackRow
+        size={trackRowSize}
         index={index}
         title={item.name}
         artist={artist}
-        pic={item.meta.picUrl}
+        pic={pic}
         badge={badge}
         duration={isShowInterval ? item.interval ?? undefined : undefined}
         playing={playingId == item.id}
@@ -53,7 +57,8 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
     </View>
   )
 }, (prevProps, nextProps) => {
-  return !!(prevProps.item === nextProps.item &&
+  return !!(prevProps.trackRowSize === nextProps.trackRowSize &&
+    prevProps.item === nextProps.item &&
     prevProps.index === nextProps.index &&
     prevProps.showSource === nextProps.showSource &&
     prevProps.isShowAlbumName === nextProps.isShowAlbumName &&

@@ -4,7 +4,7 @@ import { View } from 'react-native'
 import MusicList, { type MusicListType } from './MusicList'
 import Overview, { type OverviewInfo } from './Overview'
 import PageContent from '@/components/PageContent'
-import { AmbientBackground, CarShell } from '@/components/car'
+import { AmbientBackground, CarShell, MiniPlayer, MINI_PLAYER_HEIGHT } from '@/components/car'
 import { setComponentId, updateSetting } from '@/core/common'
 import { COMPONENT_IDS, MUSIC_TOGGLE_MODE } from '@/config/constant'
 import { type ListInfoItem } from '@/store/songlist/state'
@@ -66,7 +66,7 @@ export default ({ componentId, info }: { componentId: string, info: ListInfoItem
         <ListInfoContext.Provider value={info}>
           <View style={{ flex: 1 }}>
             <AmbientBackground />
-            <View style={{ flex: 1, flexDirection: 'row', gap: px(80), paddingTop: px(48), paddingHorizontal: px(72) }}>
+            <View style={{ flex: 1, flexDirection: 'row', gap: px(64), paddingTop: px(60), paddingBottom: px(MINI_PLAYER_HEIGHT + 24 + 20), paddingHorizontal: px(72) }}>
               <Overview
                 componentId={componentId}
                 info={overview}
@@ -78,6 +78,9 @@ export default ({ componentId, info }: { componentId: string, info: ListInfoItem
               <View style={{ flex: 1 }}>
                 <MusicList ref={musicListRef} onInfo={setOverview} />
               </View>
+            </View>
+            <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: px(24), alignItems: 'center' }}>
+              <MiniPlayer componentId={componentId} />
             </View>
           </View>
         </ListInfoContext.Provider>

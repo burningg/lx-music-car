@@ -26,7 +26,7 @@ export default memo(({ board, source, pic, total, onPlay, onCollect }: BoardInfo
   const sourceLabel = t(`source_${sourceNameType}_${source}`)
 
   return (
-    <View style={{ minHeight: px(119), flexDirection: 'row', alignItems: 'center', gap: px(28) }}>
+    <View style={{ minHeight: px(119), paddingHorizontal: px(20), flexDirection: 'row', alignItems: 'center', gap: px(28) }}>
       <View style={{
         width: px(112),
         height: px(112),

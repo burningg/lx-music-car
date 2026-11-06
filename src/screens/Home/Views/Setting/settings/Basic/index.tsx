@@ -26,6 +26,7 @@ export default memo(() => {
   return (
     <Section title={t('setting_basic')} header={<ThemeSwatches />}>
       <Theme />
+      <FontSize />
       <IsStartupAutoPlay />
       <IsStartupPushPlayDetailScreen />
       <IsShowBackBtn />
@@ -37,7 +38,6 @@ export default memo(() => {
       <IsAlwaysKeepStatusbarHeight />
       <DrawerLayoutPosition />
       <Language />
-      <FontSize />
       <ShareType />
       <Source />
       <SourceName />

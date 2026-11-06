@@ -11,6 +11,9 @@ export interface PlaylistCardProps {
   width?: number
   /** 直接指定 dp 宽度（网格按容器宽度计算时使用），优先于 width */
   rawWidth?: number
+  /** 非正方形封面高度（设计稿 px），省略时保持正方形 */
+  artHeight?: number
+  titleLines?: number
   title: string
   subtitle?: string
   pic?: string | null
@@ -21,14 +24,14 @@ export interface PlaylistCardProps {
 }
 
 // 设计稿 Playlist Card：封面圆角 20，右下角 52 圆形播放键，标题两行
-export default memo(({ width = 300, rawWidth, title, subtitle, pic, nativeID, onPress, onPlay }: PlaylistCardProps) => {
+export default memo(({ width = 300, rawWidth, artHeight, titleLines = 2, title, subtitle, pic, nativeID, onPress, onPlay }: PlaylistCardProps) => {
   const theme = useTheme()
   const size = rawWidth ?? px(width)
   const playSize = px(52)
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={{ width: size, gap: px(16) }}>
       <View>
-        <Image url={pic} nativeID={nativeID} style={{ width: size, height: size, borderRadius: px(20) }} />
+        <Image url={pic} nativeID={nativeID} style={{ width: size, height: artHeight == null ? size : px(artHeight), borderRadius: px(20) }} />
         {onPlay ? (
           <TouchableOpacity
             activeOpacity={0.7}
@@ -50,7 +53,7 @@ export default memo(({ width = 300, rawWidth, title, subtitle, pic, nativeID, on
         ) : null}
       </View>
       <View style={{ gap: px(6) }}>
-        <CarText size={19} weight="500" lineHeight={1.35} numberOfLines={2}>{title}</CarText>
+        <CarText size={19} weight="500" lineHeight={1.35} numberOfLines={titleLines}>{title}</CarText>
         {subtitle ? <CarText size={14} numberOfLines={1} color={theme['text-3']}>{subtitle}</CarText> : null}
       </View>
     </TouchableOpacity>

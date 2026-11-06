@@ -31,7 +31,7 @@ export default memo(({ title, desc, right, toggle, disabled, onPress }: SettingR
         paddingVertical: px(18),
         paddingHorizontal: px(28),
         borderRadius: px(18),
-        minHeight: px(72),
+        minHeight: px(91),
       }}
     >
       <View style={{ flex: 1, gap: px(4) }}>

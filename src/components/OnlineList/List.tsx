@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, forwardRef, useImperativeHandle } from 'reac
 import { FlatList, type FlatListProps, RefreshControl, View } from 'react-native'
 
 // import { useMusicList } from '@/store/list/hook'
-import ListItem, { ITEM_HEIGHT } from './ListItem'
+import ListItem, { getItemHeight } from './ListItem'
 import { createStyle, type RowInfoType } from '@/utils/tools'
 import type { Position } from './ListMenu'
 import type { SelectMode } from './MultipleModeBar'
@@ -14,6 +14,7 @@ import Text from '@/components/common/Text'
 import { handlePlay } from './listAction'
 import { useSettingValue } from '@/store/setting/hook'
 import { usePlayerMusicInfo } from '@/store/player/hook'
+import { type TrackRowProps } from '@/components/car'
 
 type FlatListType = FlatListProps<LX.Music.MusicInfoOnline>
 
@@ -22,6 +23,7 @@ export type {
 }
 
 export interface ListProps {
+  trackRowSize?: TrackRowProps['size']
   onShowMenu: (musicInfo: LX.Music.MusicInfoOnline, index: number, position: Position) => void
   onMuiltSelectMode: () => void
   onSelectAll: (isAll: boolean) => void
@@ -58,6 +60,7 @@ const List = forwardRef<ListType, ListProps>(({
   ListHeaderComponent,
   checkHomePagerIdle,
   contentInsetBottom,
+  trackRowSize = 'default',
 }, ref) => {
   // const t = useI18n()
   const theme = useTheme()
@@ -185,6 +188,7 @@ const List = forwardRef<ListType, ListProps>(({
 
   const renderItem: FlatListType['renderItem'] = ({ item, index }) => (
     <ListItem
+      trackRowSize={trackRowSize}
       item={item}
       index={index}
       showSource={showSource}
@@ -200,7 +204,8 @@ const List = forwardRef<ListType, ListProps>(({
   )
   const getkey: FlatListType['keyExtractor'] = item => item.id
   const getItemLayout: FlatListType['getItemLayout'] = (data, index) => {
-    return { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
+    const height = getItemHeight(trackRowSize)
+    return { length: height, offset: height * index, index }
   }
   const refreshControl = useMemo(() => (
     <RefreshControl
@@ -240,6 +245,7 @@ const List = forwardRef<ListType, ListProps>(({
       data={currentList}
       extraData={playingId}
       horizontal={false}
+      showsVerticalScrollIndicator={trackRowSize != 'large'}
       maxToRenderPerBatch={4}
       // updateCellsBatchingPeriod={80}
       windowSize={8}

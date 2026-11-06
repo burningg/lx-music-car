@@ -1,12 +1,13 @@
 import { useCallback, useRef, forwardRef, useImperativeHandle, useState } from 'react'
-import { View } from 'react-native'
+import { View, type ViewProps } from 'react-native'
 import Input, { type InputType, type InputProps } from '@/components/common/Input'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { CarIcon, IconButton } from '@/components/car'
-import { px } from '@/utils/pixelRatio'
+import { px, sp } from '@/utils/pixelRatio'
 
 export interface SearchInputProps {
+  onLayout?: ViewProps['onLayout']
   onChangeText: (text: string) => void
   onSubmit: (text: string) => void
   onBlur: () => void
@@ -20,7 +21,7 @@ export interface SearchInputType {
 }
 
 // 设计稿搜索框：高 64 胶囊，左侧搜索图标，右侧 36 圆形清除键
-export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, onSubmit, onBlur, onTouchStart }, ref) => {
+export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, onSubmit, onBlur, onTouchStart, onLayout }, ref) => {
   const theme = useTheme()
   const t = useI18n()
   const [text, setText] = useState('')
@@ -54,7 +55,7 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, on
   }, [onSubmit])
 
   return (
-    <View style={{
+    <View onLayout={onLayout} style={{
       flex: 1,
       height: px(64),
       flexDirection: 'row',
@@ -73,11 +74,12 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, on
         placeholder={t('search_placeholder')}
         value={text}
         size={22}
-        style={{ height: px(56), paddingLeft: 0, color: theme['text-1'], fontWeight: '500' }}
+        style={{ height: px(56), fontSize: sp(22), paddingLeft: 0, color: theme['text-1'], fontWeight: '500' }}
         placeholderTextColor={theme['text-3']}
         selectionColor={theme.accent}
         onChangeText={handleChangeText}
         onBlur={onBlur}
+        onFocus={onTouchStart}
         onSubmitEditing={handleSubmit}
         onTouchStart={onTouchStart}
       />

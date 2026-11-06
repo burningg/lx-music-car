@@ -77,24 +77,20 @@ export default forwardRef<SheetType, SheetProps>(({ header, quick, actions, onPr
       statusBarTranslucent
       onRequestClose={hide}
     >
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-end', padding: px(24) }}>
         <Pressable style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.7)' }} onPress={hide} />
         <View style={{
-          position: 'absolute',
-          right: px(24),
-          top: px(24),
           width: px(596),
-          maxHeight: px(672),
+          maxHeight: '100%',
           borderRadius: px(28),
           padding: px(12),
+          gap: px(4),
           backgroundColor: theme.elevated,
-          borderWidth: 1,
-          borderColor: theme['art-stroke'],
           elevation: 24,
         }}>
           {header
             ? (
-              <View style={{ height: px(108), flexDirection: 'row', alignItems: 'center', gap: px(18), paddingLeft: px(4), paddingRight: px(4) }}>
+              <View style={{ height: px(108), flexDirection: 'row', alignItems: 'center', gap: px(18), paddingTop: px(16), paddingBottom: px(20), paddingHorizontal: px(16) }}>
                 {header.pic
                   ? <Image url={header.pic} style={{ width: px(72), height: px(72), borderRadius: px(14) }} />
                   : null}
@@ -106,10 +102,10 @@ export default forwardRef<SheetType, SheetProps>(({ header, quick, actions, onPr
               </View>
               )
             : null}
-          <View style={{ height: 1, marginVertical: px(4), backgroundColor: theme.hairline }} />
+          <View style={{ height: px(1), backgroundColor: theme.hairline }} />
           {quick?.length
             ? (
-              <View style={{ flexDirection: 'row', gap: px(14), paddingVertical: px(12) }}>
+              <View style={{ flexDirection: 'row', gap: px(10), paddingVertical: px(12), paddingHorizontal: px(4) }}>
                 {quick.map(item => (
                   <TouchableOpacity
                     key={item.action}
@@ -134,7 +130,7 @@ export default forwardRef<SheetType, SheetProps>(({ header, quick, actions, onPr
             : null}
           {actions?.length
             ? (
-              <ScrollView style={{ flexGrow: 0 }} contentContainerStyle={{ gap: px(4), paddingTop: px(4) }} showsVerticalScrollIndicator={false}>
+              <ScrollView style={{ flexGrow: 0, flexShrink: 1 }} contentContainerStyle={{ gap: px(4) }} showsVerticalScrollIndicator={false}>
                 {actions.map(item => (
                   <TouchableOpacity
                     key={item.action}
@@ -159,6 +155,7 @@ export default forwardRef<SheetType, SheetProps>(({ header, quick, actions, onPr
               </ScrollView>
               )
             : null}
+          <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, borderRadius: px(28), borderWidth: px(1), borderColor: theme['art-stroke'] }} />
         </View>
       </View>
     </Modal>

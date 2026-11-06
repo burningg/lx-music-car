@@ -1,98 +1,35 @@
-import { memo, useMemo } from 'react'
-
-import { StyleSheet, View } from 'react-native'
-
-import SubTitle from '../../components/SubTitle'
-import CheckBox from '../../components/ChoiceChip'
+import { memo } from 'react'
+import { View } from 'react-native'
+import { CarText, SegmentTabs } from '@/components/car'
 import { useI18n } from '@/lang'
 import { setFontSize } from '@/core/common'
 import { useFontSize } from '@/store/common/hook'
-import Text from '@/components/common/Text'
-import { getTextSize } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
+import { px } from '@/utils/pixelRatio'
 
-const LIST = [
-  {
-    size: 0.8,
-    name: 'setting_basic_font_size_80',
-  },
-  {
-    size: 0.9,
-    name: 'setting_basic_font_size_90',
-  },
-  {
-    size: 1,
-    name: 'setting_basic_font_size_100',
-  },
-  {
-    size: 1.1,
-    name: 'setting_basic_font_size_110',
-  },
-  {
-    size: 1.2,
-    name: 'setting_basic_font_size_120',
-  },
-  {
-    size: 1.3,
-    name: 'setting_basic_font_size_130',
-  },
-] as const
-
-type SIZE_TYPE = typeof LIST[number]['size']
-
-const useActive = (size: SIZE_TYPE) => {
-  const _size = useFontSize()
-  const isActive = useMemo(() => _size == size, [_size, size])
-  return isActive
-}
-
-const SizeText = () => {
-  const size = getTextSize(14) * useFontSize()
-  const t = useI18n()
-  const theme = useTheme()
-
-  return <Text style={{ fontSize: size }} color={theme['c-primary']}>{t('setting_basic_font_size_preview')}</Text>
-}
-
-const Item = ({ size, label }: {
-  size: SIZE_TYPE
-  label: string
-}) => {
-  const isActive = useActive(size)
-  // const [toggleCheckBox, setToggleCheckBox] = useState(false)
-  return <CheckBox marginRight={8} check={isActive} label={label} onChange={() => { setFontSize(size) }} need />
-}
+// 未包含的旧字号仍然保留；只有用户主动点选时才写入新值。
+const SIZES = [1, 1.1, 1.3] as const
 
 export default memo(() => {
   const t = useI18n()
-
-  const list = useMemo(() => {
-    return LIST.map((item) => ({ size: item.size, name: t(item.name) }))
-  }, [t])
+  const theme = useTheme()
+  const size = useFontSize()
+  const custom = !SIZES.some(value => value == size)
+  const items = [
+    { id: '1', label: t('setting_basic_font_size_100') },
+    { id: '1.1', label: t('setting_basic_font_size_110') },
+    { id: '1.3', label: t('car_font_size_extra_large') },
+  ]
 
   return (
-    <SubTitle title={t('setting_basic_font_size')}>
-      <View style={styles.preview}>
-        <SizeText />
+    <View style={{ minHeight: px(103), paddingVertical: px(24), paddingHorizontal: px(28), gap: px(24), flexDirection: 'row', alignItems: 'center', borderTopWidth: px(1), borderTopColor: theme.hairline }}>
+      <View style={{ flex: 1, gap: px(4) }}>
+        <CarText size={20} weight="500">{t('car_font_size')}</CarText>
+        <CarText size={15} color={theme['text-2']}>
+          {t('car_font_size_desc')}{custom ? ` · ${Math.round(size * 100)}%` : ''}
+        </CarText>
       </View>
-      <View style={styles.list}>
-        {
-          list.map(({ size, name }) => <Item key={size} size={size} label={name} />)
-        }
-      </View>
-    </SubTitle>
+      <SegmentTabs compact items={items} activeId={String(size)} onChange={value => { setFontSize(Number(value)) }} />
+    </View>
   )
-})
-
-const styles = StyleSheet.create({
-  preview: {
-    justifyContent: 'center',
-    // paddingTop: 3,
-    paddingBottom: 10,
-    height: 45,
-  },
-  list: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
 })

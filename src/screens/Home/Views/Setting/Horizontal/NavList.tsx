@@ -4,7 +4,7 @@ import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { CarText, CarIcon } from '@/components/car'
 import { px } from '@/utils/pixelRatio'
-import { SETTING_SCREENS, type SettingScreenIds } from '../Main'
+import { SETTING_SCREENS, normalizeSettingScreenId, type SettingScreenIds } from '../Main'
 
 const ICONS: Record<SettingScreenIds, string> = {
   basic: 'lucide-palette',
@@ -16,7 +16,6 @@ const ICONS: Record<SettingScreenIds, string> = {
   backup: 'lucide-archive',
   other: 'lucide-sliders-horizontal',
   version: 'lucide-download',
-  about: 'lucide-info',
 }
 
 const ListItem = memo(({ id, active, onPress }: {
@@ -52,7 +51,7 @@ export default ({ onChangeId }: {
 }) => {
   const theme = useTheme()
   const t = useI18n()
-  const [activeId, setActiveId] = useState(global.lx.settingActiveId)
+  const [activeId, setActiveId] = useState(normalizeSettingScreenId(global.lx.settingActiveId))
 
   const handleChangeId = (id: SettingScreenIds) => {
     onChangeId(id)
@@ -63,11 +62,11 @@ export default ({ onChangeId }: {
   return (
     <ScrollView
       style={{ width: px(340), flexGrow: 0, backgroundColor: theme.surface, borderRightWidth: 1, borderRightColor: theme.hairline }}
-      contentContainerStyle={{ paddingTop: px(44), paddingBottom: px(24), paddingLeft: px(32), paddingRight: px(20), gap: px(20) }}
+      contentContainerStyle={{ paddingTop: px(60), paddingBottom: px(40), paddingLeft: px(32), paddingRight: px(20), gap: px(32) }}
     >
       <CarText size={36} weight="700">{t('nav_setting')}</CarText>
       <View style={{ gap: px(2) }}>
-        {SETTING_SCREENS.map(id => <ListItem key={id} id={id} active={activeId == id} onPress={handleChangeId} />)}
+        {SETTING_SCREENS.map(id => <ListItem key={id} id={id} active={normalizeSettingScreenId(activeId) == id} onPress={handleChangeId} />)}
       </View>
     </ScrollView>
   )

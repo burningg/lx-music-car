@@ -132,8 +132,8 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({
     return (
       <Animated.View style={{
         position: 'absolute',
-        left: px(48),
-        right: px(72),
+        alignSelf: 'center',
+        width: px(1200),
         bottom: px(24),
         height: px(92),
         borderRadius: px(26),
@@ -142,8 +142,9 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({
         backgroundColor: theme['mini-bg'],
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: px(20),
-        gap: px(12),
+        paddingLeft: px(20),
+        paddingRight: px(14),
+        gap: px(8),
         elevation: 16,
         opacity: visibleBar ? animFade : 0,
         transform: [{ translateY: animTranslateY }],
@@ -174,7 +175,7 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({
           <CarIcon name="lucide-folder-input" size={24} color={theme['text-1']} />
           <CarText size={18} weight="500">{t('move_to')}</CarText>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onRemove} style={{ ...actionStyle, backgroundColor: '#FF4D4F24' }}>
+        <TouchableOpacity onPress={onRemove} style={{ ...actionStyle, paddingHorizontal: px(24), backgroundColor: '#FF4D4F24' }}>
           <CarIcon name="lucide-trash-2" size={24} color="#FF6B6B" />
           <CarText size={18} weight="600" color="#FF6B6B">{t('list_remove')}</CarText>
         </TouchableOpacity>

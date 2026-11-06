@@ -23,11 +23,13 @@ const MiniPlayerSlot = () => {
   if (id == 'nav_setting' || (id == 'nav_love' && multiSelect)) return null
   const alignRight = id == 'nav_top' || id == 'nav_love'
   return (
-    <View style={{
+    <View pointerEvents="box-none" style={{
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: px(24),
       alignItems: alignRight ? 'flex-end' : 'center',
       paddingRight: alignRight ? px(134) : 0,
-      paddingTop: px(12),
-      paddingBottom: px(24),
     }}>
       <MiniPlayer isHome />
     </View>

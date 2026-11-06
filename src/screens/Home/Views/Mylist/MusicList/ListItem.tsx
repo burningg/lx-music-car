@@ -1,9 +1,9 @@
 import { memo } from 'react'
 import { View } from 'react-native'
-import { TrackRow, TRACK_ROW_HEIGHT } from '@/components/car'
+import { TrackRow, TRACK_ROW_HEIGHT, TRACK_ROW_GAP } from '@/components/car'
 import { px } from '@/utils/pixelRatio'
 
-export const ITEM_HEIGHT = px(TRACK_ROW_HEIGHT + 4)
+export const ITEM_HEIGHT = px(TRACK_ROW_HEIGHT + TRACK_ROW_GAP)
 
 export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPress, selectedList, isMultiSelectMode, isShowAlbumName, isShowInterval }: {
   item: LX.Music.MusicInfo
@@ -21,7 +21,7 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
   if (isShowAlbumName && item.meta.albumName) artist += ` · ${item.meta.albumName}`
 
   return (
-    <View style={{ height: ITEM_HEIGHT, paddingBottom: px(4) }}>
+    <View style={{ height: ITEM_HEIGHT, paddingBottom: px(TRACK_ROW_GAP) }}>
       <TrackRow
         index={index}
         title={item.name}

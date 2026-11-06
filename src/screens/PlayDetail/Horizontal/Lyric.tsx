@@ -1,13 +1,13 @@
 import { memo, useMemo, useEffect, useRef, useCallback } from 'react'
-import { View, FlatList, type FlatListProps, type NativeSyntheticEvent, type NativeScrollEvent, type LayoutChangeEvent } from 'react-native'
+import { View, FlatList, StyleSheet, type FlatListProps, type NativeSyntheticEvent, type NativeScrollEvent, type LayoutChangeEvent } from 'react-native'
 // import { useLayout } from '@/utils/hooks'
 import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
-import { createStyle } from '@/utils/tools'
 // import { useComponentIds } from '@/store/common/hook'
 import { useTheme } from '@/store/theme/hook'
 import { useSettingValue } from '@/store/setting/hook'
 import { AnimatedColorText } from '@/components/common/Text'
-import { setSpText } from '@/utils/pixelRatio'
+import { px, sp } from '@/utils/pixelRatio'
+import { getFontStyle } from '@/theme/fonts'
 import playerState from '@/store/player/state'
 import { scrollTo } from '@/utils/scroll'
 import PlayLine, { type PlayLineType } from '../components/PlayLine'
@@ -27,21 +27,14 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
   const theme = useTheme()
   const lrcFontSize = useSettingValue('playDetail.horizontal.style.lrcFontSize')
   const textAlign = useSettingValue('playDetail.style.align')
-  const size = lrcFontSize / 10
-  const lineHeight = setSpText(size) * 1.3
+  const distance = lineNum - activeLine
+  const active = distance == 0
+  // 保留用户的歌词字号比例，以默认 220 对应新版 20 / 36px。
+  const size = (active ? 36 : distance == 1 ? 22 : 20) * lrcFontSize / 220
+  const lineHeight = sp(size) * 1.3
 
-  const colors = useMemo(() => {
-    const active = activeLine == lineNum
-    return active ? [
-      theme['c-primary'],
-      theme['c-primary-alpha-200'],
-      1,
-    ] as const : [
-      theme['c-350'],
-      theme['c-300'],
-      0.6,
-    ] as const
-  }, [activeLine, lineNum, theme])
+  // 设计稿以主文字色逐级淡出，避免次级灰再叠加原生渐隐后接近全黑。
+  const opacity = active ? 1 : distance == 1 ? 0.5 : distance == 2 ? 0.3 : distance > 2 ? 0.15 : distance == -1 ? 0.35 : distance == -2 ? 0.2 : 0.15
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     onLayout(lineNum, nativeEvent.layout.height, nativeEvent.layout.width)
@@ -54,23 +47,27 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
       <AnimatedColorText style={{
         ...styles.lineText,
         textAlign,
+        fontSize: sp(size),
+        ...getFontStyle(active ? '700' : distance == 1 ? '500' : '400', false),
         lineHeight,
-      }} textBreakStrategy="simple" color={colors[0]} opacity={colors[2]} size={size}>{line.text}</AnimatedColorText>
+      }} textBreakStrategy="simple" color={theme['text-1']} opacity={opacity} size={size}>{line.text}</AnimatedColorText>
       {
         line.extendedLyrics.map((lrc, index) => {
           return (<AnimatedColorText style={{
             ...styles.lineTranslationText,
             textAlign,
+            fontSize: sp(size * 0.8),
             lineHeight: lineHeight * 0.8,
-          }} textBreakStrategy="simple" key={index} color={colors[1]} opacity={colors[2]} size={size * 0.8}>{lrc}</AnimatedColorText>)
+          }} textBreakStrategy="simple" key={index} color={active ? theme['text-2'] : theme['text-1']} opacity={opacity} size={size * 0.8}>{lrc}</AnimatedColorText>)
         })
       }
     </View>
   )
 }, (prevProps, nextProps) => {
   return prevProps.line === nextProps.line &&
-    prevProps.activeLine != nextProps.lineNum &&
-    nextProps.activeLine != nextProps.lineNum
+    prevProps.lineNum == nextProps.lineNum &&
+    prevProps.activeLine == nextProps.activeLine &&
+    prevProps.onLayout === nextProps.onLayout
 })
 const wait = async() => new Promise(resolve => setTimeout(resolve, 100))
 
@@ -108,9 +105,9 @@ export default () => {
       if (scrollInfoRef.current && lineRef.current.line - lineRef.current.prevLine == 1) {
         let offset = listLayoutInfoRef.current.spaceHeight
         for (let line = 0; line < index; line++) {
-          offset += listLayoutInfoRef.current.lineHeights[line]
+          offset += listLayoutInfoRef.current.lineHeights[line] ?? 0
         }
-        offset += (listLayoutInfoRef.current.lineHeights[line] ?? 0) / 2
+        offset += (listLayoutInfoRef.current.lineHeights[index] ?? 0) / 2
         try {
           scrollCancelRef.current = scrollTo(flatListRef.current, scrollInfoRef.current, offset - scrollInfoRef.current.layoutMeasurement.height * 0.42, 600, () => {
             scrollCancelRef.current = null
@@ -281,7 +278,7 @@ export default () => {
         ListFooterComponent={spaceComponent}
         onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={onScrollEndDrag}
-        fadingEdgeLength={100}
+        fadingEdgeLength={px(32)}
         initialNumToRender={Math.max(line + 10, 10)}
         onScrollToIndexFailed={handleScrollToIndexFailed}
         onScroll={handleScroll}
@@ -291,19 +288,17 @@ export default () => {
   )
 }
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingLeft: 20,
-    paddingRight: 20,
+    paddingLeft: px(8),
     // backgroundColor: 'rgba(0,0,0,0.1)',
   },
   space: {
     paddingTop: '100%',
   },
   line: {
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingVertical: px(16),
     // opacity: 0,
   },
   lineText: {
@@ -318,7 +313,7 @@ const styles = createStyle({
     textAlign: 'center',
     // fontSize: 13,
     // lineHeight: 17,
-    paddingTop: 5,
+    paddingTop: px(5),
     // paddingBottom: 5,
   },
 })

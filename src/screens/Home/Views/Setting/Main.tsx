@@ -9,7 +9,6 @@ import Sync from './settings/Sync'
 import Backup from './settings/Backup'
 import Other from './settings/Other'
 import Version from './settings/Version'
-import About from './settings/About'
 
 export const SETTING_SCREENS = [
   'basic',
@@ -21,10 +20,12 @@ export const SETTING_SCREENS = [
   'backup',
   'other',
   'version',
-  'about',
 ] as const
 
 export type SettingScreenIds = typeof SETTING_SCREENS[number]
+
+// Older sessions may still point at a section that is no longer exposed.
+export const normalizeSettingScreenId = (id: string): SettingScreenIds => SETTING_SCREENS.find(screen => screen == id) ?? 'basic'
 
 // interface MainProps {
 //   onUpdateActiveId: (id: string) => void
@@ -34,20 +35,20 @@ export interface MainType {
 }
 
 const Main = forwardRef<MainType, {}>((props, ref) => {
-  const [id, setId] = useState(global.lx.settingActiveId)
+  const [id, setId] = useState(normalizeSettingScreenId(global.lx.settingActiveId))
 
   useImperativeHandle(ref, () => ({
     setActiveId(id) {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          setId(id)
+          setId(normalizeSettingScreenId(id))
         })
       })
     },
   }))
 
   const component = useMemo(() => {
-    switch (id) {
+    switch (normalizeSettingScreenId(id)) {
       case 'player': return <Player />
       case 'lyric_desktop': return <LyricDesktop />
       case 'search': return <Search />
@@ -56,7 +57,6 @@ const Main = forwardRef<MainType, {}>((props, ref) => {
       case 'backup': return <Backup />
       case 'other': return <Other />
       case 'version': return <Version />
-      case 'about': return <About />
       case 'basic':
       default: return <Basic />
     }

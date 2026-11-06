@@ -8,7 +8,7 @@ import commonState from '@/store/common/state'
 import { useTheme } from '@/store/theme/hook'
 import { px } from '@/utils/pixelRatio'
 
-/** 设计稿封面：448×448，圆角 24，保留共享元素锚点 */
+/** 设计稿封面：512×512，圆角 24，保留共享元素锚点 */
 export default memo(({ componentId }: { componentId: string }) => {
   const theme = useTheme()
   const musicInfo = usePlayerMusicInfo()
@@ -25,8 +25,8 @@ export default memo(({ componentId }: { componentId: string }) => {
 
   return (
     <View style={{
-      width: px(448),
-      height: px(448),
+      width: px(512),
+      height: px(512),
       borderRadius: px(24),
       overflow: 'hidden',
       borderWidth: 1,

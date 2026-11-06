@@ -161,7 +161,7 @@ export default ({ onShowListMenu, onShowSort }: MusicListProps) => {
 
   return (
     <View style={styles.container}>
-      <View style={{ paddingTop: px(44), paddingLeft: px(56), paddingRight: px(72) }}>
+      <View style={{ paddingTop: px(60), paddingLeft: px(56), paddingRight: px(72) }}>
         <ListHeader
           multiSelect={multiSelect}
           onLocate={handleLocate}
@@ -177,7 +177,7 @@ export default ({ onShowListMenu, onShowSort }: MusicListProps) => {
           onExitSearch={handleExitSearch}
         />
       </View>
-      <View style={{ flex: 1, marginTop: px(20), paddingLeft: px(56), paddingRight: px(72) }} onLayout={onLayout}>
+      <View style={{ flex: 1, marginTop: px(28), marginBottom: px(152), paddingLeft: px(56), paddingRight: px(72) }} onLayout={onLayout}>
         <List
           ref={listRef}
           onShowMenu={showMenu}
@@ -188,8 +188,8 @@ export default ({ onShowListMenu, onShowSort }: MusicListProps) => {
           ref={listMusicSearchRef}
           onScrollToInfo={handleScrollToInfo}
         />
-        <ListFade height={120} />
       </View>
+      <ListFade height={152} />
       <MultipleModeBar
         ref={multipleModeBarRef}
         onSwitchMode={hancelSwitchSelectMode}
