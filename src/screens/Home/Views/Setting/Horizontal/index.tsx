@@ -2,44 +2,26 @@ import { useRef } from 'react'
 import { ScrollView, View } from 'react-native'
 import NavList from './NavList'
 import Main, { type MainType } from '../Main'
-import { createStyle } from '@/utils/tools'
-import { BorderWidths } from '@/theme'
-import { useTheme } from '@/store/theme/hook'
+import { ListFade } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
 
-const styles = createStyle({
-  container: {
-    flex: 1,
-    flexDirection: 'row',
-    borderTopWidth: BorderWidths.normal,
-  },
-  nav: {
-    height: '100%',
-    width: '22%',
-    borderRightWidth: BorderWidths.normal,
-  },
-  main: {
-    paddingLeft: 15,
-    paddingRight: 15,
-    paddingTop: 15,
-    paddingBottom: 15,
-    flex: 0,
-  },
-})
-
+// 设计稿设置页：左侧分区栏 + 右侧内容（内边距 44/72/0/56），底部渐隐
 export default () => {
-  const theme = useTheme()
   const mainRef = useRef<MainType>(null)
+  const scrollRef = useRef<ScrollView>(null)
 
   return (
-    <View style={{ ...styles.container, borderTopColor: theme['c-border-background'] }}>
-      <View style={{ ...styles.nav, borderRightColor: theme['c-border-background'] }}>
-        <NavList onChangeId={(id) => mainRef.current?.setActiveId(id)} />
-      </View>
-      <ScrollView keyboardShouldPersistTaps={'always'}>
-        <View style={styles.main}>
+    <View style={{ flex: 1, flexDirection: 'row' }}>
+      <NavList onChangeId={(id) => {
+        mainRef.current?.setActiveId(id)
+        scrollRef.current?.scrollTo({ y: 0, animated: false })
+      }} />
+      <View style={{ flex: 1 }}>
+        <ScrollView ref={scrollRef} keyboardShouldPersistTaps={'always'} contentContainerStyle={{ paddingTop: px(44), paddingLeft: px(56), paddingRight: px(72) }}>
           <Main ref={mainRef} />
-        </View>
-      </ScrollView>
+        </ScrollView>
+        <ListFade height={80} />
+      </View>
     </View>
   )
 }

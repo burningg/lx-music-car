@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import Theme from '../Theme'
+import Theme, { ThemeSwatches } from '../Theme'
 import Section from '../../components/Section'
 import Source from './Source'
 import SourceName from './SourceName'
@@ -24,7 +24,8 @@ export default memo(() => {
 
 
   return (
-    <Section title={t('setting_basic')}>
+    <Section title={t('setting_basic')} header={<ThemeSwatches />}>
+      <Theme />
       <IsStartupAutoPlay />
       <IsStartupPushPlayDetailScreen />
       <IsShowBackBtn />
@@ -34,7 +35,6 @@ export default memo(() => {
       <IsAllowProgressBarSeek />
       <IsUseSystemFileSelector />
       <IsAlwaysKeepStatusbarHeight />
-      <Theme />
       <DrawerLayoutPosition />
       <Language />
       <FontSize />

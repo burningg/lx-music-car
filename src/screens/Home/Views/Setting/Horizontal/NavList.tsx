@@ -1,57 +1,57 @@
-import { memo, useRef, useState } from 'react'
-import { View, TouchableOpacity, FlatList, type FlatListProps } from 'react-native'
-
-import { Icon } from '@/components/common/Icon'
-
+import { memo, useState } from 'react'
+import { ScrollView, TouchableOpacity, View } from 'react-native'
 import { useTheme } from '@/store/theme/hook'
-import { createStyle } from '@/utils/tools'
-import Text from '@/components/common/Text'
-import { scaleSizeH } from '@/utils/pixelRatio'
-import { SETTING_SCREENS, type SettingScreenIds } from '../Main'
 import { useI18n } from '@/lang'
+import { CarText, CarIcon } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
+import { SETTING_SCREENS, type SettingScreenIds } from '../Main'
 
-type FlatListType = FlatListProps<SettingScreenIds>
+const ICONS: Record<SettingScreenIds, string> = {
+  basic: 'lucide-palette',
+  player: 'lucide-play',
+  lyric_desktop: 'lucide-captions',
+  search: 'lucide-search',
+  list: 'lucide-list',
+  sync: 'lucide-refresh-cw',
+  backup: 'lucide-archive',
+  other: 'lucide-sliders-horizontal',
+  version: 'lucide-download',
+  about: 'lucide-info',
+}
 
-const ITEM_HEIGHT = scaleSizeH(40)
-
-const ListItem = memo(({ id, activeId, onPress }: {
-  onPress: (item: SettingScreenIds) => void
-  activeId: string
+const ListItem = memo(({ id, active, onPress }: {
   id: SettingScreenIds
+  active: boolean
+  onPress: (id: SettingScreenIds) => void
 }) => {
   const theme = useTheme()
   const t = useI18n()
-
-  const active = activeId == id
-
-  const handlePress = () => {
-    onPress(id)
-  }
-
   return (
-    <View style={{ ...styles.listItem, height: ITEM_HEIGHT }}>
-      {
-        active
-          ? <Icon style={styles.listActiveIcon} name="chevron-right" size={12} color={theme['c-primary-font']} />
-          : null
-      }
-      <TouchableOpacity style={styles.listName} onPress={handlePress}>
-        <Text numberOfLines={1} size={16} color={active ? theme['c-primary-font'] : theme['c-font']}>{t(`setting_${id}`)}</Text>
-      </TouchableOpacity>
-    </View>
-  )
-}, (prevProps, nextProps) => {
-  return !!(prevProps.id === nextProps.id &&
-    prevProps.activeId != nextProps.id &&
-    nextProps.activeId != nextProps.id
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => { onPress(id) }}
+      style={{
+        height: px(50),
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: px(14),
+        paddingHorizontal: px(16),
+        borderRadius: px(14),
+        backgroundColor: active ? theme['glass-strong'] : undefined,
+      }}
+    >
+      <CarIcon name={ICONS[id]} size={22} color={active ? theme.accent : theme['text-2']} />
+      <CarText size={18} weight={active ? '600' : '400'} color={active ? theme['text-1'] : theme['text-2']} numberOfLines={1}>{t(`setting_${id}`)}</CarText>
+    </TouchableOpacity>
   )
 })
 
-
+// 设计稿左侧分区栏：宽 340，表面色底，右侧 1px 分隔
 export default ({ onChangeId }: {
   onChangeId: (id: SettingScreenIds) => void
 }) => {
-  const flatListRef = useRef<FlatList>(null)
+  const theme = useTheme()
+  const t = useI18n()
   const [activeId, setActiveId] = useState(global.lx.settingActiveId)
 
   const handleChangeId = (id: SettingScreenIds) => {
@@ -60,71 +60,15 @@ export default ({ onChangeId }: {
     global.lx.settingActiveId = id
   }
 
-  const renderItem: FlatListType['renderItem'] = ({ item, index }) => (
-    <ListItem
-      key={item}
-      id={item}
-      activeId={activeId}
-      onPress={handleChangeId}
-    />
-  )
-  const getkey: FlatListType['keyExtractor'] = item => item
-  const getItemLayout: FlatListType['getItemLayout'] = (data, index) => {
-    return { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
-  }
-
   return (
-    <FlatList
-      ref={flatListRef}
-      style={styles.container}
-      data={SETTING_SCREENS}
-      maxToRenderPerBatch={9}
-      // updateCellsBatchingPeriod={80}
-      windowSize={9}
-      removeClippedSubviews={true}
-      initialNumToRender={18}
-      renderItem={renderItem}
-      keyExtractor={getkey}
-      // extraData={activeIndex}
-      getItemLayout={getItemLayout}
-    />
+    <ScrollView
+      style={{ width: px(340), flexGrow: 0, backgroundColor: theme.surface, borderRightWidth: 1, borderRightColor: theme.hairline }}
+      contentContainerStyle={{ paddingTop: px(44), paddingBottom: px(24), paddingLeft: px(32), paddingRight: px(20), gap: px(20) }}
+    >
+      <CarText size={36} weight="700">{t('nav_setting')}</CarText>
+      <View style={{ gap: px(2) }}>
+        {SETTING_SCREENS.map(id => <ListItem key={id} id={id} active={activeId == id} onPress={handleChangeId} />)}
+      </View>
+    </ScrollView>
   )
 }
-
-
-const styles = createStyle({
-  container: {
-    flexShrink: 1,
-    flexGrow: 0,
-  },
-  // listContainer: {
-  //   // borderBottomWidth: BorderWidths.normal2,
-  // },
-
-  listItem: {
-    height: 'auto',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingRight: 10,
-    paddingLeft: 10,
-    // borderBottomWidth: BorderWidths.normal,
-  },
-  listActiveIcon: {
-    // width: 18,
-    marginLeft: 3,
-    // paddingRight: 5,
-    textAlign: 'center',
-  },
-  listName: {
-    height: '100%',
-    // height: 46,
-    // paddingTop: 12,
-    // paddingBottom: 12,
-    justifyContent: 'center',
-    flexGrow: 1,
-    flexShrink: 1,
-    paddingLeft: 5,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-})
-

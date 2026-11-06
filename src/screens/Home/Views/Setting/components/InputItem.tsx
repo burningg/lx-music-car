@@ -4,7 +4,8 @@ import { StyleSheet, View, Keyboard } from 'react-native'
 import type { InputType, InputProps } from '@/components/common/Input'
 import Input from '@/components/common/Input'
 import { useTheme } from '@/store/theme/hook'
-import Text from '@/components/common/Text'
+import { CarText } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
 
 
 export interface InputItemProps extends InputProps {
@@ -62,13 +63,14 @@ export default memo(({ value, label, onChanged, ...props }: InputItemProps) => {
     textRef.current = text
   }
   return (
-    <View style={styles.container}>
-      <Text style={styles.label} size={14}>{label}</Text>
+    <View style={{ gap: px(8), marginBottom: px(8) }}>
+      <CarText size={15} color={theme['text-2']}>{label}</CarText>
       <Input
         value={text}
         ref={inputRef}
         onChangeText={handleSetSelectMode}
-        style={{ ...styles.input, backgroundColor: theme['c-primary-input-background'] }}
+        size={17}
+        style={{ ...styles.input, color: theme['text-1'], backgroundColor: theme.glass, borderColor: theme.hairline }}
         {...props}
         onBlur={saveValue}
        />
