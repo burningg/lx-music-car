@@ -32,6 +32,8 @@ export interface ListProps {
   ListHeaderComponent?: FlatListType['ListEmptyComponent']
   checkHomePagerIdle: boolean
   rowType?: RowInfoType
+  /** 列表底部留白，避免最后几行被迷你播放条挡住 */
+  contentInsetBottom?: number
 }
 export interface ListType {
   setList: (list: LX.Music.MusicInfoOnline[], isAppend: boolean, showSource: boolean) => void
@@ -55,6 +57,7 @@ const List = forwardRef<ListType, ListProps>(({
   progressViewOffset,
   ListHeaderComponent,
   checkHomePagerIdle,
+  contentInsetBottom,
 }, ref) => {
   // const t = useI18n()
   const theme = useTheme()
@@ -250,6 +253,7 @@ const List = forwardRef<ListType, ListProps>(({
       onEndReachedThreshold={0.5}
       onEndReached={handleLoadMore}
       progressViewOffset={progressViewOffset}
+      contentContainerStyle={contentInsetBottom ? { paddingBottom: contentInsetBottom } : undefined}
       ListHeaderComponent={ListHeaderComponent}
       refreshControl={refreshControl}
       ListFooterComponent={footerComponent}

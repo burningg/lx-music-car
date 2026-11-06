@@ -1,76 +1,66 @@
 import { useCallback, useRef } from 'react'
-import Text from '@/components/common/Text'
+import { TouchableOpacity, View } from 'react-native'
 import { useTheme } from '@/store/theme/hook'
-import Button, { type BtnType } from '@/components/common/Button'
-import { createStyle } from '@/utils/tools'
 import { type BoardItem } from '@/store/leaderboard/state'
-import { Icon } from '@/components/common/Icon'
+import { CarIcon, CarText } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
+import { useI18n } from '@/lang'
+import { useSettingValue } from '@/store/setting/hook'
 
-// index={index}
-// longPressIndex={longPressIndex}
-// activeId={activeId}
-// showMenu={showMenu}
-// onBoundChange={handleBoundChange}
 export interface ListItemProps {
   item: BoardItem
   index: number
-  longPressIndex: number
-  activeId: string
-  onShowMenu: (id: string, name: string, index: number, position: { x: number, y: number, w: number, h: number }) => void
-  onBoundChange: (item: BoardItem) => void
+  active: boolean
+  source: LX.OnlineSource
+  onPress: (item: BoardItem) => void
+  onLongPress: (item: BoardItem, position: { x: number, y: number, w: number, h: number }) => void
 }
 
-export default ({ item, activeId, index, longPressIndex, onBoundChange, onShowMenu }: ListItemProps) => {
+// 设计稿榜单行：400×80，封面 60，选中行玻璃底 + 右侧 4×28 强调色标记
+export default ({ item, index, active, source, onPress, onLongPress }: ListItemProps) => {
   const theme = useTheme()
-  const buttonRef = useRef<BtnType>(null)
+  const t = useI18n()
+  const sourceNameType = useSettingValue('common.sourceNameType')
+  const buttonRef = useRef<TouchableOpacity>(null)
 
-  const setPosition = useCallback(() => {
-    if (buttonRef.current?.measure) {
-      buttonRef.current.measure((fx, fy, width, height, px, py) => {
-        // console.log(fx, fy, width, height, px, py)
-        onShowMenu(item.id, item.name, index, { x: Math.ceil(px), y: Math.ceil(py), w: Math.ceil(width), h: Math.ceil(height) })
-      })
-    }
-  }, [index, item, onShowMenu])
-
-  const active = activeId == item.id
+  const handleLongPress = useCallback(() => {
+    buttonRef.current?.measure((fx, fy, width, height, pageX, pageY) => {
+      onLongPress(item, { x: Math.ceil(pageX), y: Math.ceil(pageY), w: Math.ceil(width), h: Math.ceil(height) })
+    })
+  }, [item, onLongPress])
 
   return (
-    <Button
+    <TouchableOpacity
       ref={buttonRef}
-      style={{ ...styles.button, backgroundColor: index == longPressIndex ? theme['c-button-background-active'] : undefined }}
-      key={item.id} onLongPress={setPosition}
-      onPress={() => { onBoundChange(item) }}
+      key={item.id}
+      activeOpacity={0.7}
+      onPress={() => { onPress(item) }}
+      onLongPress={handleLongPress}
+      style={{
+        height: px(80),
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: px(16),
+        paddingHorizontal: px(10),
+        borderRadius: px(18),
+        backgroundColor: active ? theme['glass-strong'] : undefined,
+      }}
     >
-      {
-        active
-          ? <Icon style={styles.listActiveIcon} name="chevron-right" size={12} color={theme['c-primary-font']} />
-          : null
-      }
-      <Text style={styles.listName} size={14} textBreakStrategy="simple" color={active ? theme['c-primary-font-active'] : theme['c-font']} numberOfLines={1}>{item.name}</Text>
-    </Button>
+      <View style={{
+        width: px(60),
+        height: px(60),
+        borderRadius: px(12),
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: theme.glass,
+      }}>
+        <CarIcon name="lucide-trophy" size={26} color={active ? theme.accent : theme['text-3']} />
+      </View>
+      <View style={{ flex: 1, gap: px(3) }}>
+        <CarText size={19} weight="600" numberOfLines={1}>{item.name}</CarText>
+        <CarText size={14} color={theme['text-3']} numberOfLines={1}>{t(`source_${sourceNameType}_${source}`)}</CarText>
+      </View>
+      {active ? <View style={{ width: px(4), height: px(28), borderRadius: px(2), backgroundColor: theme.accent }} /> : null}
+    </TouchableOpacity>
   )
 }
-
-const styles = createStyle({
-  button: {
-    paddingLeft: 5,
-    paddingRight: 10,
-    paddingTop: 10,
-    paddingBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  listActiveIcon: {
-    // width: 18,
-    marginLeft: 3,
-    // paddingRight: 5,
-    textAlign: 'center',
-  },
-  listName: {
-    height: '100%',
-    justifyContent: 'center',
-    paddingLeft: 6,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-})

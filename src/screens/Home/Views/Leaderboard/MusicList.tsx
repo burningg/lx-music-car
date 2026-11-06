@@ -1,8 +1,9 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react'
 import OnlineList, { type OnlineListType, type OnlineListProps } from '@/components/OnlineList'
 import { clearListDetail, getListDetail, setListDetail, setListDetailInfo } from '@/core/leaderboard'
 import boardState from '@/store/leaderboard/state'
 import { handlePlay } from './listAction'
+import { px } from '@/utils/pixelRatio'
 
 // export type MusicListProps = Pick<OnlineListProps,
 // 'onLoadMore'
@@ -14,9 +15,23 @@ export interface MusicListType {
   loadList: (source: LX.OnlineSource, listId: string) => void
 }
 
-export default forwardRef<MusicListType, {}>((props, ref) => {
+export interface BoardLoadedInfo {
+  /** 榜单封面（暂用榜首歌曲封面） */
+  pic?: string
+  total: number
+}
+
+export interface MusicListProps {
+  onLoaded?: (info: BoardLoadedInfo) => void
+}
+
+export default forwardRef<MusicListType, MusicListProps>(({ onLoaded }, ref) => {
   const listRef = useRef<OnlineListType>(null)
   const isUnmountedRef = useRef(false)
+  const handleLoaded = useCallback(() => {
+    const list = boardState.listDetailInfo.list
+    onLoaded?.({ pic: list[0]?.meta.picUrl ?? undefined, total: boardState.listDetailInfo.total })
+  }, [onLoaded])
   useImperativeHandle(ref, () => ({
     async loadList(source, id) {
       const listDetailInfo = boardState.listDetailInfo
@@ -24,6 +39,7 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
       if (listDetailInfo.id == id && listDetailInfo.source == source && listDetailInfo.list.length) {
         requestAnimationFrame(() => {
           listRef.current?.setList(listDetailInfo.list)
+          handleLoaded()
         })
       } else {
         listRef.current?.setStatus('loading')
@@ -35,6 +51,7 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
           requestAnimationFrame(() => {
             listRef.current?.setList(result.list)
             listRef.current?.setStatus(boardState.listDetailInfo.maxPage <= page ? 'end' : 'idle')
+            handleLoaded()
           })
         }).catch(() => {
           if (boardState.listDetailInfo.list.length && page == 1) clearListDetail()
@@ -42,7 +59,7 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
         })
       }
     },
-  }), [])
+  }), [handleLoaded])
 
   useEffect(() => {
     isUnmountedRef.current = false
@@ -65,6 +82,7 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
       if (isUnmountedRef.current) return
       listRef.current?.setList(result.list)
       listRef.current?.setStatus(boardState.listDetailInfo.maxPage <= page ? 'end' : 'idle')
+      handleLoaded()
     }).catch(() => {
       if (boardState.listDetailInfo.list.length && page == 1) clearListDetail()
       listRef.current?.setStatus('error')
@@ -91,6 +109,7 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
     onLoadMore={handleLoadMore}
     checkHomePagerIdle
     rowType='medium'
+    contentInsetBottom={px(140)}
    />
 })
 

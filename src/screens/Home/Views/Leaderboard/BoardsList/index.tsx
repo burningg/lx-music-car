@@ -1,57 +1,54 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react'
-import { StyleSheet, View } from 'react-native'
-import List, { type ListType, type ListProps } from './List'
+import { useRef } from 'react'
+import { ScrollView } from 'react-native'
+import ListItem from './ListItem'
 import ListMenu, { type ListMenuType, type Position } from './ListMenu'
 import { type BoardItem } from '@/store/leaderboard/state'
-
+import { px } from '@/utils/pixelRatio'
 
 export interface BoardsListProps {
-  onBoundChange: (listId: string) => void
-  onPlay: (listId: string) => void
-  onCollect: (listId: string, name: string) => void
-}
-export interface BoardsListType {
-  setList: (list: BoardItem[], activeId: string) => void
+  list: BoardItem[]
+  activeId: string
+  source: LX.OnlineSource
+  onPress: (item: BoardItem) => void
+  onPlay: (id: string) => void
+  onCollect: (id: string, name: string) => void
 }
 
-export default forwardRef<BoardsListType, BoardsListProps>(({ onBoundChange, onPlay, onCollect }, ref) => {
-  const listRef = useRef<ListType>(null)
+// 设计稿榜单栏：宽 400，行高 80、行距 6
+export default ({ list, activeId, source, onPress, onPlay, onCollect }: BoardsListProps) => {
   const listMenuRef = useRef<ListMenuType>(null)
 
-  useImperativeHandle(ref, () => ({
-    setList(list, listId) {
-      listRef.current?.setList(list, listId)
-    },
-  }), [])
-
-  const handleShowMenu: ListProps['onShowMenu'] = ({ listId, name, index }, position: Position) => {
-    listMenuRef.current?.show({
-      listId,
-      index,
-      name,
-    }, position)
+  const handleLongPress = (item: BoardItem, position: Position) => {
+    const index = list.findIndex(board => board.id == item.id)
+    listMenuRef.current?.show({ listId: item.id, name: item.name, index }, position)
   }
 
   return (
-    <View style={styles.container}>
-      <List
-        ref={listRef}
-        onBoundChange={onBoundChange}
-        onShowMenu={handleShowMenu} />
+    <>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ gap: px(6), paddingBottom: px(140) }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps={'always'}
+      >
+        {list.map((item, index) => (
+          <ListItem
+            key={item.id}
+            item={item}
+            index={index}
+            active={activeId == item.id}
+            source={source}
+            onPress={onPress}
+            onLongPress={handleLongPress}
+          />
+        ))}
+      </ScrollView>
       <ListMenu
         ref={listMenuRef}
-        onHideMenu={() => listRef.current?.hideMenu()}
+        onHideMenu={() => {}}
         onPlay={({ listId }) => { onPlay(listId) }}
         onCollect={({ listId, name }) => { onCollect(listId, name) }}
       />
-    </View>
+    </>
   )
-})
-
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    flexShrink: 1,
-  },
-})
+}
