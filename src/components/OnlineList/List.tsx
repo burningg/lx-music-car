@@ -30,6 +30,8 @@ export interface ListProps {
   onRefresh: () => void
   onLoadMore: () => void
   onPlayList?: (index: number) => void
+  /** 歌单详情和排行榜固定使用当前列表作为播放队列，其他页面沿用列表设置。 */
+  playListOnPress?: boolean
   progressViewOffset?: number
   ListHeaderComponent?: FlatListType['ListEmptyComponent']
   checkHomePagerIdle: boolean
@@ -56,6 +58,7 @@ const List = forwardRef<ListType, ListProps>(({
   onRefresh,
   onLoadMore,
   onPlayList,
+  playListOnPress,
   progressViewOffset,
   ListHeaderComponent,
   checkHomePagerIdle,
@@ -163,7 +166,7 @@ const List = forwardRef<ListType, ListProps>(({
       if (isMultiSelectModeRef.current) {
         handleSelect(item, index)
       } else {
-        if (settingState.setting['list.isClickPlayList'] && onPlayList != null) {
+        if ((playListOnPress ?? settingState.setting['list.isClickPlayList']) && onPlayList != null) {
           onPlayList(index)
         } else {
           // console.log(currentList[index])

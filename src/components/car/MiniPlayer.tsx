@@ -13,6 +13,7 @@ import { setLoadErrorPicUrl, setMusicInfo } from '@/core/player/playInfo'
 import { COMPONENT_IDS, LIST_IDS, NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import { useKeyboard } from '@/utils/hooks'
 import { px } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
 import CarText from './CarText'
 import IconButton from './IconButton'
 import SeekBar from './SeekBar'
@@ -56,6 +57,7 @@ const Controls = () => {
 
 // 设计稿 Mini Player：1100×92，圆角 26，左封面 64，右控制区，底部 3px 进度
 export default memo(({ isHome = false, componentId }: { isHome?: boolean, componentId?: string }) => {
+  useWindowSize()
   const theme = useTheme()
   const musicInfo = usePlayerMusicInfo()
   const { keyboardShown } = useKeyboard()

@@ -9,6 +9,7 @@ import { setComponentId, updateSetting } from '@/core/common'
 import { COMPONENT_IDS, MUSIC_TOGGLE_MODE } from '@/config/constant'
 import { type ListInfoItem } from '@/store/songlist/state'
 import songlistState from '@/store/songlist/state'
+import playerState from '@/store/player/state'
 import { ListInfoContext } from './state'
 import { pop } from '@/navigation'
 import { useI18n } from '@/lang'
@@ -46,14 +47,19 @@ export default ({ componentId, info }: { componentId: string, info: ListInfoItem
   const back = () => {
     void pop(componentId)
   }
-  const handlePlayAll = () => {
+  const startPlaylist = (index: number) => {
     if (!songlistState.listDetailInfo.info.name) return
-    void handlePlay(info.id, info.source, songlistState.listDetailInfo.list)
+    void handlePlay(info.id, info.source, songlistState.listDetailInfo.list, index)
+  }
+  const handlePlayAll = () => {
+    const currentId = playerState.playMusicInfo.musicInfo?.id
+    const index = songlistState.listDetailInfo.list.findIndex(music => music.id == currentId)
+    startPlaylist(Math.max(0, index))
   }
   const handleShuffle = () => {
     updateSetting({ 'player.togglePlayMethod': MUSIC_TOGGLE_MODE.random })
     toast(t('play_list_random'))
-    handlePlayAll()
+    startPlaylist(0)
   }
   const handleCollectList = () => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing

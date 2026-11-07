@@ -355,19 +355,76 @@ test('mini player controls occupy 258px rather than 288px', () => {
   assert.equal(width, 258)
 })
 
-test('home mini player is an overlay and cannot subtract from screen height', () => {
+test('mini player catches initial window correction and resizes without navigation or playback changes', () => {
+  const component = responsiveComponent('src/components/car/MiniPlayer.tsx', { isHome: true }, {
+    '@/navigation': { navigations: {} },
+    '@/store/player/hook': { usePlayerMusicInfo: () => ({}), useIsPlay: () => true },
+    '@/store/common/hook': { usePageVisible: noop },
+    '@/store/setting/hook': { useSettingValue: () => false },
+    '@/store/common/state': {},
+    '@/store/player/state': {},
+    '@/core/player/player': Object.fromEntries(['collectMusic', 'playNext', 'playPrev', 'togglePlay', 'uncollectMusic'].map(key => [key, noop])),
+    '@/core/player/playInfo': { setLoadErrorPicUrl: noop, setMusicInfo: noop },
+    '@/config/constant': { COMPONENT_IDS: {}, LIST_IDS: {}, NAV_SHEAR_NATIVE_IDS: {} },
+    '@/utils/hooks': { useKeyboard: () => ({ keyboardShown: false }) },
+    './SeekBar': 'SeekBar',
+    './hooks': { useCurrentMusicLoved: () => false },
+  })
+  assert.equal(component.output().props.style.width, 550)
+  component.resize(1920, 1080)
+  const unmount = component.mount()
+  assert.equal(component.listeners.size, 1)
+  assert.equal(component.output().props.style.width, 1100)
+  assert.equal(component.output().props.style.height, 92)
+  component.resize(960, 540)
+  assert.equal(component.output().props.style.width, 550)
+  assert.equal(component.output().props.style.height, 46)
+  unmount()
+  assert.equal(component.listeners.size, 0)
+})
+
+for (const activeId of ['nav_songlist', 'nav_search', 'nav_top', 'nav_love']) {
+  test(`home mini player uses the same centered overlay on ${activeId}`, () => {
+    const Home = load('src/screens/Home/Horizontal/index.tsx', {
+      '@/components/car': { CarShell: 'CarShell', MiniPlayer: 'MiniPlayer' },
+      '@/store/common/hook': { useNavActiveId: () => activeId },
+      './Header': 'Header',
+      './Main': 'Main',
+    }).default
+    const output = render(Home)
+    const slot = children(output).at(-1)
+    const bar = render(slot.type)
+    assert.equal(bar.props.style.position, 'absolute')
+    assert.equal(bar.props.style.left, 0)
+    assert.equal(bar.props.style.right, 0)
+    assert.equal(bar.props.style.bottom, 24)
+    assert.equal(bar.props.style.alignItems, 'center')
+    assert.equal(bar.props.style.paddingRight ?? 0, 0)
+    assert.equal(bar.props.pointerEvents, 'box-none')
+    const player = children(bar)[0]
+    assert.equal(player.type, 'MiniPlayer')
+    assert.deepEqual(player.props, { isHome: true })
+  })
+}
+
+test('home mini player stays hidden in settings and yields to my-list multi-select', () => {
+  let activeId = 'nav_setting'
+  let multiSelect = false
   const Home = load('src/screens/Home/Horizontal/index.tsx', {
+    react: { ...React, useState: () => [multiSelect, noop] },
     '@/components/car': { CarShell: 'CarShell', MiniPlayer: 'MiniPlayer' },
-    '@/store/common/hook': { useNavActiveId: () => 'nav_songlist' },
+    '@/store/common/hook': { useNavActiveId: () => activeId },
     './Header': 'Header',
     './Main': 'Main',
   }).default
-  const output = render(Home)
-  const slot = children(output).at(-1)
-  const bar = render(slot.type)
-  assert.equal(bar.props.style.position, 'absolute')
-  assert.equal(bar.props.style.bottom, 24)
-  assert.equal(bar.props.pointerEvents, 'box-none')
+  const slot = children(render(Home)).at(-1)
+  assert.equal(render(slot.type), null)
+  activeId = 'nav_love'
+  assert.notEqual(render(slot.type), null)
+  multiSelect = true
+  assert.equal(render(slot.type), null)
+  activeId = 'nav_top'
+  assert.notEqual(render(slot.type), null)
 })
 
 test('featured playlist uses 592×766 art and a 68px play button', () => {
@@ -570,6 +627,7 @@ test('playlist detail retains the mini player and reserves space above it for sc
     '@/core/common': {},
     '@/config/constant': { COMPONENT_IDS: {}, MUSIC_TOGGLE_MODE: {} },
     '@/store/songlist/state': {},
+    '@/store/player/state': {},
     './state': { ListInfoContext: { Provider: 'ListInfoProvider' } },
     '@/navigation': {},
     '@/utils/tools': {},

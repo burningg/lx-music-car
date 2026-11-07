@@ -131,6 +131,7 @@ export default forwardRef<MusicListType, MusicListProps>(({ onInfo }, ref) => {
           ref={listRef}
           trackRowSize="large"
           onPlayList={handlePlayList}
+          playListOnPress
           onRefresh={handleRefresh}
           onLoadMore={handleLoadMore}
           contentInsetBottom={px(40)}

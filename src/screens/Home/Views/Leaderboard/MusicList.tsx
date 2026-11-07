@@ -105,6 +105,7 @@ export default forwardRef<MusicListType, MusicListProps>(({ onLoaded }, ref) => 
   return <OnlineList
     ref={listRef}
     onPlayList={handlePlayList}
+    playListOnPress
     onRefresh={handleRefresh}
     onLoadMore={handleLoadMore}
     checkHomePagerIdle

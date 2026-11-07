@@ -8,12 +8,14 @@ import ListMusicAdd, { type MusicAddModalType as ListMusicAddType } from '@/comp
 import MultipleModeBar, { type MultipleModeBarType, type SelectMode } from './MultipleModeBar'
 import { clearMusicUrl, handleDislikeMusic, handlePlay, handlePlayLater, handleShare, handleShowMusicSourceDetail } from './listAction'
 import { createStyle } from '@/utils/tools'
+import settingState from '@/store/setting/state'
 
 export interface OnlineListProps {
   trackRowSize?: ListProps['trackRowSize']
   onRefresh: ListProps['onRefresh']
   onLoadMore: ListProps['onLoadMore']
   onPlayList?: ListProps['onPlayList']
+  playListOnPress?: ListProps['playListOnPress']
   progressViewOffset?: ListProps['progressViewOffset']
   ListHeaderComponent?: ListProps['ListHeaderComponent']
   checkHomePagerIdle?: boolean
@@ -29,6 +31,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
   onRefresh,
   onLoadMore,
   onPlayList,
+  playListOnPress,
   progressViewOffset,
   ListHeaderComponent,
   checkHomePagerIdle = false,
@@ -93,6 +96,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
           onRefresh={onRefresh}
           onLoadMore={onLoadMore}
           onPlayList={onPlayList}
+          playListOnPress={playListOnPress}
           progressViewOffset={progressViewOffset}
           ListHeaderComponent={ListHeaderComponent}
           checkHomePagerIdle={checkHomePagerIdle}
@@ -111,7 +115,13 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
       <ListMusicMultiAdd ref={listMusicMultiAddRef} onAdded={() => { hancelExitSelect() }} />
       <ListMenu
         ref={listMenuRef}
-        onPlay={info => { handlePlay(info.musicInfo) }}
+        onPlay={info => {
+          if ((playListOnPress ?? settingState.setting['list.isClickPlayList']) && onPlayList != null) {
+            onPlayList(info.index)
+          } else {
+            handlePlay(info.musicInfo)
+          }
+        }}
         onPlayLater={info => { hancelExitSelect(); handlePlayLater(info.musicInfo, info.selectedList, hancelExitSelect) }}
         onCopyName={info => { handleShare(info.musicInfo) }}
         onAdd={handleAddMusic}
