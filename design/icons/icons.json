@@ -263,5 +263,30 @@
     "name": "ph-skip-forward-fill",
     "source": "phosphor:skip-forward-fill",
     "size": 48
+  },
+  {
+    "name": "lucide-minus",
+    "source": "lucide:minus",
+    "size": 24
+  },
+  {
+    "name": "lucide-rotate-ccw",
+    "source": "lucide:rotate-ccw",
+    "size": 18
+  },
+  {
+    "name": "ms-format-align-left",
+    "source": "material-symbols:format-align-left-rounded",
+    "size": 24
+  },
+  {
+    "name": "ms-format-align-center",
+    "source": "material-symbols:format-align-center-rounded",
+    "size": 24
+  },
+  {
+    "name": "ms-format-align-right",
+    "source": "material-symbols:format-align-right-rounded",
+    "size": 24
   }
 ]

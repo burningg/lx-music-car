@@ -43,6 +43,13 @@
 
 从 v1.0.0 起，我们发布了一个独立的[数据同步服务](https://github.com/lyswhut/lx-music-sync-server#readme)。如果你有服务器，可以将其部署到服务器上作为私人多端同步服务使用，详情看该项目说明。
 
+## 本仓库 Android 本地运行
+
+日常在模拟器或车机上使用：`npm run android`，安装内置 JS 的独立版，不依赖 Metro。
+开发热更新：`npm start` + `npm run dev`。可拷贝的独立 APK：`npm run pack:android:standalone`。
+
+启动红屏原因、数据保留说明和正式打包见 [Android 启动与打包](docs/Android启动与打包.md)。
+
 ## 贡献代码
 
 本项目欢迎 PR，但为了 PR 能顺利合并，需要注意以下几点：

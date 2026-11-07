@@ -19,6 +19,7 @@ const identityScale = { px: size => size, sp: size => size }
 const defaults = {
   'react-native': native,
   '@/utils/pixelRatio': identityScale,
+  '@/utils/hooks/useWindowSize': () => ({ width: 1920, height: 1080 }),
   '@/store/theme/hook': { useTheme: () => theme },
   '@/lang': { useI18n: () => key => key },
   '@/components/common/Image': 'Image',
@@ -103,6 +104,125 @@ test('font preferences scale text but never button geometry', () => {
   const api = scaler(1920, 1080, 2, 1.2, 1.3)
   assert.equal(api.px(64), 32)
   assert.equal(api.sp(24), 13)
+})
+
+// ShallowRenderer omits effects. Run this hook's mount effect explicitly, retaining
+// React's real useState so a window notification must update the component
+// without renderer.render(), changed props, a clock tick or a simulated click.
+function responsiveComponent(file, props, mocks = {}) {
+  const scale = scaler(960, 540)
+  let size = { width: 960, height: 540 }
+  const listeners = new Set()
+  let mountEffect
+  const useWindowSize = load('src/utils/hooks/useWindowSize.ts', {
+    react: { ...React, useEffect: effect => { mountEffect ??= effect } },
+    '@/utils/windowSizeTools': { windowSizeTools: {
+      getSize: () => size,
+      onSizeChanged: listener => {
+        listeners.add(listener)
+        return () => listeners.delete(listener)
+      },
+    } },
+  }).default
+  const Component = load(file, {
+    ...mocks,
+    '@/utils/pixelRatio': scale,
+    '@/utils/hooks/useWindowSize': useWindowSize,
+  }).default
+  const renderer = new ShallowRenderer()
+  // This renderer incorrectly applies memo's prop bailout to local state updates.
+  // Unwrap memo here; React Native bypasses that bailout for hook state updates.
+  renderer.render(React.createElement(Component.type ?? Component, props))
+  return {
+    output: () => renderer.getRenderOutput(),
+    mount: () => mountEffect(),
+    listeners,
+    resize(width, height) {
+      size = { width, height }
+      scale.resize(width, height)
+      for (const listener of listeners) listener(size)
+    },
+  }
+}
+
+const railMocks = {
+  '@/navigation': { navigations: { pushPlayDetailScreen: noop }, popToRoot: noop },
+  '@/store/common/hook': { useNavActiveId: () => 'nav_search' },
+  '@/store/setting/hook': { useSettingValue: () => true },
+  '@/store/common/state': { componentIds: { home: 'home' } },
+  '@/store/player/state': { musicInfo: { id: 'track' } },
+  '@/core/common': { exitApp: noop, setNavActiveId: noop },
+  '@/utils/tools': { confirmDialog: noop, exitApp: noop },
+  './hooks': { useClock: () => '09:43' },
+}
+
+test('memoized car controls rescale on window changes without clicking or changing props', () => {
+  const cases = [
+    {
+      file: 'CarIcon', props: { name: 'lucide-search', size: 28, color: '#777' },
+      mocks: { '@/components/common/Icon': { Icon: 'Icon' } },
+      value: output => output.props.rawSize, designSize: 28,
+    },
+    {
+      file: 'CarText', props: { size: 22, children: '09:43' },
+      mocks: {
+        'react-native': { Text: 'Text', StyleSheet: { compose: (a, b) => [a, b] } },
+        '@/theme/fonts': { getFontStyle: () => ({}) },
+      },
+      value: output => flatStyle(output).fontSize, designSize: 22,
+    },
+    {
+      file: 'IconButton', props: { icon: 'lucide-search', size: 64 },
+      value: output => flatStyle(output).width, designSize: 64,
+    },
+    {
+      file: 'SegmentTabs', props: { compact: true, items: [{ id: 'song', label: '歌曲' }], activeId: 'song', onChange: noop },
+      value: output => output.props.style.padding, designSize: 5,
+    },
+    {
+      file: 'NavRail', props: {}, mocks: railMocks,
+      value: output => output.props.style.width, designSize: 112,
+    },
+  ]
+  for (const { file, props, mocks, value, designSize } of cases) {
+    const component = responsiveComponent(`src/components/car/${file}.tsx`, props, mocks)
+    assert.equal(value(component.output()), Math.round(designSize / 2), file)
+    const unmount = component.mount()
+    assert.equal(component.listeners.size, 1, `${file} subscribes to window changes`)
+    component.resize(1920, 1080)
+    assert.equal(value(component.output()), designSize, `${file} grows without interaction`)
+    component.resize(960, 540)
+    assert.equal(value(component.output()), Math.round(designSize / 2), `${file} shrinks without interaction`)
+    unmount()
+    assert.equal(component.listeners.size, 0, `${file} removes its listener`)
+  }
+})
+
+test('first layout correction between render and subscription is not lost', () => {
+  const icon = responsiveComponent('src/components/car/CarIcon.tsx', { name: 'lucide-heart', size: 28 }, {
+    '@/components/common/Icon': { Icon: 'Icon' },
+  })
+  assert.equal(icon.output().props.rawSize, 14)
+  icon.resize(1920, 1080)
+  assert.equal(icon.output().props.rawSize, 14, 'no listener has mounted yet')
+  const unmount = icon.mount()
+  assert.equal(icon.output().props.rawSize, 28, 'subscription catches up before any click')
+  unmount()
+})
+
+test('every rail icon and touch target keep the same size when selected', () => {
+  const NavRail = load('src/components/car/NavRail.tsx', railMocks).default
+  const rail = render(NavRail)
+  const buttons = children(rail).slice(1).flatMap(children)
+  assert.equal(buttons.length, 8, 'five tabs plus home, exit and settings')
+  for (const button of buttons) {
+    const idle = render(button.type, { ...button.props, active: false })
+    const active = render(button.type, { ...button.props, active: true })
+    assert.equal(idle.props.style.width, active.props.style.width)
+    assert.equal(idle.props.style.height, active.props.style.height)
+    assert.equal(children(idle)[0].props.size, children(active)[0].props.size)
+    assert.equal(children(idle)[0].props.size, button.props.iconSize)
+  }
 })
 
 test('icon layout, rounded rectangle radius and expanded hit area are independent', () => {

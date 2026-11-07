@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { TouchableOpacity, View } from 'react-native'
 import { useTheme } from '@/store/theme/hook'
 import { px } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
 import CarText from './CarText'
 
 export interface SegmentTabsProps<T extends string> {
@@ -13,6 +14,7 @@ export interface SegmentTabsProps<T extends string> {
 
 // 设计稿分段切换：玻璃底胶囊，内边距 5，选中段用浮层色
 const SegmentTabs = <T extends string>({ items, activeId, compact = false, onChange }: SegmentTabsProps<T>) => {
+  useWindowSize()
   const theme = useTheme()
   return (
     <View style={{ flexDirection: 'row', gap: px(4), padding: px(5), borderRadius: 999, backgroundColor: theme.glass, alignSelf: 'flex-start' }}>

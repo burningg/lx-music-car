@@ -92,7 +92,7 @@ const Component = <S extends Sources>({ fontSize = 15, center, variant = 'text',
       menus={sourceList_t}
       center={center}
       onPress={handleChangeSource}
-      fontSize={fontSize}
+      fontSize={20}
       activeId={source}
     >
       {button}

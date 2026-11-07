@@ -1,6 +1,7 @@
 import { forwardRef, memo } from 'react'
 import { TouchableOpacity, type ColorValue, type StyleProp, type ViewStyle } from 'react-native'
 import { px } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
 import CarIcon from './CarIcon'
 
 export interface IconButtonProps {
@@ -23,6 +24,7 @@ export interface IconButtonProps {
 }
 
 export default memo(forwardRef<TouchableOpacity, IconButtonProps>(({ icon, iconSize = 28, size = 64, radius = size / 2, touchSize = 64, color, background, disabled, style, onPress, onLongPress }, ref) => {
+  useWindowSize()
   const boxSize = px(size)
   const inset = Math.max(0, (px(touchSize) - boxSize) / 2)
   return (

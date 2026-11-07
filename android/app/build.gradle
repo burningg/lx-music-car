@@ -25,7 +25,8 @@ react {
     //   The list of variants to that are debuggable. For those we're going to
     //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
     //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
-    // debuggableVariants = ["liteDebug", "prodDebug"]
+    // Only debug uses Metro. standalone/release must bundle JS and assets at build time.
+    debuggableVariants = ["debug"]
 
     /* Bundling */
     //   A list containing the node command and its flags. Default is just 'node'.
@@ -134,13 +135,16 @@ android {
                 keyPassword MYAPP_UPLOAD_KEY_PASSWORD
             } else {
                 def keystorePropertiesFile = rootProject.file("keystore.properties")
-                def keystoreProperties = new Properties()
-                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+                // Local debug/standalone builds do not require a private release keystore.
+                if (keystorePropertiesFile.exists()) {
+                    def keystoreProperties = new Properties()
+                    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 
-                storeFile file(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
+                    storeFile file(keystoreProperties['storeFile'])
+                    storePassword keystoreProperties['storePassword']
+                    keyAlias keystoreProperties['keyAlias']
+                    keyPassword keystoreProperties['keyPassword']
+                }
             }
         }
         debug {
@@ -163,9 +167,19 @@ android {
 
             signingConfig signingConfigs.release
         }
+        standalone {
+            // Production JS/runtime, but the local debug key allows an in-place update
+            // of a debug install without deleting its playlists or custom sources.
+            initWith release
+            matchingFallbacks = ["release"]
+            debuggable false
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
+        }
     }
 
-    // applicationVariants are e.g. debug, release
+    // applicationVariants are e.g. debug, standalone, release
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
             // For each separate APK per architecture, set a unique version code as described here:
@@ -173,14 +187,15 @@ android {
             // Example: versionCode 1 will generate 1001 for armeabi-v7a, 1002 for x86, etc.
             def versionCodes = ["armeabi-v7a": 1, "x86": 2, "arm64-v8a": 3, "x86_64": 4]
             def abi = output.getFilter(OutputFile.ABI)
+            def variantSuffix = variant.buildType.name == "standalone" ? "-standalone" : ""
             if (abi == null) {  // null for the universal-debug, universal-release variants
                 output.outputFileName =
-                        "${applicationName}-v${defaultConfig.versionName}-universal.apk"
+                        "${applicationName}-v${defaultConfig.versionName}-universal${variantSuffix}.apk"
             } else {
                 output.versionCodeOverride =
                         defaultConfig.versionCode * 1000 + versionCodes.get(abi)
                 output.outputFileName =
-                        "${applicationName}-v${defaultConfig.versionName}-${abi}.apk"
+                        "${applicationName}-v${defaultConfig.versionName}-${abi}${variantSuffix}.apk"
             }
 
         }

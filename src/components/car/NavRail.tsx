@@ -10,6 +10,7 @@ import { exitApp, setNavActiveId } from '@/core/common'
 import { confirmDialog, exitApp as backHome } from '@/utils/tools'
 import { type NAV_ID_Type } from '@/config/constant'
 import { px } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
 import CarText from './CarText'
 import CarIcon from './CarIcon'
 import { useClock } from './hooks'
@@ -74,6 +75,7 @@ const RailButton = ({ icon, active, size, radius, iconSize, idleBackground, onPr
 
 // 设计稿 Nav Rail：宽 112，上下内边距 28，顶部时间，中部 5 个 64×64 导航，底部 56×56 设置
 export default memo(({ componentId, activeId }: NavRailProps) => {
+  useWindowSize()
   const theme = useTheme()
   const time = useClock()
   const navActiveId = useNavActiveId()

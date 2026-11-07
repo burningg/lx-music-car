@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { Text, StyleSheet, type TextProps, type ColorValue } from 'react-native'
 import { useTheme } from '@/store/theme/hook'
 import { sp } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
 import { getFontStyle, type FontWeight } from '@/theme/fonts'
 
 export interface CarTextProps extends TextProps {
@@ -16,6 +17,7 @@ export interface CarTextProps extends TextProps {
 }
 
 export default memo(({ size = 19, weight = '400', color, num = false, lineHeight, style, children, ...props }: CarTextProps) => {
+  useWindowSize()
   const theme = useTheme()
   const fontSize = sp(size)
 
