@@ -66,3 +66,6 @@ buck-out/
 
 # testing
 /coverage
+
+# Pinned offline STT binaries, fetched and SHA-256 checked by prepare-offline-stt.cjs
+/android/.stt/

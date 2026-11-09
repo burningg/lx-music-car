@@ -7,6 +7,7 @@ import { CarIcon, IconButton } from '@/components/car'
 import { px, sp } from '@/utils/pixelRatio'
 
 export interface SearchInputProps {
+  onEdit?: () => void
   onLayout?: ViewProps['onLayout']
   onChangeText: (text: string) => void
   onSubmit: (text: string) => void
@@ -21,7 +22,7 @@ export interface SearchInputType {
 }
 
 // 设计稿搜索框：高 64 胶囊，左侧搜索图标，右侧 36 圆形清除键
-export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, onSubmit, onBlur, onTouchStart, onLayout }, ref) => {
+export default forwardRef<SearchInputType, SearchInputProps>(({ onEdit, onChangeText, onSubmit, onBlur, onTouchStart, onLayout }, ref) => {
   const theme = useTheme()
   const t = useI18n()
   const [text, setText] = useState('')
@@ -40,19 +41,22 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, on
   }))
 
   const handleChangeText = (text: string) => {
+    onEdit?.()
     setText(text)
     onChangeText(text.trim())
   }
 
   const handleClearText = useCallback(() => {
+    onEdit?.()
     setText('')
     onChangeText('')
     onSubmit('')
-  }, [onChangeText, onSubmit])
+  }, [onEdit, onChangeText, onSubmit])
 
   const handleSubmit = useCallback<NonNullable<InputProps['onSubmitEditing']>>(({ nativeEvent: { text } }) => {
+    onEdit?.()
     onSubmit(text)
-  }, [onSubmit])
+  }, [onEdit, onSubmit])
 
   return (
     <View onLayout={onLayout} style={{
@@ -79,7 +83,10 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, on
         selectionColor={theme.accent}
         onChangeText={handleChangeText}
         onBlur={onBlur}
-        onFocus={onTouchStart}
+        onFocus={() => {
+          onEdit?.()
+          onTouchStart()
+        }}
         onSubmitEditing={handleSubmit}
         onTouchStart={onTouchStart}
       />

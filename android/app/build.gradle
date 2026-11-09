@@ -103,7 +103,39 @@ def verCode = npmPackageJson["versionCode"]
 def verName = npmPackageJson["version"]
 def applicationName = npmPackageJson["name"]
 
+// Keep binaries out of Git; prepare once at build time, with locked hashes and no runtime downloads.
+def sttRoot = file("$rootDir/.stt")
+def prepareOfflineStt = tasks.register("prepareOfflineStt", Exec) {
+    workingDir rootProject.projectDir.parentFile
+    commandLine "node", "scripts/prepare-offline-stt.cjs"
+    // Always hash-check cached files; downloads only occur when missing/corrupt.
+}
+def prepareOfflineSttTests = tasks.register("prepareOfflineSttTests", Exec) {
+    dependsOn prepareOfflineStt
+    workingDir rootProject.projectDir.parentFile
+    commandLine "node", "scripts/prepare-offline-stt.cjs", "--tests"
+}
+tasks.named("preBuild").configure { dependsOn prepareOfflineStt }
+tasks.configureEach { task ->
+    if (task.name.startsWith("configureCMake") || task.name.startsWith("buildCMake")) {
+        task.dependsOn prepareOfflineStt
+    }
+    if (task.name.startsWith("merge") && task.name.endsWith("AndroidTestAssets")) {
+        task.dependsOn prepareOfflineSttTests
+    }
+}
+
 android {
+    externalNativeBuild {
+        cmake { path "src/main/cpp/CMakeLists.txt"; version "3.22.1" }
+    }
+    sourceSets {
+        main.assets.srcDir "$sttRoot/assets"
+        main.assets.srcDir "../../third_party"
+        androidTest.assets.srcDir "$sttRoot/test-assets"
+    }
+    // Read model bytes directly from APK assets; avoid extraction/duplicate private storage.
+    androidResources { noCompress += ["onnx"] }
     ndkVersion rootProject.ext.ndkVersion
 
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -111,7 +143,15 @@ android {
 
     namespace "cn.toside.music.mobile"
     defaultConfig {
+        ndk { abiFilters(*reactNativeArchitectures()) }
+        externalNativeBuild {
+            cmake {
+                targets "sherpa-onnx-jni"
+                arguments "-DANDROID_STL=c++_static"
+            }
+        }
         applicationId "cn.toside.music.mobile"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode verCode
@@ -203,6 +243,8 @@ android {
 }
 
 dependencies {
+    androidTestImplementation "androidx.test:runner:1.4.0"
+    androidTestImplementation "androidx.test.ext:junit:1.1.3"
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
     implementation("com.facebook.react:flipper-integration")

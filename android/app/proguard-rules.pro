@@ -24,3 +24,6 @@
   **[] $VALUES;
   public *;
 }
+
+# JNI accesses sherpa config fields and class names via reflection.
+-keep class com.k2fsa.sherpa.onnx.** { *; }

@@ -1,5 +1,5 @@
 import { forwardRef, memo } from 'react'
-import { TouchableOpacity, type ColorValue, type StyleProp, type ViewStyle } from 'react-native'
+import { TouchableOpacity, type AccessibilityState, type ColorValue, type StyleProp, type ViewStyle } from 'react-native'
 import { px } from '@/utils/pixelRatio'
 import useWindowSize from '@/utils/hooks/useWindowSize'
 import CarIcon from './CarIcon'
@@ -18,12 +18,14 @@ export interface IconButtonProps {
   /** 圆形底色 */
   background?: ColorValue
   disabled?: boolean
+  accessibilityLabel?: string
+  accessibilityState?: AccessibilityState
   style?: StyleProp<ViewStyle>
   onPress?: () => void
   onLongPress?: () => void
 }
 
-export default memo(forwardRef<TouchableOpacity, IconButtonProps>(({ icon, iconSize = 28, size = 64, radius = size / 2, touchSize = 64, color, background, disabled, style, onPress, onLongPress }, ref) => {
+export default memo(forwardRef<TouchableOpacity, IconButtonProps>(({ icon, iconSize = 28, size = 64, radius = size / 2, touchSize = 64, color, background, disabled, accessibilityLabel, accessibilityState, style, onPress, onLongPress }, ref) => {
   useWindowSize()
   const boxSize = px(size)
   const inset = Math.max(0, (px(touchSize) - boxSize) / 2)
@@ -32,6 +34,8 @@ export default memo(forwardRef<TouchableOpacity, IconButtonProps>(({ icon, iconS
       ref={ref}
       activeOpacity={0.6}
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled, ...accessibilityState }}
       hitSlop={{ top: inset, bottom: inset, left: inset, right: inset }}
       disabled={disabled}
       onPress={onPress}

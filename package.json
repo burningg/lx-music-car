@@ -4,6 +4,7 @@
   "versionCode": 79,
   "private": true,
   "scripts": {
+    "prepare:stt": "node scripts/prepare-offline-stt.cjs",
     "android": "react-native run-android --mode standalone --no-packager --active-arch-only",
     "dev": "react-native run-android --active-arch-only",
     "ios": "react-native run-ios",
