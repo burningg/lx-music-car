@@ -8,11 +8,11 @@ import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicLong
 
 /** One model per foreground session. The model is mmap'ed from a verified private file. */
-internal class WetypeEngine(context: Context, cancelled: () -> Boolean = { false }) {
+internal class OfflineSttEngine(context: Context, cancelled: () -> Boolean = { false }) {
     companion object {
         const val SAMPLE_RATE = 16000
         const val MAX_SAMPLES = SAMPLE_RATE * 20
-        const val MODEL_DIR = "stt/wetype"
+        const val MODEL_DIR = "stt/offline-stt"
         private data class Asset(val name: String, val size: Long, val sha256: String)
         private val modelFiles = arrayOf(
             Asset("model.xnet", 135646496, "0674250a848ce3eb91024b3c0a6eda61b91ea45b2c40e4900130995e89cb9033"),
@@ -45,7 +45,7 @@ internal class WetypeEngine(context: Context, cancelled: () -> Boolean = { false
         @Synchronized
         private fun prepare(context: Context, cancelled: () -> Boolean): File {
             // Only this version's files are loaded. No SD card/imported/untrusted models.
-            val dir = File(context.noBackupFilesDir, "wetype-20260710")
+            val dir = File(context.noBackupFilesDir, "offline-stt-20260710")
             if (!dir.isDirectory && !dir.mkdirs()) throw ModelException("Cannot create model directory")
             for (asset in modelFiles) {
                 checkCancelled(cancelled)
@@ -81,7 +81,7 @@ internal class WetypeEngine(context: Context, cancelled: () -> Boolean = { false
         try {
             val dir = prepare(context, cancelled)
             checkCancelled(cancelled)
-            val nativeHandle = WetypeNative.create(dir.absolutePath)
+            val nativeHandle = OfflineSttNative.create(dir.absolutePath)
             if (nativeHandle == 0L) throw ModelException("Native model initialization failed")
             handle.set(nativeHandle)
         } catch (error: CancellationException) {
@@ -103,15 +103,15 @@ internal class WetypeEngine(context: Context, cancelled: () -> Boolean = { false
     fun finish(): String {
         val id = handle.get()
         if (id == 0L || !endpoint.heardSpeech) return ""
-        return WetypeNative.recognize(id, pcm.copyOf(count)).trim()
+        return OfflineSttNative.recognize(id, pcm.copyOf(count)).trim()
     }
 
     // May run on the main thread while native decode is in progress; never waits for inference.
-    fun cancel() { handle.get().takeIf { it != 0L }?.let { WetypeNative.cancel(it) } }
+    fun cancel() { handle.get().takeIf { it != 0L }?.let { OfflineSttNative.cancel(it) } }
 
     // Only called by the worker after decode returns, so PCM cannot race the writer.
     fun release() {
-        handle.getAndSet(0).takeIf { it != 0L }?.let { WetypeNative.release(it) }
+        handle.getAndSet(0).takeIf { it != 0L }?.let { OfflineSttNative.release(it) }
         pcm.fill(0)
     }
 

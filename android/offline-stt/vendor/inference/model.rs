@@ -164,7 +164,7 @@ impl Model {
                 .min(2);
             rayon::ThreadPoolBuilder::new()
                 .num_threads(n)
-                .thread_name(|i| format!("wtlocal-{i}"))
+                .thread_name(|i| format!("offline-stt-{i}"))
                 .build()
                 .unwrap()
         });

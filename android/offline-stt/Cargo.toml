@@ -1,12 +1,12 @@
 [package]
-name = "lx-wetype"
+name = "lx-offline-stt"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.95"
 publish = false
 
 [lib]
-name = "lx_wetype"
+name = "lx_offline_stt"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]

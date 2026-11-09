@@ -1,11 +1,11 @@
-# 搜索页离线语音输入：微信离线（WeType）
+# 搜索页离线语音输入
 
 ## 状态与授权
 
-已从 Zipformer/sherpa-onnx 切换为微信输入法 XNet 模型 + VoiceKey 衍生的精简 Rust 推理。
-此次为本地集成验证；VoiceKey 相关源码及腾讯模型的使用、分发许可尚未确认。
+当前使用内置 XNet 模型与精简 Rust 推理引擎，完全在设备本地完成语音识别。
+此次为本地集成验证；第三方推理源码及模型的使用、分发许可尚未确认。
 **本项目的 Apache-2.0 不能为这些第三方组件补充授权；对外发布前必须确认许可。**
-来源、改动与依赖说明见 `third_party/wetype/NOTICE.md`。
+来源、改动与依赖说明见 `third_party/offline-stt/NOTICE.md`。
 
 ## 使用与交互
 
@@ -22,18 +22,18 @@
 
 | 项目 | 内容 |
 | --- | --- |
-| 模型包版本 | `20260710220526250`，腾讯 CDN |
+| 模型包版本 | `20260710220526250`，构建时下载并校验 |
 | 构建时下载包 | 102,920,639 字节（约 98.15 MiB） |
 | APK 模型 `model.xnet` | 135,646,496 字节 |
 | APK 词表 `dict.decoder.utf8.txt` | 129,706 字节 |
 | 模型文件合计 | **135,776,202 字节（约 129.49 MiB / 135.78 MB）** |
 | 推理 | 40 层 Transformer、INT8、CTC，最多 2 个 CPU 推理线程 |
-| 原生库 | 自编译 `liblx_wetype.so`；不含 sherpa、ONNX Runtime 或 VoiceKey 云端引擎 |
+| 原生库 | 自编译 `liblx_offline_stt.so`；不含 sherpa、ONNX Runtime 或云端引擎 |
 
-XNet 按原始权重使用，未训练或改量化。模型首次使用复制到应用 `noBackupFilesDir/wetype-20260710/` 以供 mmap，后续每次加载校验 SHA-256；损坏时从 APK 修复。
+XNet 按原始权重使用，未训练或改量化。模型首次使用复制到应用 `noBackupFilesDir/offline-stt-20260710/` 以供 mmap，后续每次加载校验 SHA-256；损坏时从 APK 修复。
 因此除 APK 本身外还需约 **136 MB 私有存储**，修复模型时另需临时文件空间。模型、音频和原生句柄每次会话结束释放，两个计算线程可保留，但不缓存模型。
 
-ARM64 先检查 `dotprod` 再运行 SDOT，不支持时走通用回退；x86_64 先检查 AVX2。保留 Android API 21 和四种 ABI 的构建目标，不照搬 VoiceKey 的 API 26/ARM64 限制。旧芯片回退后的速度尚需实测。
+ARM64 先检查 `dotprod` 再运行 SDOT，不支持时走通用回退；x86_64 先检查 AVX2。保留 Android API 21 和四种 ABI 的构建目标。旧芯片回退后的速度尚需实测。
 
 ## 构建
 
@@ -56,7 +56,7 @@ npm run pack:android:standalone
 node scripts/prepare-offline-stt.cjs --verify
 ```
 
-- 模型、构建产物位于 `android/.stt/wetype/`，不提交二进制。旧 `android/.stt/` 中的 Zipformer 缓存不会进入新 APK，可自行清理旧缓存。
+- 模型、构建产物位于 `android/.stt/offline-stt/`，不提交二进制。旧缓存不会进入新 APK，可自行清理不再使用的缓存目录。
 - 推理源码在 `android/offline-stt/`；Cargo.lock 固定依赖，构建使用 `--locked`，NDK 以 API 21 链接并设置 16 KiB ELF 页对齐。
 - 构建时仅解出两个白名单模型文件，包和文件均 SHA-256 校验；失败则终止构建。
 - 新原生库与模型必须重建安装 APK，不能仅 Metro 热更新。
@@ -66,17 +66,17 @@ node scripts/prepare-offline-stt.cjs --verify
 
 ```sh
 node --test scripts/*.test.cjs
-cargo test --manifest-path android/offline-stt/Cargo.toml --target-dir android/.stt/wetype/target
+cargo test --manifest-path android/offline-stt/Cargo.toml --target-dir android/.stt/offline-stt/target
 
 # 真实模型的主机推理、静音、超长拒绝、解码中取消
 node scripts/prepare-offline-stt.cjs --tests
-cargo test --release --manifest-path android/offline-stt/Cargo.toml --target-dir android/.stt/wetype/target --test model -- --ignored --nocapture
+cargo test --release --manifest-path android/offline-stt/Cargo.toml --target-dir android/.stt/offline-stt/target --test model -- --ignored --nocapture
 
 # Android 原生集成测试（包含测试音频，不使用麦克风）
 node scripts/gradle.cjs :app:assembleStandalone :app:assembleDebugAndroidTest -PreactNativeArchitectures=arm64-v8a
 adb install -r android/app/build/outputs/apk/standalone/lx-music-car-v1.9.2-arm64-v8a-standalone.apk
 adb install -r android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-adb shell am instrument -w -e class cn.toside.music.car.speech.WetypeEngineTest cn.toside.music.car.test/androidx.test.runner.AndroidJUnitRunner
+adb shell am instrument -w -e class cn.toside.music.car.speech.OfflineSttEngineTest cn.toside.music.car.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
 测试覆盖真实模型中英混合文字、句尾、静音、取消、能量端点、20 秒录音限制、缓存损坏修复、加载/录音/解码 UI 状态，以及现有搜索交互回归。

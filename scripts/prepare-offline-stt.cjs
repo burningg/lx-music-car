@@ -7,7 +7,7 @@ const { Readable } = require('node:stream')
 const { pipeline } = require('node:stream/promises')
 const path = require('node:path')
 const manifest = require('./offline-stt-assets.json')
-const root = path.resolve(__dirname, '../android/.stt/wetype')
+const root = path.resolve(__dirname, '../android/.stt/offline-stt')
 
 async function matches(file, artifact) {
   try {
@@ -51,7 +51,7 @@ async function prepare(artifact, verifyOnly) {
 async function installModel(verifyOnly) {
   const valid = await Promise.all(manifest.files.map(file => matches(path.join(root, file.path), file)))
   if (!valid.every(Boolean)) {
-    if (verifyOnly) throw new Error('Missing or corrupt WeType model. Run npm run prepare:stt.')
+    if (verifyOnly) throw new Error('Missing or corrupt offline speech model. Run npm run prepare:stt.')
     await prepare(manifest.package, false)
     const directory = await mkdtemp(path.join(root, 'downloads/extract-'))
     const jar = process.env.JAVA_HOME ? path.join(process.env.JAVA_HOME, 'bin', process.platform === 'win32' ? 'jar.exe' : 'jar') : 'jar'
@@ -91,7 +91,7 @@ async function main() {
   if (process.argv.includes('--tests')) {
     for (const artifact of manifest.testFiles) await prepare(artifact, verifyOnly)
   }
-  console.log('WeType offline model verified (XNet + dictionary; no ONNX runtime or cloud engines).')
+  console.log('Offline speech model verified (XNet + dictionary; no ONNX runtime or cloud engines).')
 }
 
 if (require.main === module) main().catch(error => { console.error(error.message); process.exitCode = 1 })

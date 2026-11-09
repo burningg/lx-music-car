@@ -12,14 +12,14 @@ import java.util.concurrent.CancellationException
 
 /** Real bundled XNet inference through the production Kotlin/JNI path, no microphone or network. */
 @RunWith(AndroidJUnit4::class)
-class WetypeEngineTest {
+class OfflineSttEngineTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
 
     @Test
     fun testBundledChineseEnglishModelDecodesOffline() {
         val started = System.nanoTime()
-        assertTrue(WetypeEngine.assetsAvailable(instrumentation.targetContext.assets))
-        val engine = WetypeEngine(instrumentation.targetContext)
+        assertTrue(OfflineSttEngine.assetsAvailable(instrumentation.targetContext.assets))
+        val engine = OfflineSttEngine(instrumentation.targetContext)
         try {
             val samples = readPcmWav("stt/0.wav")
             for (offset in samples.indices step 1280) {
@@ -28,7 +28,7 @@ class WetypeEngineTest {
             }
             val decodeStarted = System.nanoTime()
             val text = engine.finish()
-            Log.i("WetypeTest", "Offline fixture: $text; decode ${(System.nanoTime() - decodeStarted) / 1e9}s; total ${(System.nanoTime() - started) / 1e9}s")
+            Log.i("OfflineSttTest", "Offline fixture: $text; decode ${(System.nanoTime() - decodeStarted) / 1e9}s; total ${(System.nanoTime() - started) / 1e9}s")
             assertTrue("Expected Chinese, got: $text", text.contains("昨天"))
             assertTrue("Expected English, got: $text", text.contains("monday", ignoreCase = true))
             assertTrue("Final words must not be dropped: $text", text.contains("星期三"))
@@ -38,7 +38,7 @@ class WetypeEngineTest {
 
     @Test
     fun testSilenceDoesNotHallucinate() {
-        val engine = WetypeEngine(instrumentation.targetContext)
+        val engine = OfflineSttEngine(instrumentation.targetContext)
         try {
             repeat(75) { engine.accept(ShortArray(1280), 1280) }
             assertTrue(engine.isEndpoint())
@@ -49,7 +49,7 @@ class WetypeEngineTest {
 
     @Test
     fun testCancelledSessionNeverReturnsText() {
-        val engine = WetypeEngine(instrumentation.targetContext)
+        val engine = OfflineSttEngine(instrumentation.targetContext)
         try {
             val pcm = readPcmWav("stt/0.wav")
             engine.accept(pcm, pcm.size)
@@ -57,7 +57,7 @@ class WetypeEngineTest {
             assertEquals("", engine.finish())
         } finally { engine.release() }
         try {
-            WetypeEngine(instrumentation.targetContext) { true }
+            OfflineSttEngine(instrumentation.targetContext) { true }
             fail("Cancelled initialization must not create a native handle")
         } catch (_: CancellationException) { }
     }
@@ -89,12 +89,12 @@ class WetypeEngineTest {
 
     @Test
     fun testCorruptPrivateModelIsRepaired() {
-        val dir = java.io.File(instrumentation.targetContext.noBackupFilesDir, "wetype-20260710")
+        val dir = java.io.File(instrumentation.targetContext.noBackupFilesDir, "offline-stt-20260710")
         dir.mkdirs()
         val vocab = java.io.File(dir, "dict.decoder.utf8.txt")
         // Same length: verification must check SHA-256, not just file length/existence.
         vocab.writeBytes(ByteArray(129706))
-        val engine = WetypeEngine(instrumentation.targetContext)
+        val engine = OfflineSttEngine(instrumentation.targetContext)
         engine.release()
         assertFalse(vocab.readBytes().all { it == 0.toByte() })
     }

@@ -16,7 +16,7 @@ runs:
         java-version: '17'
         cache: gradle
 
-    - name: Setup Rust for offline WeType JNI
+    - name: Setup Rust for offline speech JNI
       shell: bash
       run: |
         rustup toolchain install 1.95.0 --profile minimal

@@ -1,12 +1,12 @@
 //! Offline-only, bounded utterance recognition. No cloud engines, downloads or global model cache.
 mod bridge;
-#[path = "../vendor/wtlocal/fbank.rs"]
+#[path = "../vendor/inference/fbank.rs"]
 mod fbank;
-#[path = "../vendor/wtlocal/kernels.rs"]
+#[path = "../vendor/inference/kernels.rs"]
 mod kernels;
-#[path = "../vendor/wtlocal/model.rs"]
+#[path = "../vendor/inference/model.rs"]
 mod model;
-#[path = "../vendor/wtlocal/xnet.rs"]
+#[path = "../vendor/inference/xnet.rs"]
 mod xnet;
 
 use anyhow::{bail, Result};

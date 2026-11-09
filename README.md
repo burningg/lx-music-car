@@ -18,10 +18,10 @@
 
 ## 本地运行
 
-安装依赖并连接 Android 设备后，运行 `npm run android`；独立 APK 打包使用 `npm run pack:android:standalone`。微信离线语音构建还需要 Rust 和 Android 编译目标，见 [离线语音输入](docs/Android语音输入.md)。详见 [Android 启动与打包](docs/Android启动与打包.md)。
+安装依赖并连接 Android 设备后，运行 `npm run android`；独立 APK 打包使用 `npm run pack:android:standalone`。离线语音构建还需要 Rust 和 Android 编译目标，见 [离线语音输入](docs/Android语音输入.md)。详见 [Android 启动与打包](docs/Android启动与打包.md)。
 
 ## 致谢与协议
 
 感谢 [LX Music Mobile](https://github.com/lyswhut/lx-music-mobile) 提供开源基础。本项目遵循 [Apache-2.0](LICENSE) 及[原项目补充协议](docs/使用协议.md)。请尊重音乐版权，支持正版。
 
-**微信离线组件授权提示**：新增的 VoiceKey 推理源码及腾讯模型不因本项目的 Apache-2.0 声明而获得授权。当前接入用于本地验证，对外分发前必须确认代码、模型的使用及分发许可，见 [第三方说明](third_party/wetype/NOTICE.md)。
+**离线语音组件授权提示**：新增的第三方推理源码及模型不因本项目的 Apache-2.0 声明而获得授权。当前接入用于本地验证，对外分发前必须确认代码、模型的使用及分发许可，见 [第三方说明](third_party/offline-stt/NOTICE.md)。

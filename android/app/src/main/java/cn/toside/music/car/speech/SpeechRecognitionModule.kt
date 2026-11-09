@@ -31,7 +31,7 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
     // Worker-thread-owned; released after each session to avoid retaining model RAM in the player.
     private class Session(val promise: Promise) {
         val cancelled = AtomicBoolean(false)
-        @Volatile var engine: WetypeEngine? = null
+        @Volatile var engine: OfflineSttEngine? = null
         var recorder: AudioRecord? = null // Guarded by synchronized(session).
         var watchdog: Runnable? = null
     }
@@ -41,7 +41,7 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
 
     @ReactMethod
     fun isAvailable(promise: Promise) {
-        main.post { promise.resolve(!invalidated && WetypeEngine.assetsAvailable(context.assets)) }
+        main.post { promise.resolve(!invalidated && OfflineSttEngine.assetsAvailable(context.assets)) }
     }
 
     // Required by NativeEventEmitter; no upstream subscription exists outside a recording session.
@@ -57,8 +57,8 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
                 promise.reject("E_BUSY", "Voice input is already running")
             } else if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                 promise.reject("E_PERMISSION", "Microphone permission is required")
-            } else if (!WetypeEngine.assetsAvailable(context.assets)) {
-                promise.reject("E_UNAVAILABLE", "Bundled WeType model is missing")
+            } else if (!OfflineSttEngine.assetsAvailable(context.assets)) {
+                promise.reject("E_UNAVAILABLE", "Bundled offline speech model is missing")
             } else {
                 // The bundled model auto-detects Chinese/English; the app locale does not select a server.
                 val session = Session(promise)
@@ -85,24 +85,24 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
     }
 
     private fun recognize(session: Session) {
-        var engine: WetypeEngine? = null
+        var engine: OfflineSttEngine? = null
         var text = ""
         var errorCode: String? = null
         try {
             if (session.cancelled.get()) return
-            engine = WetypeEngine(context, session.cancelled::get)
+            engine = OfflineSttEngine(context, session.cancelled::get)
             session.engine = engine
             if (session.cancelled.get()) return
             val minBuffer = AudioRecord.getMinBufferSize(
-                WetypeEngine.SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
+                OfflineSttEngine.SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
             )
             if (minBuffer <= 0) throw AudioException()
             synchronized(session) {
                 if (session.cancelled.get()) return
                 val recorder = AudioRecord(
-                    MediaRecorder.AudioSource.VOICE_RECOGNITION, WetypeEngine.SAMPLE_RATE,
+                    MediaRecorder.AudioSource.VOICE_RECOGNITION, OfflineSttEngine.SAMPLE_RATE,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
-                    maxOf(minBuffer * 2, WetypeEngine.SAMPLE_RATE * 2),
+                    maxOf(minBuffer * 2, OfflineSttEngine.SAMPLE_RATE * 2),
                 )
                 session.recorder = recorder
                 if (recorder.state != AudioRecord.STATE_INITIALIZED) throw AudioException()
@@ -114,9 +114,9 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
             val pcm = ShortArray(1280) // 80 ms of mono 16 kHz PCM, compatible with Android 5+.
             val started = SystemClock.elapsedRealtime()
             var samplesRead = 0
-            while (!session.cancelled.get() && samplesRead < WetypeEngine.SAMPLE_RATE * 20 &&
+            while (!session.cancelled.get() && samplesRead < OfflineSttEngine.SAMPLE_RATE * 20 &&
                 SystemClock.elapsedRealtime() - started < 20000) {
-                val count = recorder.read(pcm, 0, minOf(pcm.size, WetypeEngine.MAX_SAMPLES - samplesRead))
+                val count = recorder.read(pcm, 0, minOf(pcm.size, OfflineSttEngine.MAX_SAMPLES - samplesRead))
                 if (session.cancelled.get()) break
                 if (count < 0) throw AudioException()
                 if (count == 0) { Thread.sleep(10); continue }
@@ -130,7 +130,7 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
                 text = engine.finish()
                 if (text.isBlank()) errorCode = "E_NO_MATCH"
             }
-        } catch (_: WetypeEngine.ModelException) {
+        } catch (_: OfflineSttEngine.ModelException) {
             errorCode = "E_MODEL"
         } catch (_: SecurityException) {
             errorCode = "E_PERMISSION"

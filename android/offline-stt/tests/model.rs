@@ -1,4 +1,4 @@
-use lx_wetype::{load_model, recognize, MAX_SAMPLES};
+use lx_offline_stt::{load_model, recognize, MAX_SAMPLES};
 use std::{path::PathBuf, sync::atomic::AtomicBool, time::Instant};
 
 // Explicit opt-in: normal unit tests remain small and never download a model.
@@ -7,15 +7,15 @@ use std::{path::PathBuf, sync::atomic::AtomicBool, time::Instant};
 #[test]
 #[ignore = "requires the pinned local model and WAV fixtures"]
 fn real_model_offline_recognition() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.stt/wetype");
-    let model = load_model(&root.join("assets/stt/wetype")).unwrap();
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.stt/offline-stt");
+    let model = load_model(&root.join("assets/stt/offline-stt")).unwrap();
     let mut wav = hound::WavReader::open(root.join("test-assets/stt/0.wav")).unwrap();
     assert_eq!(wav.spec().sample_rate, 16000);
     assert_eq!(wav.spec().channels, 1);
     let pcm: Vec<i16> = wav.samples::<i16>().map(Result::unwrap).collect();
     let started = Instant::now();
     let text = recognize(&model, &pcm, &AtomicBool::new(false)).unwrap();
-    eprintln!("WeType fixture: {text}; {:?}", started.elapsed());
+    eprintln!("Offline STT fixture: {text}; {:?}", started.elapsed());
     assert!(text.contains("昨天"), "{text}");
     assert!(text.to_lowercase().contains("monday"), "{text}");
     assert!(text.contains("星期三"), "{text}");

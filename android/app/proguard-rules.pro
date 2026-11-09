@@ -26,4 +26,4 @@
 }
 
 # Exported JNI symbols contain this class and method names.
--keep class cn.toside.music.car.speech.WetypeNative { *; }
+-keep class cn.toside.music.car.speech.OfflineSttNative { *; }

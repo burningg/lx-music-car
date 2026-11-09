@@ -104,7 +104,7 @@ def verName = npmPackageJson["version"]
 def applicationName = npmPackageJson["name"]
 
 // Keep binaries out of Git; prepare once at build time, with locked hashes and no runtime downloads.
-def sttRoot = file("$rootDir/.stt/wetype")
+def sttRoot = file("$rootDir/.stt/offline-stt")
 def prepareOfflineStt = tasks.register("prepareOfflineStt", Exec) {
     workingDir rootProject.projectDir.parentFile
     commandLine "node", "scripts/prepare-offline-stt.cjs"

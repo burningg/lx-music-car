@@ -1,6 +1,6 @@
 # Rust dependency notices
 
-Includes runtime, build/proc-macro, test and target-specific packages in Cargo.lock. This list does not license VoiceKey or the Tencent model.
+Includes runtime, build/proc-macro, test and target-specific packages in Cargo.lock. This list does not license the upstream inference source or speech model.
 
 | Package | Version | Declared license |
 | --- | --- | --- |

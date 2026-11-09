@@ -18,7 +18,7 @@ function main() {
   const host = { darwin: 'darwin-x86_64', linux: 'linux-x86_64', win32: 'windows-x86_64' }[process.platform]
   if (!host) throw new Error(`Unsupported build host: ${process.platform}`)
   const bin = path.join(ndk, 'toolchains/llvm/prebuilt', host, 'bin')
-  const cache = path.join(root, 'android/.stt/wetype')
+  const cache = path.join(root, 'android/.stt/offline-stt')
   const libs = path.join(cache, 'jniLibs')
   const targetDir = path.join(cache, 'target')
   mkdirSync(libs, { recursive: true })
@@ -37,7 +37,7 @@ function main() {
     })
     if (result.error || result.status !== 0) throw new Error(`Rust build failed for ${abi}. Install Rust and run: rustup target add ${target}. ${result.error?.message ?? ''}`)
     mkdirSync(path.join(libs, abi), { recursive: true })
-    copyFileSync(path.join(targetDir, target, 'release/liblx_wetype.so'), path.join(libs, abi, 'liblx_wetype.so'))
+    copyFileSync(path.join(targetDir, target, 'release/liblx_offline_stt.so'), path.join(libs, abi, 'liblx_offline_stt.so'))
   }
 }
 if (require.main === module) {

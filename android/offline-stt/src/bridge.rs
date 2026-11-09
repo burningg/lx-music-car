@@ -49,7 +49,7 @@ fn guarded<T: Default>(env: &mut JNIEnv, f: impl FnOnce(&mut JNIEnv) -> Result<T
 }
 
 #[no_mangle]
-pub extern "system" fn Java_cn_toside_music_car_speech_WetypeNative_create(
+pub extern "system" fn Java_cn_toside_music_car_speech_OfflineSttNative_create(
     mut env: JNIEnv,
     _: JClass,
     dir: JString,
@@ -72,7 +72,7 @@ pub extern "system" fn Java_cn_toside_music_car_speech_WetypeNative_create(
     })
 }
 #[no_mangle]
-pub extern "system" fn Java_cn_toside_music_car_speech_WetypeNative_recognize(
+pub extern "system" fn Java_cn_toside_music_car_speech_OfflineSttNative_recognize(
     mut env: JNIEnv,
     _: JClass,
     id: jlong,
@@ -91,7 +91,7 @@ pub extern "system" fn Java_cn_toside_music_car_speech_WetypeNative_recognize(
     })
 }
 #[no_mangle]
-pub extern "system" fn Java_cn_toside_music_car_speech_WetypeNative_cancel(
+pub extern "system" fn Java_cn_toside_music_car_speech_OfflineSttNative_cancel(
     mut env: JNIEnv,
     _: JClass,
     id: jlong,
@@ -104,7 +104,7 @@ pub extern "system" fn Java_cn_toside_music_car_speech_WetypeNative_cancel(
     });
 }
 #[no_mangle]
-pub extern "system" fn Java_cn_toside_music_car_speech_WetypeNative_release(
+pub extern "system" fn Java_cn_toside_music_car_speech_OfflineSttNative_release(
     mut env: JNIEnv,
     _: JClass,
     id: jlong,
