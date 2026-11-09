@@ -1,128 +1,26 @@
 {
-  "engineVersion": "1.12.15",
-  "modelRevision": "e2382758de9a0219b4efe682b95af30b399db3b8",
+  "engine": "wetype",
+  "upstreamRevision": "f9ca4a0af5db3d7a493a6d0ccb4ae7d1a467d869",
+  "modelRevision": "20260710220526250",
+  "package": {
+    "path": "downloads/wetype-20260710.apk",
+    "url": "https://download.z.weixin.qq.com/publish_words/v1/ime_asr_decoder_model/20260710220526250_ime_asr_decoder_model.apk",
+    "size": 102920639,
+    "sha256": "b3729fbe928b25740cc9cd781537175b1db4a445bd78bf464267c0c4633e0863",
+    "inner": "ime_asr_decoder_model.zip"
+  },
   "files": [
     {
-      "path": "assets/stt/zipformer-small-zh-en-int8/encoder-epoch-99-avg-1.int8.onnx",
-      "url": "https://huggingface.co/csukuangfj/k2fsa-zipformer-bilingual-zh-en-t/resolve/e2382758de9a0219b4efe682b95af30b399db3b8/exp/32/encoder-epoch-99-avg-1.int8.onnx",
-      "sha256": "db6f51551762e40e549166fe041ea3e45464370b595e9ad23f06478ec3794fbb",
-      "size": 42980793
+      "path": "assets/stt/wetype/model.xnet",
+      "member": "embed_140m_kld43wh_test_78000_1_merge_4.kv.conv1d.dyQu.onnx.xnet",
+      "size": 135646496,
+      "sha256": "0674250a848ce3eb91024b3c0a6eda61b91ea45b2c40e4900130995e89cb9033"
     },
     {
-      "path": "assets/stt/zipformer-small-zh-en-int8/joiner-epoch-99-avg-1.int8.onnx",
-      "url": "https://huggingface.co/csukuangfj/k2fsa-zipformer-bilingual-zh-en-t/resolve/e2382758de9a0219b4efe682b95af30b399db3b8/exp/32/joiner-epoch-99-avg-1.int8.onnx",
-      "sha256": "bdda356d6f9b8c2d7cee9ee0e26075fa537490f7fd06520be408d287073667b9",
-      "size": 3228485
-    },
-    {
-      "path": "assets/stt/zipformer-small-zh-en-int8/tokens.txt",
-      "url": "https://huggingface.co/csukuangfj/k2fsa-zipformer-bilingual-zh-en-t/resolve/e2382758de9a0219b4efe682b95af30b399db3b8/data/lang_char_bpe/tokens.txt",
-      "sha256": "a8e0e4ec53810e433789b54a5c0134a7eaa2ffca595a6334d54c00da858841d3",
-      "size": 56317
-    },
-    {
-      "path": "assets/stt/zipformer-small-zh-en-int8/decoder-epoch-99-avg-1.onnx",
-      "url": "https://huggingface.co/csukuangfj/k2fsa-zipformer-bilingual-zh-en-t/resolve/e2382758de9a0219b4efe682b95af30b399db3b8/exp/32/decoder-epoch-99-avg-1.onnx",
-      "sha256": "89be509a83175261695bdef5fd1c7b9ab1129a663d1284e7ba9f8507b21e0906",
-      "size": 13877276
-    },
-    {
-      "path": "downloads/sherpa-onnx-1.12.15.tar.gz",
-      "url": "https://codeload.github.com/k2-fsa/sherpa-onnx/tar.gz/refs/tags/v1.12.15",
-      "sha256": "d0e1483b263aafc32ceb9b446334b2cb26e39c2a7bd462a491ba07e46c99a6eb",
-      "size": 8752540,
-      "extract": {
-        "directory": "sherpa-onnx-1.12.15",
-        "format": "tar",
-        "strip": 1
-      }
-    },
-    {
-      "path": "downloads/onnxruntime-android-1.17.1.zip",
-      "url": "https://github.com/csukuangfj/onnxruntime-libs/releases/download/v1.17.1/onnxruntime-android-1.17.1.zip",
-      "sha256": "e42407f98a593b832ca0e7275166a20184a925e484fe94a4196f0ef84bac32a8",
-      "size": 25166852,
-      "extract": {
-        "directory": "onnxruntime-1.17.1",
-        "format": "zip"
-      }
-    },
-    {
-      "path": "downloads/fbank.tar.gz",
-      "url": "https://codeload.github.com/csukuangfj/kaldi-native-fbank/tar.gz/refs/tags/v1.22.3",
-      "sha256": "9176cc66fc7ce1edf85cf355b06e320c57db6297df74277f575183468893cf61",
-      "size": 71144,
-      "extract": {
-        "directory": "deps/fbank",
-        "format": "tar",
-        "strip": 1
-      }
-    },
-    {
-      "path": "downloads/kissfft.tar.gz",
-      "url": "https://codeload.github.com/mborgerding/kissfft/tar.gz/febd4caeed32e33ad8b2e0bb5ea77542c40f18ec",
-      "sha256": "fe840c3e29fc98250ae3ba843696894f190037f947332296e4be281a18f341cd",
-      "size": 52373,
-      "extract": {
-        "directory": "deps/kissfft",
-        "format": "tar",
-        "strip": 1
-      }
-    },
-    {
-      "path": "downloads/kaldi-decoder.tar.gz",
-      "url": "https://codeload.github.com/k2-fsa/kaldi-decoder/tar.gz/refs/tags/v0.2.10",
-      "sha256": "a3d602edc1f422acfe663153faf3f0a716305ec1f95b8fcf9d28d301d6827309",
-      "size": 51908,
-      "extract": {
-        "directory": "deps/kaldi-decoder",
-        "format": "tar",
-        "strip": 1
-      }
-    },
-    {
-      "path": "downloads/sentencepiece.tar.gz",
-      "url": "https://codeload.github.com/pkufool/simple-sentencepiece/tar.gz/refs/tags/v0.7",
-      "sha256": "1748a822060a35baa9f6609f84efc8eb54dc0e74b9ece3d82367b7119fdc75af",
-      "size": 355335,
-      "extract": {
-        "directory": "deps/sentencepiece",
-        "format": "tar",
-        "strip": 1
-      }
-    },
-    {
-      "path": "downloads/kaldifst.tar.gz",
-      "url": "https://codeload.github.com/k2-fsa/kaldifst/tar.gz/refs/tags/v1.7.16",
-      "sha256": "f338135a3d137b7a8c287e2ca2e0918e1394e1c08bad53b26e7be03a5d4a1066",
-      "size": 171688,
-      "extract": {
-        "directory": "deps/kaldifst",
-        "format": "tar",
-        "strip": 1
-      }
-    },
-    {
-      "path": "downloads/openfst.tar.gz",
-      "url": "https://codeload.github.com/csukuangfj/openfst/tar.gz/refs/tags/sherpa-onnx-2024-06-19",
-      "sha256": "5c98e82cc509c5618502dde4860b8ea04d843850ed57e6d6b590b644b268853d",
-      "size": 1244216,
-      "extract": {
-        "directory": "deps/openfst",
-        "format": "tar",
-        "strip": 1
-      }
-    },
-    {
-      "path": "downloads/eigen.tar.gz",
-      "url": "https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz",
-      "sha256": "8586084f71f9bde545ee7fa6d00288b264a2b7ac3607b974e54d13e7162c1c72",
-      "size": 2705005,
-      "extract": {
-        "directory": "deps/eigen",
-        "format": "tar",
-        "strip": 1
-      }
+      "path": "assets/stt/wetype/dict.decoder.utf8.txt",
+      "member": "dict.decoder.utf8.txt",
+      "size": 129706,
+      "sha256": "08a16004cfcf5b9f1668e055f3100de9b8a44f88541819def2bbd56bfd42f484"
     }
   ],
   "testFiles": [

@@ -1,83 +1,85 @@
-# 搜索页离线语音输入：Zipformer
+# 搜索页离线语音输入：微信离线（WeType）
+
+## 状态与授权
+
+已从 Zipformer/sherpa-onnx 切换为微信输入法 XNet 模型 + VoiceKey 衍生的精简 Rust 推理。
+此次为本地集成验证；VoiceKey 相关源码及腾讯模型的使用、分发许可尚未确认。
+**本项目的 Apache-2.0 不能为这些第三方组件补充授权；对外发布前必须确认许可。**
+来源、改动与依赖说明见 `third_party/wetype/NOTICE.md`。
 
 ## 使用与交互
 
-- 搜索页来源选择器右侧的麦克风按钮遵循 `design/lx-music-car-claude.pen`：64 × 64 圆形、`accent` 底色、26px `lucide-mic`、`on-primary` 图标色，适配白天/夜间主题。
-- 首次点击申请麦克风权限。先显示「正在加载离线模型…」，出现「请说出歌名或歌手…」后开始说话。
-- 中文和英文由同一个模型识别，不依赖应用语言切换，不需要 Google 服务、系统中文包或联网。中文输出以模型的简体字词表为准，不承诺繁体转换或粤语识别。
-- 停顿约 1.2 秒后结束有语音的句子；没有说话约 6 秒结束；录音最长 20 秒，整个会话有 35 秒看门狗。
-- 最终文字替换搜索框内容并更新建议，**不自动提交搜索、不写入搜索历史**。随后可以编辑、选择建议或通过键盘搜索。
-- 再次点击按钮、按返回键、切换页面、开始手动编辑或进入后台会取消识别。取消、无结果、拒绝权限、失败时保留原输入；迟到回调不会覆盖新输入。
-- 识别全程不写音频文件、不上传音频。搜索建议和之后的音乐搜索仍使用原来的在线音乐接口。
+- 搜索页麦克风按钮不变：点击申请麦克风权限；先显示「正在加载离线模型…」，出现「请说出歌名或歌手…」后说话。
+- 停顿后停止录音，显示「正在识别，请稍候…」，后台进行一次整句解码。不反复计算中间文字，以减少播放器 CPU 竞争。
+- 最终文字替换搜索框并更新建议，**不自动提交、不写入搜索历史**；首尾句子标点会去掉。
+- 支持普通话及英文词的本地识别；不承诺繁体、粤语或其他方言，应用语言不切换模型。
+- 再点按钮、返回、切换页面、手动编辑、进入后台都会取消；错误或迟到回调不覆盖输入。原生计算在卷积阶段之间、Transformer 层之间检查取消。
+- 麦克风采集 16 kHz、单声道 PCM16，80 ms 读取；20 ms 能量门限判断语音，约 1.2 秒静音结束，约 6 秒未说话结束，录音最多 20 秒，会话看门狗 35 秒。
+- 能量检测**不是神经 VAD**：持续路噪、空调和车内音乐可能影响停顿判断，必须在目标车机验证。
+- 音频仅驻留内存，不写音频文件、不上传；安装完成后首次语音使用也无需网络。音乐搜索和建议仍使用原来的在线接口。
 
-## 模型及引擎
+## 模型、运行时与空间
 
-模型：**Zipformer Small 中英双语，2023-02-16，32-frame chunk**，采用官方 INT8 示例中的混合配置：编码器/联合网络 INT8，解码器 FP32。
+| 项目 | 内容 |
+| --- | --- |
+| 模型包版本 | `20260710220526250`，腾讯 CDN |
+| 构建时下载包 | 102,920,639 字节（约 98.15 MiB） |
+| APK 模型 `model.xnet` | 135,646,496 字节 |
+| APK 词表 `dict.decoder.utf8.txt` | 129,706 字节 |
+| 模型文件合计 | **135,776,202 字节（约 129.49 MiB / 135.78 MB）** |
+| 推理 | 40 层 Transformer、INT8、CTC，最多 2 个 CPU 推理线程 |
+| 原生库 | 自编译 `liblx_wetype.so`；不含 sherpa、ONNX Runtime 或 VoiceKey 云端引擎 |
 
-| APK 内必需文件 | 字节数 |
-| --- | ---: |
-| encoder-epoch-99-avg-1.int8.onnx | 42,980,793 |
-| decoder-epoch-99-avg-1.onnx | 13,877,276 |
-| joiner-epoch-99-avg-1.int8.onnx | 3,228,485 |
-| tokens.txt | 56,317 |
-| 合计 | **60,142,871（约 57.36 MiB / 60.14 MB）** |
+XNet 按原始权重使用，未训练或改量化。模型首次使用复制到应用 `noBackupFilesDir/wetype-20260710/` 以供 mmap，后续每次加载校验 SHA-256；损坏时从 APK 修复。
+因此除 APK 本身外还需约 **136 MB 私有存储**，修复模型时另需临时文件空间。模型、音频和原生句柄每次会话结束释放，两个计算线程可保留，但不缓存模型。
 
-不打包浮点编码器/联合网络、INT8 解码器、其他 chunk 大小、BPE 训练文件或测试录音。
-
-初始全 INT8 配置约 47.45 MiB，但在自编译 Android 引擎验证中出现句尾漏字；采用官方示例的 FP32 解码器后，中英混合测试通过。模型因此增加约 9.91 MiB，这是验证后的配置调整，不是额外打包一整套模型。模型通过 AssetManager 直接从 APK 读取，不需要首次启动解压一份副本。
-
-运行时：sherpa-onnx **1.12.15** 的 JNI API + ONNX Runtime **1.17.1**，CPU 推理，2 个推理线程。Android `AudioRecord` 采集 16 kHz、单声道、PCM16，以 80 ms 分块交给后台识别线程。每次会话结束释放 recorder、stream 和模型，避免播放器空闲时长期占用模型内存。
-
-**不用官方通用 sherpa AAR**：该包附带本项目不需要的 TTS 及 espeak-ng 等依赖。这里从固定源码构建识别 JNI，关闭 TTS、说话人分离等；Eigen 限定 MPL2 代码。模型卡、许可证、第三方说明见 `third_party/zipformer/`，也随 APK 打包。
+ARM64 先检查 `dotprod` 再运行 SDOT，不支持时走通用回退；x86_64 先检查 AVX2。保留 Android API 21 和四种 ABI 的构建目标，不照搬 VoiceKey 的 API 26/ARM64 限制。旧芯片回退后的速度尚需实测。
 
 ## 构建
 
-需要项目现有的 Node 18+、JDK 17、Android SDK / NDK 26.1.10909125，以及 SDK CMake **3.22.1**、`tar`。JDK 的 `jar` 用来解压 ONNX Runtime ZIP。没有 CMake 时通过 Android Studio 的 SDK Tools 安装。
+需要 Node 18+、JDK 17、Android SDK / NDK **26.1.10909125**、Rust（已用 **1.95.0** 验证）。JDK 的 `jar` 负责解出模型，不需要 Python 或 cargo-ndk。
 
 ```sh
-# 可提前下载。后续 Gradle 构建也会自动执行，已有正确文件不重复下载。
+# 已安装 Rust 后，安装需要的目标；只构建 ARM64 可以只装第一个。
+rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+
+# 构建前下载、解包并检查模型（Gradle 也会自动运行）
 npm run prepare:stt
 
-# 构建含内置模型的 ARM64 独立 APK，无需 Metro
+# ARM64 独立 APK，不依赖 Metro
 node scripts/gradle.cjs assembleStandalone -PreactNativeArchitectures=arm64-v8a
 
-# 检查下载缓存的字节数和 SHA-256，不联网
+# 四种 ABI + universal
+npm run pack:android:standalone
+
+# 仅验证已有模型，不联网
 node scripts/prepare-offline-stt.cjs --verify
 ```
 
-- 固定版本、下载地址、大小、SHA-256 位于 `scripts/offline-stt-assets.json`。
-- 模型和源码归档保存在 `android/.stt/`，不提交大二进制到 Git。
-- 首次**构建**需要下载模型、运行时和编译源码；安装好的应用无需下载任何语音资源。
-- 所有传递源码也由 Node 脚本预下载并校验，CMake 使用本地源码，不依赖构建过程中额外的 CMake 网络下载。
-- 若下载损坏会重试并校验，失败则中止构建，不生成缺失模型的 APK。
-- 默认支持 armeabi-v7a、arm64-v8a、x86、x86_64。使用 `reactNativeArchitectures` 可限制目标，减少构建时间及包体积。
-- 新增原生模块/内置模型后必须重建并安装 APK，不能只靠 Metro 热更新。
+- 模型、构建产物位于 `android/.stt/wetype/`，不提交二进制。旧 `android/.stt/` 中的 Zipformer 缓存不会进入新 APK，可自行清理旧缓存。
+- 推理源码在 `android/offline-stt/`；Cargo.lock 固定依赖，构建使用 `--locked`，NDK 以 API 21 链接并设置 16 KiB ELF 页对齐。
+- 构建时仅解出两个白名单模型文件，包和文件均 SHA-256 校验；失败则终止构建。
+- 新原生库与模型必须重建安装 APK，不能仅 Metro 热更新。
+- Rust/Gradle 首次构建需要联网拉依赖；安装后的语音识别不需要网络。
 
 ## 验证
 
 ```sh
 node --test scripts/*.test.cjs
+cargo test --manifest-path android/offline-stt/Cargo.toml --target-dir android/.stt/wetype/target
 
-# 构建应用和带测试录音的独立测试 APK
+# 真实模型的主机推理、静音、超长拒绝、解码中取消
+node scripts/prepare-offline-stt.cjs --tests
+cargo test --release --manifest-path android/offline-stt/Cargo.toml --target-dir android/.stt/wetype/target --test model -- --ignored --nocapture
+
+# Android 原生集成测试（包含测试音频，不使用麦克风）
 node scripts/gradle.cjs :app:assembleStandalone :app:assembleDebugAndroidTest -PreactNativeArchitectures=arm64-v8a
 adb install -r android/app/build/outputs/apk/standalone/lx-music-car-v1.9.2-arm64-v8a-standalone.apk
 adb install -r android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-adb shell am instrument -w -e class cn.toside.music.car.speech.ZipformerEngineTest cn.toside.music.car.test/androidx.test.runner.AndroidJUnitRunner
+adb shell am instrument -w -e class cn.toside.music.car.speech.WetypeEngineTest cn.toside.music.car.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-JS 测试覆盖设计尺寸、回填不提交、权限、前台恢复、取消、重复点击、迟到回调和 loading/listening 状态。资源测试覆盖锁定版本、损坏校验、包内模型范围及关闭 TTS 的构建配置。
+测试覆盖真实模型中英混合文字、句尾、静音、取消、能量端点、20 秒录音限制、缓存损坏修复、加载/录音/解码 UI 状态，以及现有搜索交互回归。
+测试录音保留自旧模型仓库，仅进入测试 APK，不代表生产包仍包含旧模型。
 
-Android 仪器测试运行**真实的内置混合量化模型**，不是 mock：识别上游中英混合 WAV，检查「昨天 / MONDAY / 星期三」；同时验证静音终点、空结果及新 stream 隔离。测试录音仅在测试 APK 中。
-
-目标平板/车机仍需实测：真实麦克风下的歌名/歌手准确率、背景音乐及噪声影响、低配设备的延迟和内存。参考音频通过不等于所有音乐名称都能准确识别。
-
-## 本次验收记录（2026-11-07）
-
-- Node 测试 **139 项通过**；修改文件 ESLint、`git diff --check` 通过。
-- ARM64 standalone、AndroidTest APK 构建，以及 `:app:minifyReleaseWithR8` 通过。
-- API 34 模拟器上真实模型测试 **2 项通过**：中英混合音频、完整句尾、静音终点和新 stream 隔离。
-- 模拟器实际 UI 已验证首次授权后进入录音、返回键取消、静音自动结束；已有输入 `Jay` 在无语音后保持不变。
-- 最终 ARM64 APK **86,282,377 字节（82.29 MiB）**；模型 **60,142,871 字节（57.36 MiB）**。
-- 已逐项校验 APK 内四个模型文件的 SHA-256；确认仅 ARM64 架构、仅两个 STT 原生库，无旧 INT8 解码器、测试 WAV、TTS/espeak JNI 符号，并包含许可说明。
-- 全仓 TypeScript 仍有 5 处既有错误（播放器计时器、歌单 SourceSelector 泛型及播放列表类型），此次变更没有新增错误。
-- 尚需在目标车机/平板上实测真实麦克风、背景音乐、噪声和冷门歌名；模型文件测试通过不等同于这些场景的识别率保证。
+目前的样本断言只验证基本识别链路，并非准确率评测。应使用目标车机实录的歌名、歌手名、英文、中英混合和路噪音频，验证准确率、峰值内存、录音后等待时间及播放是否卡顿；不能由主机或模拟器速度推断真实车机表现。

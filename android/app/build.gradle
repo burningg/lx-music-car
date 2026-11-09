@@ -104,7 +104,7 @@ def verName = npmPackageJson["version"]
 def applicationName = npmPackageJson["name"]
 
 // Keep binaries out of Git; prepare once at build time, with locked hashes and no runtime downloads.
-def sttRoot = file("$rootDir/.stt")
+def sttRoot = file("$rootDir/.stt/wetype")
 def prepareOfflineStt = tasks.register("prepareOfflineStt", Exec) {
     workingDir rootProject.projectDir.parentFile
     commandLine "node", "scripts/prepare-offline-stt.cjs"
@@ -115,27 +115,27 @@ def prepareOfflineSttTests = tasks.register("prepareOfflineSttTests", Exec) {
     workingDir rootProject.projectDir.parentFile
     commandLine "node", "scripts/prepare-offline-stt.cjs", "--tests"
 }
-tasks.named("preBuild").configure { dependsOn prepareOfflineStt }
+def buildOfflineStt = tasks.register("buildOfflineStt", Exec) {
+    workingDir rootProject.projectDir.parentFile
+    commandLine "node", "scripts/build-offline-stt.cjs", "--abis", reactNativeArchitectures().join(","),
+        "--ndk", "${android.sdkDirectory}/ndk/${rootProject.ext.ndkVersion}"
+}
+tasks.named("preBuild").configure { dependsOn prepareOfflineStt, buildOfflineStt }
 tasks.configureEach { task ->
-    if (task.name.startsWith("configureCMake") || task.name.startsWith("buildCMake")) {
-        task.dependsOn prepareOfflineStt
-    }
     if (task.name.startsWith("merge") && task.name.endsWith("AndroidTestAssets")) {
         task.dependsOn prepareOfflineSttTests
     }
 }
 
 android {
-    externalNativeBuild {
-        cmake { path "src/main/cpp/CMakeLists.txt"; version "3.22.1" }
-    }
     sourceSets {
         main.assets.srcDir "$sttRoot/assets"
+        main.jniLibs.srcDir "$sttRoot/jniLibs"
         main.assets.srcDir "../../third_party"
         androidTest.assets.srcDir "$sttRoot/test-assets"
     }
-    // Read model bytes directly from APK assets; avoid extraction/duplicate private storage.
-    androidResources { noCompress += ["onnx"] }
+    // XNet is copied once to verified private storage for mmap; no runtime downloads.
+    androidResources { noCompress += ["xnet"] }
     ndkVersion rootProject.ext.ndkVersion
 
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -144,12 +144,6 @@ android {
     namespace "cn.toside.music.car"
     defaultConfig {
         ndk { abiFilters(*reactNativeArchitectures()) }
-        externalNativeBuild {
-            cmake {
-                targets "sherpa-onnx-jni"
-                arguments "-DANDROID_STL=c++_static"
-            }
-        }
         applicationId "cn.toside.music.car"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         minSdkVersion rootProject.ext.minSdkVersion

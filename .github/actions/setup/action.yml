@@ -16,6 +16,13 @@ runs:
         java-version: '17'
         cache: gradle
 
+    - name: Setup Rust for offline WeType JNI
+      shell: bash
+      run: |
+        rustup toolchain install 1.95.0 --profile minimal
+        rustup target add --toolchain 1.95.0 aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+        echo "RUSTUP_TOOLCHAIN=1.95.0" >> "$GITHUB_ENV"
+
     - name: Get npm cache directory
       id: npm-cache-dir
       shell: bash

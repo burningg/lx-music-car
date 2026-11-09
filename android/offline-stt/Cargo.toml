@@ -1,0 +1,27 @@
+[package]
+name = "lx-wetype"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.95"
+publish = false
+
+[lib]
+name = "lx_wetype"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+anyhow = "1"
+jni = "0.21"
+memmap2 = "0.9"
+rayon = "1"
+
+[dev-dependencies]
+hound = "3"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 2

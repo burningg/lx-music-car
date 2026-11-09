@@ -302,3 +302,21 @@ test('offline loading/listening states update without filling or submitting part
   await running
   assert.deepEqual(ctx.results, [])
 })
+
+test('processing state shows final decoding without returning partial text and is cleared on cancellation', async() => {
+  const ctx = setup()
+  const running = ctx.api.start()
+  await flush()
+  ctx.listeners.speech('listening')
+  ctx.listeners.speech('processing')
+  assert.equal(ctx.api.isPreparing, false)
+  assert.equal(ctx.api.isProcessing, true)
+  assert.deepEqual(ctx.results, [])
+  ctx.api.cancel()
+  assert.equal(ctx.api.isProcessing, false)
+  ctx.listeners.speech('processing')
+  assert.equal(ctx.api.isProcessing, false)
+  ctx.requests[0].resolve('迟到的结果')
+  await running
+  assert.deepEqual(ctx.results, [])
+})

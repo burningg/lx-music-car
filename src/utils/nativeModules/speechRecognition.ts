@@ -26,13 +26,13 @@ export const cancelSpeechRecognition = () => {
   if (Platform.OS == 'android') speechRecognition?.cancel()
 }
 
-export type SpeechRecognitionState = 'loading' | 'listening'
+export type SpeechRecognitionState = 'loading' | 'listening' | 'processing'
 
 export const onSpeechRecognitionState = (handler: (state: SpeechRecognitionState) => void): (() => void) => {
   if (Platform.OS != 'android' || !speechRecognition) return () => {}
   const emitter = new NativeEventEmitter(speechRecognition)
   const subscription = emitter.addListener('speech-recognition-state', (event: { state?: string }) => {
-    if (event.state == 'loading' || event.state == 'listening') handler(event.state)
+    if (event.state == 'loading' || event.state == 'listening' || event.state == 'processing') handler(event.state)
   })
   return () => { subscription.remove() }
 }

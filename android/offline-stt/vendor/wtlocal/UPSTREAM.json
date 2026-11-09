@@ -1,0 +1,11 @@
+{
+  "repository": "https://github.com/J3n5en/voicekey",
+  "revision": "f9ca4a0af5db3d7a493a6d0ccb4ae7d1a467d869",
+  "path": "crates/wtlocal/src",
+  "originalSha256": {
+    "fbank.rs": "08809501b422f23c46082586fed0ff478f390d5dd062b6db665e4c206b9d24ff",
+    "kernels.rs": "718334f5e0802f05d3b45c5a8956413c3a8b21343902fe8684775649bec0a6ab",
+    "model.rs": "62108e205777a4b8e82b0451d5ba09e05a312ec142b821628ca4dfd1f4896ad0",
+    "xnet.rs": "6eae15982d7b5f70544e1719149d2a0dd9dc15885ff33e496baea67b534b539c"
+  }
+}

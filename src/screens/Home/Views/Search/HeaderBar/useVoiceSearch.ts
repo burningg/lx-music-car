@@ -36,6 +36,7 @@ export default (onResult: (text: string) => void) => {
   const t = useI18n()
   const [isRecognizing, setIsRecognizing] = useState(false)
   const [isPreparing, setIsPreparing] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
   const session = useRef(0)
   const active = useRef(false)
   const nativeStarted = useRef(false)
@@ -50,11 +51,16 @@ export default (onResult: (text: string) => void) => {
   const cancel = useCallback(() => {
     cancelSession()
     setIsRecognizing(false)
+    setIsPreparing(false)
+    setIsProcessing(false)
   }, [cancelSession])
 
   useEffect(() => {
     const removeSpeechState = onSpeechRecognitionState(state => {
-      if (active.current) setIsPreparing(state == 'loading')
+      if (active.current) {
+        setIsPreparing(state == 'loading')
+        setIsProcessing(state == 'processing')
+      }
     })
     const back = BackHandler.addEventListener('hardwareBackPress', () => {
       if (!active.current) return false
@@ -77,6 +83,7 @@ export default (onResult: (text: string) => void) => {
     if (active.current) return
     const id = ++session.current
     active.current = true
+    setIsProcessing(false)
     setIsPreparing(true)
     setIsRecognizing(true)
     try {
@@ -105,10 +112,12 @@ export default (onResult: (text: string) => void) => {
       if (id == session.current) {
         active.current = false
         nativeStarted.current = false
+        setIsPreparing(false)
+        setIsProcessing(false)
         setIsRecognizing(false)
       }
     }
   }
 
-  return { isRecognizing, isPreparing, start, cancel }
+  return { isRecognizing, isPreparing, isProcessing, start, cancel }
 }

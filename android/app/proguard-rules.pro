@@ -25,5 +25,5 @@
   public *;
 }
 
-# JNI accesses sherpa config fields and class names via reflection.
--keep class com.k2fsa.sherpa.onnx.** { *; }
+# Exported JNI symbols contain this class and method names.
+-keep class cn.toside.music.car.speech.WetypeNative { *; }

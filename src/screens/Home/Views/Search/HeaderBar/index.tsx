@@ -38,7 +38,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
   const theme = useTheme()
   const sourceSelectorRef = useRef<SourceSelectorType>(null)
   const searchInputRef = useRef<SearchInputType>(null)
-  const { isRecognizing, isPreparing, start: startVoice, cancel: cancelVoice } = useVoiceSearch((text) => {
+  const { isRecognizing, isPreparing, isProcessing, start: startVoice, cancel: cancelVoice } = useVoiceSearch((text) => {
     searchInputRef.current?.setText(text)
     onTipSearch(text)
   })
@@ -99,7 +99,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
               accessibilityLiveRegion="polite"
               numberOfLines={1}
               style={{ position: 'absolute', top: px(70), right: 0, width: px(160), textAlign: 'right' }}
-            >{t(isPreparing ? 'search_voice_preparing' : 'search_voice_listening')}</CarText>
+            >{t(isPreparing ? 'search_voice_preparing' : isProcessing ? 'search_voice_processing' : 'search_voice_listening')}</CarText>
           ) : null}
         </View>
       ) : null}

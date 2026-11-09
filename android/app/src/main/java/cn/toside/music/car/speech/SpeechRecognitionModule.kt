@@ -17,7 +17,6 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.common.LifecycleState
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import com.k2fsa.sherpa.onnx.OnlineStream
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -32,6 +31,7 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
     // Worker-thread-owned; released after each session to avoid retaining model RAM in the player.
     private class Session(val promise: Promise) {
         val cancelled = AtomicBoolean(false)
+        @Volatile var engine: WetypeEngine? = null
         var recorder: AudioRecord? = null // Guarded by synchronized(session).
         var watchdog: Runnable? = null
     }
@@ -41,7 +41,7 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
 
     @ReactMethod
     fun isAvailable(promise: Promise) {
-        main.post { promise.resolve(!invalidated && ZipformerEngine.assetsAvailable(context.assets)) }
+        main.post { promise.resolve(!invalidated && WetypeEngine.assetsAvailable(context.assets)) }
     }
 
     // Required by NativeEventEmitter; no upstream subscription exists outside a recording session.
@@ -57,8 +57,8 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
                 promise.reject("E_BUSY", "Voice input is already running")
             } else if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                 promise.reject("E_PERMISSION", "Microphone permission is required")
-            } else if (!ZipformerEngine.assetsAvailable(context.assets)) {
-                promise.reject("E_UNAVAILABLE", "Bundled Zipformer model is missing")
+            } else if (!WetypeEngine.assetsAvailable(context.assets)) {
+                promise.reject("E_UNAVAILABLE", "Bundled WeType model is missing")
             } else {
                 // The bundled model auto-detects Chinese/English; the app locale does not select a server.
                 val session = Session(promise)
@@ -85,25 +85,24 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
     }
 
     private fun recognize(session: Session) {
-        var engine: ZipformerEngine? = null
-        var stream: OnlineStream? = null
+        var engine: WetypeEngine? = null
         var text = ""
         var errorCode: String? = null
         try {
             if (session.cancelled.get()) return
-            engine = ZipformerEngine(context.assets)
+            engine = WetypeEngine(context, session.cancelled::get)
+            session.engine = engine
             if (session.cancelled.get()) return
-            stream = engine.createStream()
             val minBuffer = AudioRecord.getMinBufferSize(
-                ZipformerEngine.SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
+                WetypeEngine.SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
             )
             if (minBuffer <= 0) throw AudioException()
             synchronized(session) {
                 if (session.cancelled.get()) return
                 val recorder = AudioRecord(
-                    MediaRecorder.AudioSource.VOICE_RECOGNITION, ZipformerEngine.SAMPLE_RATE,
+                    MediaRecorder.AudioSource.VOICE_RECOGNITION, WetypeEngine.SAMPLE_RATE,
                     AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT,
-                    maxOf(minBuffer * 2, ZipformerEngine.SAMPLE_RATE * 2),
+                    maxOf(minBuffer * 2, WetypeEngine.SAMPLE_RATE * 2),
                 )
                 session.recorder = recorder
                 if (recorder.state != AudioRecord.STATE_INITIALIZED) throw AudioException()
@@ -115,21 +114,24 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
             val pcm = ShortArray(1280) // 80 ms of mono 16 kHz PCM, compatible with Android 5+.
             val started = SystemClock.elapsedRealtime()
             var samplesRead = 0
-            while (!session.cancelled.get() && samplesRead < ZipformerEngine.SAMPLE_RATE * 20 &&
+            while (!session.cancelled.get() && samplesRead < WetypeEngine.SAMPLE_RATE * 20 &&
                 SystemClock.elapsedRealtime() - started < 20000) {
-                val count = recorder.read(pcm, 0, pcm.size)
+                val count = recorder.read(pcm, 0, minOf(pcm.size, WetypeEngine.MAX_SAMPLES - samplesRead))
                 if (session.cancelled.get()) break
                 if (count < 0) throw AudioException()
                 if (count == 0) { Thread.sleep(10); continue }
                 samplesRead += count
-                engine.accept(stream, FloatArray(count) { pcm[it] / 32768.0f }, session.cancelled::get)
-                if (engine.isEndpoint(stream)) break
+                engine.accept(pcm, count)
+                if (engine.isEndpoint()) break
             }
             stopRecorder(session)
             if (!session.cancelled.get()) {
-                text = engine.finish(stream, session.cancelled::get)
+                emitState(session, "processing")
+                text = engine.finish()
                 if (text.isBlank()) errorCode = "E_NO_MATCH"
             }
+        } catch (_: WetypeEngine.ModelException) {
+            errorCode = "E_MODEL"
         } catch (_: SecurityException) {
             errorCode = "E_PERMISSION"
         } catch (_: AudioException) {
@@ -146,7 +148,7 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
                 session.recorder?.release()
                 session.recorder = null
             }
-            stream?.release()
+            session.engine = null
             engine?.release()
             main.post {
                 if (pending === session) {
@@ -173,6 +175,7 @@ class SpeechRecognitionModule(private val context: ReactApplicationContext) :
         val session = pending ?: return
         pending = null
         session.cancelled.set(true)
+        session.engine?.cancel()
         session.watchdog?.let { main.removeCallbacks(it) }
         stopRecorder(session)
         session.promise.reject(code, message)

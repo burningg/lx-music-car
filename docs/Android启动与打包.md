@@ -27,7 +27,7 @@
 
 ## 日常在模拟器／车机上使用（推荐）
 
-在项目根目录运行，需先安装依赖并连接 Android 设备：
+在项目根目录运行，需先安装依赖、Rust/Android targets（见[离线语音构建说明](Android语音输入.md)）并连接 Android 设备：
 
 ```sh
 npm run android
