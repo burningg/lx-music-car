@@ -60,9 +60,9 @@ node --test scripts/*.test.cjs
 
 # 构建应用和带测试录音的独立测试 APK
 node scripts/gradle.cjs :app:assembleStandalone :app:assembleDebugAndroidTest -PreactNativeArchitectures=arm64-v8a
-adb install -r android/app/build/outputs/apk/standalone/lx-music-mobile-v1.9.2-arm64-v8a-standalone.apk
+adb install -r android/app/build/outputs/apk/standalone/lx-music-car-v1.9.2-arm64-v8a-standalone.apk
 adb install -r android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-adb shell am instrument -w -e class cn.toside.music.mobile.speech.ZipformerEngineTest cn.toside.music.mobile.test/androidx.test.runner.AndroidJUnitRunner
+adb shell am instrument -w -e class cn.toside.music.car.speech.ZipformerEngineTest cn.toside.music.car.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
 JS 测试覆盖设计尺寸、回填不提交、权限、前台恢复、取消、重复点击、迟到回调和 loading/listening 状态。资源测试覆盖锁定版本、损坏校验、包内模型范围及关闭 TTS 的构建配置。

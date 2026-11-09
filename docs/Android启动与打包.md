@@ -1,5 +1,15 @@
 # Android 启动与打包：不再依赖 Metro
 
+## 车载版应用标识
+
+- Android 包名：`cn.toside.music.car`
+- 桌面显示名称：`LX Music Car`
+- 安装包文件名前缀：`lx-music-car`
+
+车载版与旧 mobile 版包名不同，会作为独立应用安装，不会覆盖旧版，
+也不会自动继承旧版的数据。需要迁移时，请先在旧版导出列表、设置等数据，
+再导入车载版；确认迁移完成前不要卸载旧版。
+
 ## 为什么点开 App 会红屏？
 
 `Could not connect to development server` 表示 Android 原生层已经启动，
@@ -28,8 +38,9 @@ npm run android
 或模拟器重启、USB 断开，也不影响加载应用界面。
 在线搜索、封面、音源和在线播放仍然需要网络。
 
-本地独立版保留相同 applicationId，使用仓库的 debug 签名，通常可以覆盖原有的
-本项目 Debug 安装，保留列表、设置和自定义源。**不要先卸载，不要清除数据。**
+车载版的 debug、standalone、release 使用相同 applicationId。本地独立版使用
+仓库的 debug 签名，通常可以覆盖原有的车载版 Debug 安装，
+保留列表、设置和自定义源。**不要先卸载，不要清除数据。**
 若原安装使用另一份签名，Android 会拒绝覆盖；应先通过原 App 导出数据，
 不能靠卸载来“修复”启动问题。
 
@@ -46,8 +57,8 @@ npm run pack:android:standalone
 
 ```text
 android/app/build/outputs/apk/standalone/
-  lx-music-mobile-v<版本>-universal-standalone.apk
-  lx-music-mobile-v<版本>-arm64-v8a-standalone.apk
+  lx-music-car-v<版本>-universal-standalone.apk
+  lx-music-car-v<版本>-arm64-v8a-standalone.apk
   ...
 ```
 
@@ -74,8 +85,8 @@ npm run dev
 ```sh
 adb devices -l
 adb reverse tcp:8081 tcp:8081
-adb shell am force-stop cn.toside.music.mobile
-adb shell am start -n cn.toside.music.mobile/.MainActivity
+adb shell am force-stop cn.toside.music.car
+adb shell am start -n cn.toside.music.car/.MainActivity
 ```
 
 多设备时在每条 `adb` 命令后加 `-s <设备序列号>`；自定义 Metro 端口时，相应调整端口。

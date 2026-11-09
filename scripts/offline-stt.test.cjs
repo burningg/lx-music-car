@@ -45,8 +45,8 @@ test('asset validation detects missing, truncated and same-size corrupt files', 
 })
 
 test('Android uses AudioRecord and bundled CPU graphs, never a system or network recognizer', async() => {
-  const native = await readFile(path.join(root, 'android/app/src/main/java/cn/toside/music/mobile/speech/SpeechRecognitionModule.kt'), 'utf8')
-  const engine = await readFile(path.join(root, 'android/app/src/main/java/cn/toside/music/mobile/speech/ZipformerEngine.kt'), 'utf8')
+  const native = await readFile(path.join(root, 'android/app/src/main/java/cn/toside/music/car/speech/SpeechRecognitionModule.kt'), 'utf8')
+  const engine = await readFile(path.join(root, 'android/app/src/main/java/cn/toside/music/car/speech/ZipformerEngine.kt'), 'utf8')
   const gradle = await readFile(path.join(root, 'android/app/build.gradle'), 'utf8')
   const proguard = await readFile(path.join(root, 'android/app/proguard-rules.pro'), 'utf8')
   assert.match(native, /AudioRecord\(/)

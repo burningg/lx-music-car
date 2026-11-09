@@ -141,7 +141,7 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "cn.toside.music.mobile"
+    namespace "cn.toside.music.car"
     defaultConfig {
         ndk { abiFilters(*reactNativeArchitectures()) }
         externalNativeBuild {
@@ -150,7 +150,7 @@ android {
                 arguments "-DANDROID_STL=c++_static"
             }
         }
-        applicationId "cn.toside.music.mobile"
+        applicationId "cn.toside.music.car"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion

@@ -1,6 +1,6 @@
 // Run with: node --test scripts/android-build.test.cjs
 const assert = require('node:assert/strict')
-const { readFileSync } = require('node:fs')
+const { existsSync, readdirSync, readFileSync } = require('node:fs')
 const path = require('node:path')
 const { test } = require('node:test')
 const vm = require('node:vm')
@@ -41,6 +41,63 @@ function runWrapper(platform, result) {
   return { calls, errors, exitCode }
 }
 
+test('Android identity and file sharing use the car package', () => {
+  const packageName = 'cn.toside.music.car'
+  const manifest = readFileSync(path.join(root, 'android/app/src/main/AndroidManifest.xml'), 'utf8')
+  const settings = readFileSync(path.join(root, 'android/settings.gradle'), 'utf8')
+  const constants = readFileSync(path.join(root, 'src/config/constant.ts'), 'utf8')
+  assert.ok(gradle.includes(`namespace "${packageName}"`))
+  assert.ok(block(gradle, 'defaultConfig').includes(`applicationId "${packageName}"`))
+  assert.ok(settings.includes(`rootProject.name = '${packageName}'`))
+  assert.ok(manifest.includes(`package="${packageName}"`))
+  assert.ok(manifest.includes('android:authorities="${applicationId}.provider"'))
+  assert.ok(constants.includes(`APP_PROVIDER_NAME = '${packageName}.provider'`))
+})
+
+test('app label and APK artifact names identify the car edition', () => {
+  const app = require('../app.json')
+  const pkg = require('../package.json')
+  const lock = require('../package-lock.json')
+  const strings = readFileSync(path.join(root, 'android/app/src/main/res/values/strings.xml'), 'utf8')
+  assert.match(strings, /<string name="app_name">LX Music Car<\/string>/)
+  assert.equal(app.name, 'LX Music Car')
+  assert.equal(app.displayName, '洛雪音乐助手车载版')
+  assert.equal(pkg.name, 'lx-music-car')
+  assert.equal(lock.name, pkg.name)
+  assert.equal(lock.packages[''].name, pkg.name)
+  assert.ok(gradle.includes('def applicationName = npmPackageJson["name"]'))
+  assert.ok(gradle.includes('${applicationName}-v${defaultConfig.versionName}'))
+  for (const file of ['.github/actions/upload-artifact/action.yml', '.github/workflows/release.yml']) {
+    const workflow = readFileSync(path.join(root, file), 'utf8')
+    assert.ok(workflow.includes('lx-music-car-v'))
+    assert.ok(!workflow.includes('lx-music-mobile-v'))
+  }
+})
+
+test('native source packages match their car directory in every source set', () => {
+  function checkPackages(dir, javaRoot) {
+    let count = 0
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const file = path.join(dir, entry.name)
+      if (entry.isDirectory()) count += checkPackages(file, javaRoot)
+      else if (/\.(java|kt)$/.test(entry.name)) {
+        const source = readFileSync(file, 'utf8')
+        const expected = path.relative(javaRoot, dir).split(path.sep).join('.')
+        assert.equal(source.match(/^package\s+([\w.]+)/m)?.[1], expected, file)
+        assert.doesNotMatch(source, /cn\.toside\.music\.mobile/, file)
+        count++
+      }
+    }
+    return count
+  }
+  for (const sourceSet of ['main', 'release', 'androidTest']) {
+    const javaRoot = path.join(root, 'android/app/src', sourceSet, 'java')
+    const packageRoot = path.join(javaRoot, 'cn/toside/music')
+    assert.equal(existsSync(path.join(packageRoot, 'mobile')), false)
+    assert.ok(checkPackages(path.join(packageRoot, 'car'), javaRoot) > 0)
+  }
+})
+
 test('standalone bundles production JS while debug keeps Metro/Fast Refresh', () => {
   assert.match(block(gradle, 'react'), /debuggableVariants\s*=\s*\["debug"\]/)
   const buildTypes = block(gradle, 'buildTypes')
@@ -51,7 +108,7 @@ test('standalone bundles production JS while debug keeps Metro/Fast Refresh', ()
   assert.match(standalone, /signingConfig signingConfigs\.debug/)
   assert.doesNotMatch(standalone, /applicationIdSuffix|versionCode|versionNameSuffix/)
   assert.match(block(buildTypes, 'release'), /signingConfig signingConfigs\.release/)
-  const application = readFileSync(path.join(root, 'android/app/src/main/java/cn/toside/music/mobile/MainApplication.java'), 'utf8')
+  const application = readFileSync(path.join(root, 'android/app/src/main/java/cn/toside/music/car/MainApplication.java'), 'utf8')
   assert.match(application, /boolean getUseDeveloperSupport\(\)\s*\{\s*return BuildConfig\.DEBUG;/)
 })
 
