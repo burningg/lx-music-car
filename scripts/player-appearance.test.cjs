@@ -59,10 +59,8 @@ const palettes = {
   dark: { isDark: true, bg: '#08080A', 'text-1': '#F5F5F7', 'text-2': '#A1A1A6', accent: '#FF7A50' },
   light: { isDark: false, bg: '#F5F3EF', 'text-1': '#1A1714', 'text-2': '#6B665F', accent: '#E8562A' },
 }
-function ambient(mode, pic = 'https://example.test/cover.png', props = {}, scale = 1) {
+function ambient(mode, props = {}, scale = 1) {
   const Background = load('src/components/car/AmbientBackground.tsx', {
-    '@/components/common/Image': { defaultHeaders: { 'User-Agent': 'test' } },
-    '@/store/player/hook': { usePlayerMusicInfo: () => ({ pic }) },
     '@/store/theme/hook': { useTheme: () => palettes[mode] },
     '@/utils/pixelRatio': { px: size => size * scale },
   })
@@ -86,26 +84,46 @@ test('dark/light shade explicitly overrides the local PNG intrinsic 512×4 dimen
   }
 })
 
-test('blurred artwork bleeds past all viewport edges instead of ending in a fixed rectangle', () => {
+test('night ambient uses the design art bounds with baked transparent bleed, not a viewport-sized cover', () => {
+  const design = JSON.parse(readFileSync(path.join(root, 'design/lx-music-car-claude.pen'), 'utf8'))
+  const player = design.children.find(node => node.id == 'SEv9u')
+  const art = player.children.find(node => node.name == 'Ambient Art')
+  const bleed = art.effect.radius * 3
   for (const scale of [0.5, 1, 1.5]) {
-    const output = ambient('dark', undefined, {}, scale)
-    const art = find(output, node => node.props.blurRadius != null)
-    const bounds = style(art)
-    for (const edge of ['top', 'right', 'bottom', 'left']) assert.ok(bounds[edge] < 0)
-    assert.equal(bounds.width, undefined)
-    assert.equal(bounds.height, undefined)
-    assert.equal(bounds.opacity, 0.75)
-    assert.equal(art.props.blurRadius, 180 * scale)
-    const bottomFade = find(output, node => node.props.source?.uri.endsWith('fade-v.png'))
-    assert.equal(style(bottomFade).width, '100%')
-    assert.equal(style(bottomFade).bottom, 0)
-    assert.equal(bottomFade.props.tintColor, palettes.dark.bg)
+    const output = ambient('dark', {}, scale)
+    const backdrop = children(output)[0]
+    const bounds = style(backdrop)
+    assert.ok(backdrop.props.source.uri.endsWith('nocturne-art.png'))
+    assert.equal(bounds.left, (art.x - bleed) * scale)
+    assert.equal(bounds.top, (art.y - bleed) * scale)
+    assert.equal(bounds.width, (art.width + bleed * 2) * scale)
+    assert.equal(bounds.height, (art.height + bleed * 2) * scale)
+    assert.equal(bounds.right, undefined)
+    assert.equal(bounds.bottom, undefined)
+    assert.equal(bounds.opacity, art.opacity)
+    assert.equal(backdrop.props.source.width, (art.width + bleed * 2) / 4)
+    assert.equal(backdrop.props.source.height, (art.height + bleed * 2) / 4)
+    assert.equal(backdrop.props.blurRadius, undefined, 'blur is baked, not recalculated by Android')
+    assert.equal(backdrop.props.resizeMode, 'stretch')
+    assert.equal(children(output).length, 2, 'only ambient and horizontal shade; no extra bottom blackout')
   }
+})
+
+test('night ambient works without player state, artwork URLs or network access', () => {
+  // ambient() deliberately provides no player hook or remote-image mocks. Any
+  // renewed dependency on the current song (including empty covers) fails loading.
+  const output = ambient('dark')
+  for (const image of children(output)) {
+    assert.ok(image.props.source.uri.startsWith('@/resources/images/ambient/'))
+    assert.equal(image.props.source.headers, undefined)
+    assert.equal(image.props.blurRadius, undefined)
+  }
+  assert.equal(find(output, node => node.props.source?.uri.endsWith('fade-v.png')), undefined)
 })
 
 test('daylight uses its own shade and warm glow, never the dark cover or bottom fade', () => {
   const output = ambient('light')
-  assert.equal(find(output, node => node.props.blurRadius != null), undefined)
+  assert.equal(find(output, node => node.props.source?.uri.endsWith('nocturne-art.png')), undefined)
   assert.equal(find(output, node => node.props.source?.uri.endsWith('fade-v.png')), undefined)
   assert.ok(children(output).at(-1).props.source.uri.endsWith('shade-light-h.png'))
   const glow = children(output)[0]
@@ -113,18 +131,9 @@ test('daylight uses its own shade and warm glow, never the dark cover or bottom 
   assert.equal(style(glow).top, -320)
 })
 
-test('empty artwork stays on the themed background and local artwork uses a file URI', () => {
-  assert.equal(find(ambient('dark', ''), node => node.props.blurRadius != null), undefined)
-  for (const pic of ['/storage/emulated/0/cover.jpg', 'file:///cache/cover.jpg', 'https://example.test/cover.jpg']) {
-    const image = find(ambient('dark', pic), node => node.props.blurRadius != null)
-    assert.equal(image.props.source.uri, pic.startsWith('/') ? `file://${pic}` : pic)
-    assert.equal(image.props.source.headers['User-Agent'], 'test')
-  }
-})
-
 test('glow-only pages keep an accent-tinted, non-interactive background without artwork', () => {
   for (const mode of ['dark', 'light']) {
-    const output = ambient(mode, undefined, { variant: 'glow' })
+    const output = ambient(mode, { variant: 'glow' })
     assert.equal(children(output).length, 1)
     assert.equal(children(output)[0].props.tintColor, palettes[mode].accent)
     assert.equal(output.props.pointerEvents, 'none')
