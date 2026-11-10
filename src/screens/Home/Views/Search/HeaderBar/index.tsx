@@ -10,6 +10,7 @@ import { CarText, IconButton } from '@/components/car'
 import { px } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
 import useVoiceSearch from './useVoiceSearch'
+import VoiceSearchModal from './VoiceSearchModal'
 import { type Source as MusicSource } from '@/store/search/music/state'
 import { type Source as SonglistSource } from '@/store/search/songlist/state'
 
@@ -92,15 +93,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
             accessibilityState={{ busy: isRecognizing }}
             onPress={handleVoice}
           />
-          {isRecognizing ? (
-            <CarText
-              size={16}
-              color={theme['text-2']}
-              accessibilityLiveRegion="polite"
-              numberOfLines={1}
-              style={{ position: 'absolute', top: px(70), right: 0, width: px(160), textAlign: 'right' }}
-            >{t(isPreparing ? 'search_voice_preparing' : isProcessing ? 'search_voice_processing' : 'search_voice_listening')}</CarText>
-          ) : null}
+          <VoiceSearchModal visible={isRecognizing} isPreparing={isPreparing} isProcessing={isProcessing} onCancel={cancelVoice} />
         </View>
       ) : null}
     </View>

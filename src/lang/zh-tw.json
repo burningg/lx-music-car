@@ -248,6 +248,8 @@
   "search_voice_model_error": "離線語音模型載入失敗，請檢查儲存空間和裝置記憶體後重試",
   "search_voice_start": "語音輸入",
   "search_voice_cancel": "取消語音輸入",
+  "search_voice_listening_title": "正在聆聽…",
+  "search_voice_fill_hint": "辨識後自動填入搜尋框",
   "search_voice_listening": "請說出歌名或歌手…",
   "search_voice_unavailable": "離線語音模型或引擎無法使用，請重新安裝完整版本",
   "search_voice_permission": "語音輸入需要麥克風權限，請允許後重試",

@@ -236,6 +236,7 @@ test('header follows the design: separate accent mic after source; STT fills wit
     'react-native': { View: 'View', Platform: { OS: 'android' }, Keyboard: { dismiss() {} } },
     '@/components/SourceSelector': { default: 'SourceSelector', __esModule: true },
     './SearchInput': { default: 'SearchInput', __esModule: true },
+    './VoiceSearchModal': { default: 'VoiceSearchModal', __esModule: true },
     '@/lang': { useI18n: () => key => key },
     '@/components/car': { CarText: 'CarText', IconButton: 'IconButton' },
     '@/utils/pixelRatio': { px: n => n },
@@ -269,6 +270,12 @@ test('header follows the design: separate accent mic after source; STT fills wit
   assert.equal(button.props.background, '#E8562A')
   assert.equal(button.props.color, '#fff')
   assert.equal(button.props.accessibilityLabel, 'search_voice_start')
+  const modal = nodes[3].props.children[1]
+  assert.equal(modal.type, 'VoiceSearchModal')
+  assert.equal(modal.props.visible, false)
+  modal.props.onCancel()
+  assert.equal(cancelled, 1)
+  cancelled = 0
   resultHandler('周杰伦')
   assert.deepEqual(inputValues, ['周杰伦'])
   assert.deepEqual(changes, ['周杰伦'])
@@ -319,4 +326,110 @@ test('processing state shows final decoding without returning partial text and i
   ctx.requests[0].resolve('迟到的结果')
   await running
   assert.deepEqual(ctx.results, [])
+})
+
+
+const { DAYLIGHT_TOKENS, NOCTURNE_TOKENS } = load('src/theme/tokens.ts', {})
+const voiceDesign = JSON.parse(readFileSync(path.resolve(__dirname, '../design/lx-music-car-claude.pen'), 'utf8'))
+function findNode(node, id) {
+  if (node.id == id) return node
+  for (const child of node.children ?? []) {
+    const found = findNode(child, id)
+    if (found) return found
+  }
+}
+const backdropDesign = findNode(voiceDesign, 'U5jSt')
+const dialogDesign = backdropDesign.children[0]
+
+function renderVoiceModal({ theme = DAYLIGHT_TOKENS, width = 1920, height = 1080, ...props } = {}) {
+  const VoiceModal = load('src/screens/Home/Views/Search/HeaderBar/VoiceSearchModal.tsx', {
+    react: React,
+    'react/jsx-runtime': require('react/jsx-runtime'),
+    'react-native': { ActivityIndicator: 'ActivityIndicator', Modal: 'Modal', View: 'View', StyleSheet: { absoluteFillObject: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } } },
+    '@/components/car': { CarText: 'CarText', IconButton: 'IconButton' },
+    '@/lang': { useI18n: () => key => key },
+    '@/store/theme/hook': { useTheme: () => theme },
+    '@/utils/hooks/useWindowSize': { default: () => ({ width, height }), __esModule: true },
+    '@/utils/pixelRatio': { px: n => n },
+  }).default
+  const renderer = new ShallowRenderer()
+  renderer.render(React.createElement(VoiceModal, { visible: true, isPreparing: false, isProcessing: false, ...props }))
+  const modal = renderer.getRenderOutput()
+  const overlay = modal.props.children
+  const [scrim, dialog] = React.Children.toArray(overlay.props.children)
+  const [header, transcript, border] = React.Children.toArray(dialog.props.children)
+  const [status, close] = React.Children.toArray(header.props.children)
+  const [indicator, title] = React.Children.toArray(status.props.children)
+  return { modal, overlay, scrim, dialog, header, transcript, border, close, indicator, title }
+}
+
+for (const [mode, theme] of [['light', DAYLIGHT_TOKENS], ['dark', NOCTURNE_TOKENS]]) {
+  test(`voice dialog matches U5jSt geometry and ${mode} design tokens`, () => {
+    const { modal, overlay, scrim, dialog, header, transcript, border, close, indicator, title } = renderVoiceModal({ theme })
+    assert.equal(modal.props.transparent, true)
+    assert.equal(overlay.props.style.paddingLeft, backdropDesign.padding[3])
+    assert.equal(dialog.props.style.width, dialogDesign.width)
+    assert.equal(dialog.props.style.minHeight, dialogDesign.height)
+    assert.equal(dialog.props.style.borderRadius, dialogDesign.cornerRadius)
+    assert.deepEqual([
+      dialog.props.style.paddingTop, dialog.props.style.paddingRight,
+      dialog.props.style.paddingBottom, dialog.props.style.paddingLeft,
+    ], dialogDesign.padding)
+    assert.equal(dialog.props.style.gap, dialogDesign.gap)
+    for (const [token, actual] of [
+      ['surface', dialog.props.style.backgroundColor],
+      ['voice-scrim', scrim.props.style[1].backgroundColor],
+      ['text-1', theme['text-1']],
+      ['accent', theme.accent],
+    ]) {
+      const value = voiceDesign.variables[token].value.find(v => v.theme.mode == mode).value
+      assert.equal(actual, value)
+    }
+    assert.equal(border.props.style[1].borderColor, theme.hairline)
+    assert.equal(header.props.style.minHeight, 64)
+    assert.equal(close.props.size, 64)
+    assert.equal(close.props.radius, 12)
+    assert.equal(close.props.iconSize, 24)
+    assert.equal(close.props.color, theme['text-2'])
+    assert.equal(title.props.children, 'search_voice_listening_title')
+    assert.equal(title.props.size, 24)
+    assert.equal(title.props.accessibilityLiveRegion, 'polite')
+    assert.equal(indicator.props.style.width, 56)
+    assert.equal(indicator.props.style.backgroundColor, theme['accent-soft'])
+    const levels = React.Children.toArray(indicator.props.children)
+    assert.deepEqual(levels.map(bar => bar.props.style.height), [10, 20, 28, 18, 10])
+    assert.ok(levels.every(bar => bar.props.style.width == 4 && bar.props.style.backgroundColor == theme.accent))
+    const [words, hint] = React.Children.toArray(transcript.props.children)
+    assert.equal(words.props.size, 38)
+    assert.equal(words.props.lineHeight, 1.35)
+    assert.equal(words.props.children, 'search_voice_listening', 'show an honest prompt, not a fabricated transcript')
+    assert.equal(hint.props.size, 20)
+    assert.equal(hint.props.children, 'search_voice_fill_hint', 'preserve fill-only search behavior')
+  })
+}
+
+test('voice modal has explicit visibility, close action and Android back cancellation', () => {
+  let cancelled = 0
+  const { modal, close } = renderVoiceModal({ visible: false, onCancel: () => { ++cancelled } })
+  assert.equal(modal.props.visible, false)
+  assert.equal(close.props.accessibilityLabel, 'search_voice_cancel')
+  close.props.onPress()
+  modal.props.onRequestClose()
+  assert.equal(cancelled, 2)
+})
+
+for (const [state, label] of [['isPreparing', 'search_voice_preparing'], ['isProcessing', 'search_voice_processing']]) {
+  test(`${state} displays progress instead of a listening indicator`, () => {
+    const { title, indicator } = renderVoiceModal({ [state]: true })
+    assert.equal(title.props.children, label)
+    assert.equal(indicator.props.children.type, 'ActivityIndicator')
+  })
+}
+
+test('voice modal fits narrow portrait windows without a navigation rail offset', () => {
+  const { overlay, dialog, transcript } = renderVoiceModal({ width: 640, height: 1000 })
+  assert.equal(overlay.props.style.paddingLeft, 0)
+  assert.equal(dialog.props.style.width, 592)
+  assert.equal(dialog.props.style.height, undefined, 'dialog may grow for larger fonts and translations')
+  assert.equal(transcript.props.children[0].props.numberOfLines, undefined, 'do not truncate the speech prompt')
 })

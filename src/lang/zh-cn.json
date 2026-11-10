@@ -248,6 +248,8 @@
   "search_voice_model_error": "离线语音模型加载失败，请检查存储空间和设备内存后重试",
   "search_voice_start": "语音输入",
   "search_voice_cancel": "取消语音输入",
+  "search_voice_listening_title": "正在聆听…",
+  "search_voice_fill_hint": "识别后自动填入搜索框",
   "search_voice_listening": "请说出歌名或歌手…",
   "search_voice_unavailable": "离线语音模型或引擎不可用，请重新安装完整版本",
   "search_voice_permission": "语音输入需要麦克风权限，请允许后重试",

@@ -248,6 +248,8 @@
   "search_voice_model_error": "Could not load the offline speech model. Check free storage and memory, then try again.",
   "search_voice_start": "Voice input",
   "search_voice_cancel": "Cancel voice input",
+  "search_voice_listening_title": "Listening…",
+  "search_voice_fill_hint": "Recognized text will fill the search box",
   "search_voice_listening": "Say a song or artist…",
   "search_voice_unavailable": "Offline speech model or engine unavailable. Please reinstall the complete app.",
   "search_voice_permission": "Voice input requires microphone permission. Please allow access and try again.",
