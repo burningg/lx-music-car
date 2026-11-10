@@ -34,12 +34,17 @@ function deferred() {
   const promise = new Promise((_resolve, _reject) => { resolve = _resolve; reject = _reject })
   return { promise, resolve, reject }
 }
-const flush = async() => { for (let i = 0; i < 12; ++i) await Promise.resolve() }
+const flush = async() => new Promise(resolve => { setImmediate(resolve) })
 
-function setup({ permission = 'granted', available = true, locale = 'zh_cn' } = {}) {
+const playbackStates = Object.fromEntries(['None', 'Ready', 'Playing', 'Paused', 'Stopped', 'Buffering', 'Connecting'].map(state => [state, state]))
+
+function setup({ permission = 'granted', available = true, locale = 'zh_cn', playbackState = 'Paused', initialized = true, pauseResult, resumeResult } = {}) {
   const messages = []; const results = []; const requests = []; const cleanups = []
   const listeners = {}
   const callbacks = {}
+  const playback = { state: playbackState, initialized, events: [], pauseCalls: 0, playCalls: 0, stateReads: 0 }
+  const playerState = { playMusicInfo: { musicInfo: { id: 'current-song' }, listId: 'list' } }
+  const lx = { isPlayedStop: false }
   let api; let permissionRequests = 0; let cancelled = 0
   const appState = {
     currentState: 'active',
@@ -61,28 +66,60 @@ function setup({ permission = 'granted', available = true, locale = 'zh_cn' } = 
         request: async name => { assert.equal(name, 'microphone'); ++permissionRequests; return permission },
       },
     },
+    'react-native-track-player': {
+      __esModule: true,
+      State: playbackStates,
+      default: {
+        getState: async() => { ++playback.stateReads; return playback.state },
+        pause: async() => {
+          ++playback.pauseCalls
+          playback.events.push('pause-request')
+          await pauseResult
+          playback.state = playback.state == 'Buffering' ? 'Connecting' : 'Paused'
+          playback.events.push('paused')
+        },
+        play: async() => {
+          ++playback.playCalls
+          playback.events.push('resume-request')
+          await resumeResult
+          playback.state = 'Playing'
+          playback.events.push('resumed')
+        },
+      },
+    },
+    '@/plugins/player': { isInitialized: () => playback.initialized },
+    '@/store/player/state': { __esModule: true, default: playerState },
     '@/lang': { useI18n: () => key => key },
     '@/utils/tools': { toast: message => messages.push(message) },
     '@/utils/nativeModules/speechRecognition': {
       isSpeechRecognitionAvailable: async() => available,
       onSpeechRecognitionState: handler => appState.addEventListener('speech', handler).remove,
-      startSpeechRecognition: language => { const result = deferred(); requests.push({ language, ...result }); return result.promise },
-      cancelSpeechRecognition: () => { ++cancelled },
+      startSpeechRecognition: language => {
+        playback.events.push('recording-start')
+        const result = deferred()
+        requests.push({ language, ...result })
+        return result.promise.finally(() => { playback.events.push('recording-stopped') })
+      },
+      cancelSpeechRecognition: () => { ++cancelled; playback.events.push('cancel-recording') },
     },
-  }, { i18n: { locale } }).default
+  }, { i18n: { locale }, lx }).default
   function Harness() { api = useVoiceSearch(text => results.push(text)); return React.createElement('View') }
   const renderer = new ShallowRenderer()
   renderer.render(React.createElement(Harness))
   return {
     messages,
     results,
+    playback,
+    playerState,
+    lx,
     requests,
     listeners,
     appState,
     get api() { return api },
     get permissionRequests() { return permissionRequests },
     get cancelled() { return cancelled },
-    unmount() { cleanups.forEach(fn => fn()); renderer.unmount() },
+    unmount() { cleanups.splice(0).forEach(fn => fn()); renderer.unmount() },
+    remount() { renderer.render(React.createElement(Harness)) },
   }
 }
 
@@ -172,6 +209,7 @@ test('repeated starts are gated and stale results cannot overwrite a new session
   await flush()
   ctx.requests[0].resolve('旧文字')
   await first
+  await flush()
   assert.deepEqual(ctx.results, [])
   assert.equal(ctx.api.isRecognizing, true)
   ctx.requests[1].resolve('新文字')
@@ -432,4 +470,227 @@ test('voice modal fits narrow portrait windows without a navigation rail offset'
   assert.equal(dialog.props.style.width, 592)
   assert.equal(dialog.props.style.height, undefined, 'dialog may grow for larger fonts and translations')
   assert.equal(transcript.props.children[0].props.numberOfLines, undefined, 'do not truncate the speech prompt')
+})
+
+
+for (const playbackState of ['Playing', 'Buffering']) {
+  test(`${playbackState} music pauses before recording and resumes after recognition`, async() => {
+    const ctx = setup({ playbackState })
+    const running = ctx.api.start()
+    await flush()
+    assert.deepEqual(ctx.playback.events, ['pause-request', 'paused', 'recording-start'])
+    assert.equal(ctx.playback.playCalls, 0)
+    ctx.listeners.speech('processing')
+    assert.equal(ctx.playback.playCalls, 0, 'stay paused while final decoding is pending')
+    ctx.requests[0].resolve('周杰伦')
+    await running
+    assert.deepEqual(ctx.results, ['周杰伦'])
+    assert.deepEqual(ctx.playback.events, ['pause-request', 'paused', 'recording-start', 'recording-stopped', 'resume-request', 'resumed'])
+    assert.equal(ctx.playback.state, 'Playing')
+    assert.equal(ctx.api.isRecognizing, false)
+  })
+}
+
+for (const playbackState of ['Paused', 'Stopped', 'None', 'Ready', 'Connecting']) {
+  test(`${playbackState} playback is not started by voice recognition`, async() => {
+    const ctx = setup({ playbackState })
+    const running = ctx.api.start()
+    await flush()
+    ctx.requests[0].resolve('歌名')
+    await running
+    assert.equal(ctx.playback.pauseCalls, 0)
+    assert.equal(ctx.playback.playCalls, 0)
+    assert.equal(ctx.playback.state, playbackState)
+  })
+}
+
+test('voice recognition works before the music player has been initialized', async() => {
+  const ctx = setup({ initialized: false })
+  const running = ctx.api.start()
+  await flush()
+  ctx.requests[0].resolve('歌名')
+  await running
+  assert.equal(ctx.playback.stateReads, 0)
+  assert.equal(ctx.playback.playCalls, 0)
+})
+
+for (const options of [{ permission: 'denied' }, { available: false }]) {
+  test(`failed prerequisites ${JSON.stringify(options)} do not interrupt music`, async() => {
+    const ctx = setup({ playbackState: 'Playing', ...options })
+    await ctx.api.start()
+    assert.equal(ctx.playback.pauseCalls, 0)
+    assert.equal(ctx.playback.playCalls, 0)
+    assert.equal(ctx.requests.length, 0)
+  })
+}
+
+for (const result of ['E_NO_MATCH', 'E_TIMEOUT', 'E_AUDIO', 'E_MODEL', 'E_CANCELLED', 'empty']) {
+  test(`${result} restores the music paused for this session`, async() => {
+    const ctx = setup({ playbackState: 'Playing' })
+    const running = ctx.api.start()
+    await flush()
+    if (result == 'empty') ctx.requests[0].resolve(' ')
+    else ctx.requests[0].reject({ code: result })
+    await running
+    assert.equal(ctx.playback.playCalls, 1)
+    assert.equal(ctx.playback.state, 'Playing')
+    assert.equal(ctx.api.isRecognizing, false)
+  })
+}
+
+for (const action of ['cancel', 'back', 'background', 'unmount']) {
+  test(`${action} restores playback only after the microphone stops`, async() => {
+    const ctx = setup({ playbackState: 'Playing' })
+    const running = ctx.api.start()
+    await flush()
+    if (action == 'cancel') ctx.api.cancel()
+    if (action == 'back') ctx.listeners.hardwareBackPress()
+    if (action == 'background') {
+      ctx.appState.currentState = 'background'
+      ctx.listeners.change('background')
+    }
+    if (action == 'unmount') ctx.unmount()
+    await flush()
+    assert.equal(ctx.cancelled, 1)
+    assert.equal(ctx.playback.playCalls, 0)
+    ctx.requests[0].reject({ code: 'E_CANCELLED' })
+    await running
+    assert.equal(ctx.playback.playCalls, 1)
+    assert.deepEqual(ctx.results, [])
+    if (action != 'unmount') ctx.api.cancel()
+    assert.equal(ctx.playback.playCalls, 1, 'cleanup is idempotent')
+  })
+}
+
+test('recording waits for the asynchronous pause operation', async() => {
+  const pausing = deferred()
+  const ctx = setup({ playbackState: 'Playing', pauseResult: pausing.promise })
+  const running = ctx.api.start()
+  await flush()
+  assert.equal(ctx.playback.pauseCalls, 1)
+  assert.equal(ctx.requests.length, 0)
+  pausing.resolve()
+  await flush()
+  assert.equal(ctx.requests.length, 1)
+  ctx.requests[0].resolve('完成')
+  await running
+  assert.equal(ctx.playback.playCalls, 1)
+})
+
+for (const action of ['cancel', 'background', 'unmount']) {
+  test(`${action} while pausing restores music without opening the microphone`, async() => {
+    const pausing = deferred()
+    const ctx = setup({ playbackState: 'Playing', pauseResult: pausing.promise })
+    const running = ctx.api.start()
+    await flush()
+    if (action == 'cancel') ctx.api.cancel()
+    if (action == 'unmount') ctx.unmount()
+    if (action == 'background') {
+      ctx.appState.currentState = 'background'
+      ctx.listeners.change('background')
+    }
+    pausing.resolve()
+    await running
+    assert.equal(ctx.requests.length, 0)
+    assert.equal(ctx.playback.playCalls, 1)
+    assert.equal(ctx.playback.state, 'Playing')
+  })
+}
+
+test('a failed pause aborts recognition instead of recording over music', async() => {
+  const pausing = deferred()
+  const ctx = setup({ playbackState: 'Playing', pauseResult: pausing.promise })
+  const running = ctx.api.start()
+  await flush()
+  pausing.reject(new Error('pause failed'))
+  await running
+  assert.equal(ctx.requests.length, 0)
+  assert.equal(ctx.playback.playCalls, 0)
+  assert.deepEqual(ctx.messages, ['search_voice_failed'])
+  assert.equal(ctx.api.isRecognizing, false)
+})
+
+for (const change of ['track', 'stop', 'destroy', 'scheduled-stop', 'already-playing']) {
+  test(`playback ${change} during recognition is not overridden on completion`, async() => {
+    const ctx = setup({ playbackState: 'Playing' })
+    const running = ctx.api.start()
+    await flush()
+    if (change == 'track') ctx.playerState.playMusicInfo = { musicInfo: { id: 'other-song' }, listId: 'list' }
+    if (change == 'stop') ctx.playback.state = 'Stopped'
+    if (change == 'destroy') ctx.playback.initialized = false
+    if (change == 'scheduled-stop') ctx.lx.isPlayedStop = true
+    if (change == 'already-playing') ctx.playback.state = 'Playing'
+    ctx.requests[0].resolve('完成')
+    await running
+    assert.equal(ctx.playback.playCalls, 0)
+  })
+}
+
+test('cancel then immediately retry waits for old recorder cleanup and never resumes during new recording', async() => {
+  const resuming = deferred()
+  const ctx = setup({ playbackState: 'Playing', resumeResult: resuming.promise })
+  const first = ctx.api.start()
+  await flush()
+  ctx.api.cancel()
+  const second = ctx.api.start()
+  await flush()
+  assert.equal(ctx.requests.length, 1)
+  ctx.requests[0].reject({ code: 'E_CANCELLED' })
+  await flush()
+  assert.equal(ctx.playback.playCalls, 1)
+  assert.equal(ctx.requests.length, 1, 'wait until previous resume completes')
+  resuming.resolve()
+  await first
+  await flush()
+  assert.equal(ctx.requests.length, 2)
+  assert.equal(ctx.playback.pauseCalls, 2)
+  assert.equal(ctx.playback.state, 'Paused')
+  assert.equal(ctx.api.isRecognizing, true)
+  assert.equal(ctx.playback.playCalls, 1)
+  ctx.requests[1].resolve('新的结果')
+  await second
+  assert.deepEqual(ctx.results, ['新的结果'])
+  assert.equal(ctx.playback.playCalls, 2)
+  assert.equal(ctx.playback.state, 'Playing')
+})
+
+test('resume failure still cleans up recognition and allows later sessions', async() => {
+  const resuming = deferred()
+  const ctx = setup({ playbackState: 'Playing', resumeResult: resuming.promise })
+  const first = ctx.api.start()
+  await flush()
+  ctx.requests[0].resolve('第一次')
+  await flush()
+  resuming.reject(new Error('resume failed'))
+  await first
+  assert.equal(ctx.api.isRecognizing, false)
+  assert.deepEqual(ctx.results, ['第一次'])
+  const second = ctx.api.start()
+  await flush()
+  ctx.requests[1].resolve('第二次')
+  await second
+  assert.deepEqual(ctx.results, ['第一次', '第二次'])
+  assert.equal(ctx.playback.playCalls, 1, 'do not start originally paused music on the next session')
+})
+
+
+test('reopening search waits for playback restoration from the unmounted session', async() => {
+  const ctx = setup({ playbackState: 'Playing' })
+  const first = ctx.api.start()
+  await flush()
+  ctx.unmount()
+  ctx.remount()
+  const second = ctx.api.start()
+  await flush()
+  assert.equal(ctx.requests.length, 1)
+  ctx.requests[0].reject({ code: 'E_CANCELLED' })
+  await first
+  await flush()
+  assert.equal(ctx.requests.length, 2)
+  assert.equal(ctx.playback.pauseCalls, 2)
+  assert.equal(ctx.playback.playCalls, 1)
+  assert.equal(ctx.playback.state, 'Paused')
+  ctx.requests[1].resolve('完成')
+  await second
+  assert.equal(ctx.playback.playCalls, 2)
 })

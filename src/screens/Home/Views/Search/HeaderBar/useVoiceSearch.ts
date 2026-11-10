@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AppState, BackHandler, PermissionsAndroid } from 'react-native'
+import TrackPlayer, { State } from 'react-native-track-player'
+import { isInitialized } from '@/plugins/player'
+import playerState from '@/store/player/state'
 import { useI18n, type Message } from '@/lang'
 import { toast } from '@/utils/tools'
 import { cancelSpeechRecognition, isSpeechRecognitionAvailable, onSpeechRecognitionState, startSpeechRecognition } from '@/utils/nativeModules/speechRecognition'
@@ -32,6 +35,9 @@ const waitForForeground = async(): Promise<boolean> => {
   })
 }
 
+// Shared across mounts so leaving/reopening Search cannot overlap recorder cleanup and playback.
+let pendingSession = Promise.resolve()
+
 export default (onResult: (text: string) => void) => {
   const t = useI18n()
   const [isRecognizing, setIsRecognizing] = useState(false)
@@ -57,7 +63,7 @@ export default (onResult: (text: string) => void) => {
 
   useEffect(() => {
     const removeSpeechState = onSpeechRecognitionState(state => {
-      if (active.current) {
+      if (active.current && nativeStarted.current) {
         setIsPreparing(state == 'loading')
         setIsProcessing(state == 'processing')
       }
@@ -82,11 +88,17 @@ export default (onResult: (text: string) => void) => {
   const start = async() => {
     if (active.current) return
     const id = ++session.current
+    const previousSession = pendingSession
+    let finishSession = () => {}
+    pendingSession = new Promise<void>(resolve => { finishSession = resolve })
+    let pausedPlayback: typeof playerState.playMusicInfo | null = null
     active.current = true
     setIsProcessing(false)
     setIsPreparing(true)
     setIsRecognizing(true)
     try {
+      await previousSession
+      if (id != session.current) return
       if (!await isSpeechRecognitionAvailable()) {
         throw Object.assign(new Error('Bundled offline speech recognition is unavailable'), { code: 'E_UNAVAILABLE' })
       }
@@ -98,6 +110,18 @@ export default (onResult: (text: string) => void) => {
         return
       }
       if (!await waitForForeground() || id != session.current) return
+      if (isInitialized()) {
+        // Read native state, not the UI store: its playback events can lag behind pause/play.
+        const playbackState = await TrackPlayer.getState()
+        if (id != session.current) return
+        // In our Android player, Buffering has playWhenReady=true; Connecting is paused buffering.
+        if (playbackState == State.Playing || playbackState == State.Buffering) {
+          const playback = playerState.playMusicInfo
+          await TrackPlayer.pause()
+          pausedPlayback = playback
+        }
+      }
+      if (id != session.current || AppState.currentState != 'active') return
       nativeStarted.current = true
       const language = global.i18n?.locale == 'en_us' ? 'en-US' : global.i18n?.locale == 'zh_tw' ? 'zh-TW' : 'zh-CN'
       const text = (await startSpeechRecognition(language)).trim()
@@ -109,6 +133,19 @@ export default (onResult: (text: string) => void) => {
       const code = (error as { code?: string } | null)?.code
       if (code != 'E_CANCELLED') toast(t(errorMessages[code ?? ''] ?? 'search_voice_failed'), 'long')
     } finally {
+      // The native promise settles only after recording stops (including cancellation).
+      // Restore only the playback we paused, never a replacement track or a stopped player.
+      try {
+        if (pausedPlayback && pausedPlayback === playerState.playMusicInfo && isInitialized() && !global.lx.isPlayedStop) {
+          const playbackState = await TrackPlayer.getState()
+          if (pausedPlayback === playerState.playMusicInfo && isInitialized() && !global.lx.isPlayedStop &&
+            (playbackState == State.Paused || playbackState == State.Connecting)) {
+            await TrackPlayer.play()
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to restore playback after voice recognition', error)
+      }
       if (id == session.current) {
         active.current = false
         nativeStarted.current = false
@@ -116,6 +153,7 @@ export default (onResult: (text: string) => void) => {
         setIsProcessing(false)
         setIsRecognizing(false)
       }
+      finishSession()
     }
   }
 
