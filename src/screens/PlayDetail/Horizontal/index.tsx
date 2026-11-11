@@ -8,6 +8,7 @@ import PageContent from '@/components/PageContent'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { pop } from '@/navigation'
 import { px } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
 
 import TopBar from './TopBar'
 import Cover from './Cover'
@@ -17,8 +18,9 @@ import Transport from './Transport'
 import Secondary from './Secondary'
 import Lyric from './Lyric'
 
-// 设计稿正在播放：1920×1080，垂直居中的封面 512 + 信息 552 + 歌词 440
+// SPRSH：1920×1080，左侧封面与播放信息上下排列，右侧 864px 歌词区
 export default memo(({ componentId }: { componentId: string }) => {
+  useWindowSize()
   useEffect(() => {
     setComponentId(COMPONENT_IDS.playDetail, componentId)
     screenkeepAwake()
@@ -54,23 +56,24 @@ export default memo(({ componentId }: { componentId: string }) => {
 
   return (
     <PageContent>
-      <CarShell componentId={componentId} activeId="now" background={<AmbientBackground />}>
+      <CarShell componentId={componentId} activeId="now" navRailSize="large" background={<AmbientBackground />}>
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1, paddingHorizontal: px(80) }}>
             <View style={{ position: 'absolute', top: px(40), left: px(80), right: px(80), zIndex: 1 }}>
               <TopBar onBack={back} />
             </View>
-            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: px(72) }}>
-              <View>
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: px(112) }}>
+              <View style={{ flex: 1, minWidth: 0, alignItems: 'center', gap: px(28) }}>
                 <Cover componentId={componentId} />
+                <View style={{ width: px(368), maxWidth: '100%', minWidth: 0, gap: px(32) }}>
+                  <Meta />
+                  <ProgressRow />
+                  <Transport />
+                  <Secondary />
+                </View>
               </View>
-              <View style={{ flex: 1, minWidth: 0, gap: px(48) }}>
-                <Meta />
-                <ProgressRow />
-                <Transport />
-                <Secondary />
-              </View>
-              <View style={{ width: px(440), height: px(340) }}>
+              {/* 六行歌词加行间留白约 552px，保留当前行附近的上下文。 */}
+              <View style={{ width: px(864), height: px(552), maxHeight: '100%' }}>
                 <Lyric />
               </View>
             </View>

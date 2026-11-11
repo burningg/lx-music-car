@@ -613,12 +613,75 @@
           "ref": "sOwkY",
           "name": "Nav Rail",
           "height": "fill_container",
+          "width": 160,
           "descendants": {
+            "q4bHg": {
+              "width": "fill_container",
+              "gap": 24,
+              "padding": [
+                0,
+                24
+              ]
+            },
             "fuc4s": {
-              "fill": "$glass-strong"
+              "fill": "$glass-strong",
+              "width": "fill_container",
+              "height": 112,
+              "cornerRadius": 24
             },
             "pRDAM": {
-              "fill": "$text-1"
+              "fill": "$text-1",
+              "width": 44,
+              "height": 44
+            },
+            "hswUy": {
+              "width": "fill_container",
+              "height": 112,
+              "cornerRadius": 24
+            },
+            "RfyDO": {
+              "width": 44,
+              "height": 44,
+              "fill": "$text-2"
+            },
+            "I3Kqj": {
+              "width": "fill_container",
+              "height": 112,
+              "cornerRadius": 24
+            },
+            "zWpoJ": {
+              "width": 44,
+              "height": 44,
+              "fill": "$text-2"
+            },
+            "xZFVB": {
+              "width": "fill_container",
+              "height": 112,
+              "cornerRadius": 24
+            },
+            "nznH1": {
+              "width": 44,
+              "height": 44,
+              "fill": "$text-2"
+            },
+            "WVMvr": {
+              "width": "fill_container",
+              "height": 112,
+              "cornerRadius": 24
+            },
+            "wcl2K": {
+              "width": 44,
+              "height": 44,
+              "fill": "$text-2"
+            },
+            "UndJK": {
+              "width": 96,
+              "height": 96,
+              "cornerRadius": 32
+            },
+            "ANp4O": {
+              "width": 40,
+              "height": 40
             }
           }
         },
@@ -628,7 +691,7 @@
           "name": "Main",
           "width": "fill_container",
           "height": "fill_container",
-          "gap": 72,
+          "gap": 112,
           "padding": [
             0,
             80
@@ -637,351 +700,364 @@
           "children": [
             {
               "type": "frame",
-              "id": "snIN7",
-              "name": "Cover",
-              "width": 512,
-              "height": 512,
-              "fill": {
-                "type": "image",
-                "enabled": true,
-                "url": "images/generated-3.png",
-                "mode": "cover"
-              },
-              "cornerRadius": 24,
-              "stroke": "$art-stroke",
-              "strokeWidth": 1,
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "$shadow-strong",
-                "offset": {
-                  "x": 0,
-                  "y": 40
-                },
-                "blur": 90
-              }
-            },
-            {
-              "type": "frame",
-              "id": "lAYoo",
-              "name": "Info",
+              "id": "ZBh1a",
+              "name": "封面与播放 · 上下布局",
               "width": "fill_container",
               "layout": "vertical",
-              "gap": 48,
+              "gap": 28,
+              "alignItems": "center",
               "children": [
                 {
                   "type": "frame",
-                  "id": "wmLRb",
-                  "name": "Meta",
-                  "width": "fill_container",
+                  "id": "snIN7",
+                  "name": "Cover",
+                  "width": 320,
+                  "height": 320,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "images/generated-3.png",
+                    "mode": "cover"
+                  },
+                  "cornerRadius": 18,
+                  "stroke": "$art-stroke",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "$shadow-strong",
+                    "offset": {
+                      "x": 0,
+                      "y": 24
+                    },
+                    "blur": 60
+                  }
+                },
+                {
+                  "type": "frame",
+                  "id": "lAYoo",
+                  "name": "Info",
+                  "width": 368,
                   "layout": "vertical",
-                  "gap": 14,
+                  "gap": 32,
                   "children": [
                     {
                       "type": "frame",
-                      "id": "PpGhw",
-                      "name": "Source",
-                      "gap": 8,
-                      "alignItems": "center",
+                      "id": "wmLRb",
+                      "name": "Meta",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
                       "children": [
                         {
-                          "type": "ellipse",
-                          "id": "SsiD7",
-                          "name": "Dot",
-                          "fill": "$accent",
-                          "width": 7,
-                          "height": 7
+                          "type": "frame",
+                          "id": "PpGhw",
+                          "name": "Source",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "SsiD7",
+                              "name": "Dot",
+                              "fill": "$accent",
+                              "width": 7,
+                              "height": 7
+                            },
+                            {
+                              "type": "text",
+                              "id": "vUxvN",
+                              "name": "Label",
+                              "fill": "$text-2",
+                              "content": "来自歌单 · 秋日私语｜想和你一起听歌看日落",
+                              "fontFamily": "$font-cn",
+                              "fontSize": 16,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YosCH",
+                          "name": "Title Row",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "i5KRlV",
+                              "name": "Title",
+                              "fill": "$text-1",
+                              "content": "落日与晚风",
+                              "lineHeight": 1.3,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 44,
+                              "fontWeight": "700",
+                              "letterSpacing": -0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "o43Uka",
+                              "name": "Quality",
+                              "cornerRadius": 6,
+                              "stroke": "$badge-stroke",
+                              "strokeWidth": 1,
+                              "padding": [
+                                4,
+                                9
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "LaLac",
+                                  "name": "Label",
+                                  "fill": "$text-2",
+                                  "content": "无损",
+                                  "fontFamily": "$font-cn",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
                         },
                         {
                           "type": "text",
-                          "id": "vUxvN",
-                          "name": "Label",
+                          "id": "IBglo",
+                          "name": "Artist",
                           "fill": "$text-2",
-                          "content": "来自歌单 · 秋日私语｜想和你一起听歌看日落",
+                          "content": "陈屿 — 《海岸线以西》",
+                          "lineHeight": 1.4,
                           "fontFamily": "$font-cn",
-                          "fontSize": 16,
+                          "fontSize": 22,
                           "fontWeight": "normal"
                         }
                       ]
                     },
                     {
                       "type": "frame",
-                      "id": "YosCH",
-                      "name": "Title Row",
+                      "id": "ESlgG",
+                      "name": "Progress",
                       "width": "fill_container",
-                      "gap": 16,
-                      "alignItems": "center",
+                      "layout": "vertical",
+                      "gap": 12,
                       "children": [
                         {
-                          "type": "text",
-                          "id": "i5KRlV",
-                          "name": "Title",
-                          "fill": "$text-1",
-                          "content": "落日与晚风",
-                          "fontFamily": "$font-cn",
-                          "fontSize": 60,
-                          "fontWeight": "700",
-                          "letterSpacing": -1.2
+                          "type": "frame",
+                          "id": "hgcah",
+                          "name": "Track",
+                          "width": "fill_container",
+                          "height": 6,
+                          "fill": "$track-bg",
+                          "cornerRadius": 3,
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 3,
+                              "id": "A6fwX",
+                              "name": "Played",
+                              "fill": "$text-1",
+                              "width": 152,
+                              "height": 6
+                            }
+                          ]
                         },
                         {
                           "type": "frame",
-                          "id": "o43Uka",
-                          "name": "Quality",
-                          "cornerRadius": 6,
-                          "stroke": "$badge-stroke",
-                          "strokeWidth": 1,
-                          "padding": [
-                            4,
-                            9
-                          ],
+                          "id": "bfGEM",
+                          "name": "Times",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
                           "children": [
                             {
                               "type": "text",
-                              "id": "LaLac",
-                              "name": "Label",
-                              "fill": "$text-2",
-                              "content": "无损",
-                              "fontFamily": "$font-cn",
-                              "fontSize": 13,
-                              "fontWeight": "600"
+                              "id": "lKgfZ",
+                              "name": "Time",
+                              "fill": "$text-3",
+                              "content": "1:32",
+                              "fontFamily": "$font-num",
+                              "fontSize": 16,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "wZgio",
+                              "name": "Time",
+                              "fill": "$text-3",
+                              "content": "-2:33",
+                              "fontFamily": "$font-num",
+                              "fontSize": 16,
+                              "fontWeight": "500"
                             }
                           ]
                         }
                       ]
                     },
                     {
-                      "type": "text",
-                      "id": "IBglo",
-                      "name": "Artist",
-                      "fill": "$text-2",
-                      "content": "陈屿 — 《海岸线以西》",
-                      "fontFamily": "$font-cn",
-                      "fontSize": 26,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "ESlgG",
-                  "name": "Progress",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 12,
-                  "children": [
-                    {
                       "type": "frame",
-                      "id": "hgcah",
-                      "name": "Track",
-                      "width": "fill_container",
-                      "height": 6,
-                      "fill": "$track-bg",
-                      "cornerRadius": 3,
-                      "children": [
-                        {
-                          "type": "rectangle",
-                          "cornerRadius": 3,
-                          "id": "A6fwX",
-                          "name": "Played",
-                          "fill": "$text-1",
-                          "width": 228,
-                          "height": 6
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "bfGEM",
-                      "name": "Times",
+                      "id": "drstA",
+                      "name": "Transport",
                       "width": "fill_container",
                       "justifyContent": "space_between",
-                      "children": [
-                        {
-                          "type": "text",
-                          "id": "lKgfZ",
-                          "name": "Time",
-                          "fill": "$text-3",
-                          "content": "1:32",
-                          "fontFamily": "$font-num",
-                          "fontSize": 16,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "wZgio",
-                          "name": "Time",
-                          "fill": "$text-3",
-                          "content": "-2:33",
-                          "fontFamily": "$font-num",
-                          "fontSize": 16,
-                          "fontWeight": "500"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "drstA",
-                  "name": "Transport",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "gykP7",
-                      "name": "Shuffle",
-                      "width": 32,
-                      "height": 32,
-                      "icon": "shuffle",
-                      "library": "Material Symbols Rounded",
-                      "fill": "$text-3"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "E1Ezs",
-                      "name": "Previous",
-                      "width": 48,
-                      "height": 48,
-                      "icon": "skip-back-fill",
-                      "library": "phosphor",
-                      "fill": "$text-1"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "UxyKR",
-                      "name": "Play Pause",
-                      "width": 104,
-                      "height": 104,
-                      "fill": "$text-1",
-                      "cornerRadius": 52,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "$shadow-soft",
-                        "offset": {
-                          "x": 0,
-                          "y": 16
-                        },
-                        "blur": 40
-                      },
-                      "justifyContent": "center",
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "icon",
-                          "id": "Tri4w",
-                          "name": "Pause",
-                          "width": 44,
-                          "height": 44,
-                          "icon": "pause-fill",
+                          "id": "gykP7",
+                          "name": "Shuffle",
+                          "width": 32,
+                          "height": 32,
+                          "icon": "shuffle",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$text-3"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "E1Ezs",
+                          "name": "Previous",
+                          "width": 48,
+                          "height": 48,
+                          "icon": "skip-back-fill",
                           "library": "phosphor",
-                          "fill": "$on-primary"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "icon",
-                      "id": "RzNfV",
-                      "name": "Next",
-                      "width": 48,
-                      "height": 48,
-                      "icon": "skip-forward-fill",
-                      "library": "phosphor",
-                      "fill": "$text-1"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "FD4GD",
-                      "name": "Repeat",
-                      "width": 32,
-                      "height": 32,
-                      "icon": "repeat",
-                      "library": "Material Symbols Rounded",
-                      "fill": "$accent"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "hLvs5",
-                  "name": "Secondary",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "sXnOu",
-                      "name": "Output",
-                      "fill": "$glass",
-                      "cornerRadius": 999,
-                      "gap": 10,
-                      "padding": [
-                        10,
-                        16
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "KShxp",
-                          "name": "Icon",
-                          "width": 18,
-                          "height": 18,
-                          "icon": "speaker",
-                          "library": "lucide",
-                          "fill": "$text-2"
+                          "fill": "$text-1"
                         },
                         {
-                          "type": "text",
-                          "id": "a2T2K",
-                          "name": "Label",
-                          "fill": "$text-2",
-                          "content": "车载音响 · 杜比全景声",
-                          "fontFamily": "$font-cn",
-                          "fontSize": 15,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "p9GxJ5",
-                      "name": "Actions",
-                      "gap": 28,
-                      "alignItems": "center",
-                      "children": [
+                          "type": "frame",
+                          "id": "UxyKR",
+                          "name": "Play Pause",
+                          "width": 104,
+                          "height": 104,
+                          "fill": "$text-1",
+                          "cornerRadius": 52,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "$shadow-soft",
+                            "offset": {
+                              "x": 0,
+                              "y": 16
+                            },
+                            "blur": 40
+                          },
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "Tri4w",
+                              "name": "Pause",
+                              "width": 44,
+                              "height": 44,
+                              "icon": "pause-fill",
+                              "library": "phosphor",
+                              "fill": "$on-primary"
+                            }
+                          ]
+                        },
                         {
                           "type": "icon",
-                          "id": "awGJ2",
-                          "name": "Like",
-                          "width": 28,
-                          "height": 28,
-                          "icon": "heart-fill",
+                          "id": "RzNfV",
+                          "name": "Next",
+                          "width": 48,
+                          "height": 48,
+                          "icon": "skip-forward-fill",
                           "library": "phosphor",
-                          "fill": "$accent"
-                        },
-                        {
-                          "type": "icon",
-                          "id": "c9vO7",
-                          "name": "Lyrics",
-                          "width": 26,
-                          "height": 26,
-                          "icon": "message-square-quote",
-                          "library": "lucide",
                           "fill": "$text-1"
                         },
                         {
                           "type": "icon",
-                          "id": "yHEI4",
-                          "name": "Queue",
-                          "width": 26,
-                          "height": 26,
-                          "icon": "list-music",
-                          "library": "lucide",
-                          "fill": "$text-2"
+                          "id": "FD4GD",
+                          "name": "Repeat",
+                          "width": 32,
+                          "height": 32,
+                          "icon": "repeat",
+                          "library": "Material Symbols Rounded",
+                          "fill": "$accent"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hLvs5",
+                      "name": "Secondary",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "sXnOu",
+                          "name": "Output",
+                          "fill": "$glass",
+                          "cornerRadius": 999,
+                          "gap": 10,
+                          "padding": [
+                            10,
+                            16
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "KShxp",
+                              "name": "Icon",
+                              "width": 18,
+                              "height": 18,
+                              "icon": "speaker",
+                              "library": "lucide",
+                              "fill": "$text-2"
+                            },
+                            {
+                              "type": "text",
+                              "id": "a2T2K",
+                              "name": "Label",
+                              "fill": "$text-2",
+                              "content": "车载音响 · 杜比全景声",
+                              "fontFamily": "$font-cn",
+                              "fontSize": 15,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "p9GxJ5",
+                          "name": "Actions",
+                          "gap": 28,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "awGJ2",
+                              "name": "Like",
+                              "width": 28,
+                              "height": 28,
+                              "icon": "heart-fill",
+                              "library": "phosphor",
+                              "fill": "$accent"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "c9vO7",
+                              "name": "Lyrics",
+                              "width": 26,
+                              "height": 26,
+                              "icon": "message-square-quote",
+                              "library": "lucide",
+                              "fill": "$text-1"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "yHEI4",
+                              "name": "Queue",
+                              "width": 26,
+                              "height": 26,
+                              "icon": "list-music",
+                              "library": "lucide",
+                              "fill": "$text-2"
+                            }
+                          ]
                         }
                       ]
                     }
@@ -993,42 +1069,42 @@
               "type": "frame",
               "id": "R6aIVO",
               "name": "Lyrics",
-              "width": 440,
+              "width": 864,
               "layout": "vertical",
-              "gap": 32,
+              "gap": 36,
               "padding": [
                 0,
                 0,
                 0,
-                8
+                16
               ],
               "children": [
                 {
                   "type": "text",
                   "id": "X39q7a",
                   "name": "Line",
-                  "opacity": 0.2,
+                  "opacity": 0.48,
                   "fill": "$text-1",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "风把海面吹成一片金色",
-                  "lineHeight": 1.3,
+                  "lineHeight": 1.35,
                   "fontFamily": "$font-cn",
-                  "fontSize": 20,
+                  "fontSize": 36,
                   "fontWeight": "normal"
                 },
                 {
                   "type": "text",
                   "id": "qfNxe",
                   "name": "Line",
-                  "opacity": 0.35,
+                  "opacity": 0.65,
                   "fill": "$text-1",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "我们并肩不说话",
-                  "lineHeight": 1.3,
+                  "lineHeight": 1.35,
                   "fontFamily": "$font-cn",
-                  "fontSize": 20,
+                  "fontSize": 36,
                   "fontWeight": "normal"
                 },
                 {
@@ -1039,51 +1115,51 @@
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "就让这一刻慢一点",
-                  "lineHeight": 1.3,
+                  "lineHeight": 1.35,
                   "fontFamily": "$font-cn",
-                  "fontSize": 36,
+                  "fontSize": 64,
                   "fontWeight": "700"
                 },
                 {
                   "type": "text",
                   "id": "mN0fh",
                   "name": "Line",
-                  "opacity": 0.5,
+                  "opacity": 0.75,
                   "fill": "$text-1",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "慢到落日也舍不得走",
-                  "lineHeight": 1.3,
+                  "lineHeight": 1.35,
                   "fontFamily": "$font-cn",
-                  "fontSize": 22,
+                  "fontSize": 40,
                   "fontWeight": "500"
                 },
                 {
                   "type": "text",
                   "id": "f4zx78",
                   "name": "Line",
-                  "opacity": 0.3,
+                  "opacity": 0.58,
                   "fill": "$text-1",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "慢到你的侧脸",
-                  "lineHeight": 1.3,
+                  "lineHeight": 1.35,
                   "fontFamily": "$font-cn",
-                  "fontSize": 20,
+                  "fontSize": 36,
                   "fontWeight": "normal"
                 },
                 {
                   "type": "text",
                   "id": "k6k8CB",
                   "name": "Line",
-                  "opacity": 0.15,
+                  "opacity": 0.46,
                   "fill": "$text-1",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
                   "content": "被晚霞轻轻收藏",
-                  "lineHeight": 1.3,
+                  "lineHeight": 1.35,
                   "fontFamily": "$font-cn",
-                  "fontSize": 20,
+                  "fontSize": 36,
                   "fontWeight": "normal"
                 }
               ]

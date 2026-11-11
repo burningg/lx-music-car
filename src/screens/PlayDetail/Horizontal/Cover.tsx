@@ -7,9 +7,11 @@ import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import commonState from '@/store/common/state'
 import { useTheme } from '@/store/theme/hook'
 import { px } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
 
-/** 设计稿封面：512×512，圆角 24，保留共享元素锚点 */
+/** SPRSH 封面：320×320，圆角 18，保留共享元素锚点 */
 export default memo(({ componentId }: { componentId: string }) => {
+  useWindowSize()
   const theme = useTheme()
   const musicInfo = usePlayerMusicInfo()
 
@@ -25,15 +27,19 @@ export default memo(({ componentId }: { componentId: string }) => {
 
   return (
     <View style={{
-      width: px(512),
-      height: px(512),
-      borderRadius: px(24),
-      overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: theme['art-stroke'],
+      width: px(320),
+      height: px(320),
+      borderRadius: px(18),
+      backgroundColor: theme.bg,
+      shadowColor: theme['shadow-strong'],
+      shadowOffset: { width: 0, height: px(24) },
+      shadowRadius: px(60),
+      shadowOpacity: animated ? 1 : 0,
       elevation: animated ? 3 : 0,
     }}>
-      <Image url={pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ width: '100%', height: '100%' }} />
+      <View style={{ flex: 1, borderRadius: px(18), overflow: 'hidden', borderWidth: 1, borderColor: theme['art-stroke'] }}>
+        <Image url={pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={{ width: '100%', height: '100%' }} />
+      </View>
     </View>
   )
 })

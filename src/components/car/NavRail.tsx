@@ -17,6 +17,11 @@ import { useClock } from './hooks'
 
 export const NAV_RAIL_WIDTH = 112
 
+const RAIL_LAYOUTS = {
+  default: { width: NAV_RAIL_WIDTH, buttonSize: 64, radius: 20, iconSize: 28, gap: 14, padding: 0, settingsSize: 56, settingsRadius: 28, settingsIconSize: 24 },
+  large: { width: 160, buttonSize: 112, radius: 24, iconSize: 44, gap: 24, padding: 24, settingsSize: 96, settingsRadius: 32, settingsIconSize: 40 },
+} as const
+
 /** now：正在播放；其余对应主页 tab */
 export type RailId = 'now' | NAV_ID_Type
 
@@ -33,6 +38,8 @@ export interface NavRailProps {
   componentId?: string
   /** 覆盖高亮项，正在播放页传 now */
   activeId?: RailId
+  /** oNiqn 播放页使用 large，其他页面保留默认导航尺寸。 */
+  size?: keyof typeof RAIL_LAYOUTS
 }
 
 const handleExit = () => {
@@ -44,13 +51,14 @@ const handleExit = () => {
   })
 }
 
-const RailButton = ({ icon, active, size, radius, iconSize, idleBackground, onPress }: {
+const RailButton = ({ icon, active, size, radius, iconSize, idleBackground, idleColor, onPress }: {
   icon: string
   active: boolean
   size: number
   radius: number
   iconSize: number
   idleBackground?: string
+  idleColor?: string
   onPress: () => void
 }) => {
   const theme = useTheme()
@@ -68,13 +76,13 @@ const RailButton = ({ icon, active, size, radius, iconSize, idleBackground, onPr
         backgroundColor: active ? theme['glass-strong'] : idleBackground,
       }}
     >
-      <CarIcon name={icon} size={iconSize} color={active ? theme['text-1'] : idleBackground ? theme['text-2'] : theme['text-3']} />
+      <CarIcon name={icon} size={iconSize} color={active ? theme['text-1'] : idleColor ?? (idleBackground ? theme['text-2'] : theme['text-3'])} />
     </TouchableOpacity>
   )
 }
 
-// 设计稿 Nav Rail：宽 112，上下内边距 28，顶部时间，中部 5 个 64×64 导航，底部 56×56 设置
-export default memo(({ componentId, activeId }: NavRailProps) => {
+// 默认栏宽 112；oNiqn 实例宽 160、主按钮 112、设置按钮 96，上下内边距仍为 40。
+export default memo(({ componentId, activeId, size = 'default' }: NavRailProps) => {
   useWindowSize()
   const theme = useTheme()
   const time = useClock()
@@ -82,6 +90,7 @@ export default memo(({ componentId, activeId }: NavRailProps) => {
   const showBackBtn = useSettingValue('common.showBackBtn')
   const showExitBtn = useSettingValue('common.showExitBtn')
   const currentId: RailId = activeId ?? navActiveId
+  const layout = RAIL_LAYOUTS[size]
 
   const handlePress = (id: RailId) => {
     if (id == 'now') {
@@ -95,7 +104,7 @@ export default memo(({ componentId, activeId }: NavRailProps) => {
 
   return (
     <View style={{
-      width: px(NAV_RAIL_WIDTH),
+      width: px(layout.width),
       height: '100%',
       paddingVertical: px(40),
       alignItems: 'center',
@@ -105,15 +114,15 @@ export default memo(({ componentId, activeId }: NavRailProps) => {
       borderRightColor: theme.hairline,
     }}>
       <CarText size={22} weight="600" num style={{ letterSpacing: -0.4 }}>{time}</CarText>
-      <View style={{ gap: px(14), alignItems: 'center' }}>
+      <View style={{ gap: px(layout.gap), alignItems: 'center', alignSelf: size == 'large' ? 'stretch' : undefined, paddingHorizontal: px(layout.padding) }}>
         {RAIL_ITEMS.map(item => (
-          <RailButton key={item.id} icon={item.icon} active={currentId == item.id} size={64} radius={20} iconSize={28} onPress={() => { handlePress(item.id) }} />
+          <RailButton key={item.id} icon={item.icon} active={currentId == item.id} size={layout.buttonSize} radius={layout.radius} iconSize={layout.iconSize} idleColor={size == 'large' ? theme['text-2'] : undefined} onPress={() => { handlePress(item.id) }} />
         ))}
       </View>
       <View style={{ gap: px(18), alignItems: 'center' }}>
         {showBackBtn ? <RailButton icon="home" active={false} size={56} radius={28} iconSize={22} onPress={backHome} /> : null}
         {showExitBtn ? <RailButton icon="exit2" active={false} size={56} radius={28} iconSize={22} onPress={handleExit} /> : null}
-        <RailButton icon="lucide-layout-grid" active={currentId == 'nav_setting'} size={56} radius={28} iconSize={24} idleBackground={theme.glass} onPress={() => { handlePress('nav_setting') }} />
+        <RailButton icon="lucide-layout-grid" active={currentId == 'nav_setting'} size={layout.settingsSize} radius={layout.settingsRadius} iconSize={layout.settingsIconSize} idleBackground={theme.glass} onPress={() => { handlePress('nav_setting') }} />
       </View>
     </View>
   )

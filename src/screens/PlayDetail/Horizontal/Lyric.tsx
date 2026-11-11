@@ -7,6 +7,7 @@ import { useTheme } from '@/store/theme/hook'
 import { useSettingValue } from '@/store/setting/hook'
 import { AnimatedColorText } from '@/components/common/Text'
 import { px, sp } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
 import { getFontStyle } from '@/theme/fonts'
 import playerState from '@/store/player/state'
 import { scrollTo } from '@/utils/scroll'
@@ -24,17 +25,18 @@ interface LineProps {
   onLayout: (lineNum: number, height: number, width: number) => void
 }
 const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
+  useWindowSize()
   const theme = useTheme()
   const lrcFontSize = useSettingValue('playDetail.horizontal.style.lrcFontSize')
   const textAlign = useSettingValue('playDetail.style.align')
   const distance = lineNum - activeLine
   const active = distance == 0
-  // 保留用户的歌词字号比例，以默认 220 对应新版 20 / 36px。
-  const size = (active ? 36 : distance == 1 ? 22 : 20) * lrcFontSize / 220
-  const lineHeight = sp(size) * 1.3
+  // 保留用户的歌词字号比例，以默认 220 对应 SPRSH 的 36 / 64px。
+  const size = (active ? 64 : distance == 1 ? 40 : 36) * lrcFontSize / 220
+  const lineHeight = sp(size) * 1.35
 
   // 设计稿以主文字色逐级淡出，避免次级灰再叠加原生渐隐后接近全黑。
-  const opacity = active ? 1 : distance == 1 ? 0.5 : distance == 2 ? 0.3 : distance > 2 ? 0.15 : distance == -1 ? 0.35 : distance == -2 ? 0.2 : 0.15
+  const opacity = active ? 1 : distance == 1 ? 0.75 : distance == 2 ? 0.58 : distance > 2 ? 0.46 : distance == -1 ? 0.65 : 0.48
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     onLayout(lineNum, nativeEvent.layout.height, nativeEvent.layout.width)
@@ -43,7 +45,7 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
   // textBreakStrategy="simple" 用于解决某些设备上字体被截断的问题
   // https://stackoverflow.com/a/72822360
   return (
-    <View style={styles.line} onLayout={handleLayout}>
+    <View style={{ paddingVertical: px(18) }} onLayout={handleLayout}>
       <AnimatedColorText style={{
         ...styles.lineText,
         textAlign,
@@ -55,6 +57,7 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
         line.extendedLyrics.map((lrc, index) => {
           return (<AnimatedColorText style={{
             ...styles.lineTranslationText,
+            paddingTop: px(5),
             textAlign,
             fontSize: sp(size * 0.8),
             lineHeight: lineHeight * 0.8,
@@ -72,6 +75,7 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
 const wait = async() => new Promise(resolve => setTimeout(resolve, 100))
 
 export default () => {
+  useWindowSize()
   const lyricLines = useLrcSet()
   const { line } = useLrcPlay()
   const flatListRef = useRef<FlatList>(null)
@@ -271,7 +275,7 @@ export default () => {
         data={lyricLines}
         renderItem={renderItem}
         keyExtractor={getkey}
-        style={styles.container}
+        style={{ flex: 1, paddingLeft: px(16) }}
         ref={flatListRef}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={spaceComponent}
@@ -289,17 +293,8 @@ export default () => {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingLeft: px(8),
-    // backgroundColor: 'rgba(0,0,0,0.1)',
-  },
   space: {
     paddingTop: '100%',
-  },
-  line: {
-    paddingVertical: px(16),
-    // opacity: 0,
   },
   lineText: {
     textAlign: 'center',
@@ -313,7 +308,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     // fontSize: 13,
     // lineHeight: 17,
-    paddingTop: px(5),
     // paddingBottom: 5,
   },
 })

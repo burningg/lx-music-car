@@ -42,11 +42,11 @@ export default memo(() => {
 
   return (
     <View style={{ height: px(42), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <View style={{ height: px(42), flexShrink: 1, marginRight: px(20), flexDirection: 'row', alignItems: 'center', gap: px(10), paddingHorizontal: px(16), borderRadius: 999, backgroundColor: theme.glass }}>
+      <View style={{ height: px(42), flexShrink: 1, minWidth: 0, marginRight: px(20), flexDirection: 'row', alignItems: 'center', gap: px(10), paddingHorizontal: px(16), borderRadius: 999, backgroundColor: theme.glass }}>
         <CarIcon name="lucide-speaker" size={18} color={theme['text-2']} />
-        <CarText size={15} style={{ flexShrink: 1 }} color={theme['text-2']} numberOfLines={1}>{statusText || sourceLabel}</CarText>
+        <CarText size={15} style={{ flexShrink: 1, minWidth: 0 }} color={theme['text-2']} numberOfLines={1} ellipsizeMode="tail">{statusText || sourceLabel}</CarText>
       </View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(28) }}>
+      <View style={{ flexDirection: 'row', flexShrink: 0, alignItems: 'center', gap: px(28) }}>
         <IconButton
           icon={loved ? 'ph-heart-fill' : 'ph-heart'}
           iconSize={28}
