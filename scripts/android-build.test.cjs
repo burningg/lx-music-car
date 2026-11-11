@@ -41,6 +41,19 @@ function runWrapper(platform, result) {
   return { calls, errors, exitCode }
 }
 
+test('Android version and lockfile metadata follow the app package version', () => {
+  const pkg = require('../package.json')
+  const lock = require('../package-lock.json')
+  assert.equal(lock.version, pkg.version)
+  assert.equal(lock.packages[''].version, pkg.version)
+  assert.ok(gradle.includes('def verName = npmPackageJson["version"]'))
+  assert.ok(gradle.includes('def verCode = npmPackageJson["versionCode"]'))
+  assert.match(block(gradle, 'defaultConfig'), /versionName verName/)
+  assert.match(block(gradle, 'defaultConfig'), /versionCode verCode/)
+  const bundleInputs = block(gradle, 'tasks.withType(com.facebook.react.tasks.BundleHermesCTask).configureEach')
+  assert.ok(bundleInputs.includes('inputs.file(rootProject.file("../package.json"))'))
+})
+
 test('Android identity and file sharing use the car package', () => {
   const packageName = 'cn.toside.music.car'
   const manifest = readFileSync(path.join(root, 'android/app/src/main/AndroidManifest.xml'), 'utf8')

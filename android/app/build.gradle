@@ -103,6 +103,11 @@ def verCode = npmPackageJson["versionCode"]
 def verName = npmPackageJson["version"]
 def applicationName = npmPackageJson["name"]
 
+// The app imports its version from package.json, which RN's default JS inputs omit.
+tasks.withType(com.facebook.react.tasks.BundleHermesCTask).configureEach {
+    inputs.file(rootProject.file("../package.json"))
+}
+
 // Keep binaries out of Git; prepare once at build time, with locked hashes and no runtime downloads.
 def sttRoot = file("$rootDir/.stt/offline-stt")
 def prepareOfflineStt = tasks.register("prepareOfflineStt", Exec) {
