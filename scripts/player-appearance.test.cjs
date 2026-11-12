@@ -178,18 +178,22 @@ test('player background is underneath both the rail and the two-column content',
   assert.equal(find(output, node => node.type == 'AmbientBackground'), undefined, 'do not render a second background confined to the content column')
 })
 
-test('playback opts into the large rail while other CarShell pages retain the default', () => {
+test('playback and every CarShell page use the same rail without page-specific sizing', () => {
   const Shell = load('src/components/car/CarShell.tsx', {
     '@/components/common/StatusBar': 'StatusBar', './NavRail': 'NavRail', './OverlayHost': 'OverlayHost',
   })
   const output = player()
-  assert.equal(output.props.navRailSize, 'large')
-  const rail = find(render(Shell, output.props), node => node.type == 'NavRail')
-  assert.equal(rail.props.size, 'large')
-  assert.equal(rail.props.componentId, 'player')
-  assert.equal(rail.props.activeId, 'now')
-  const defaultRail = find(render(Shell, { children: React.createElement('Content') }), node => node.type == 'NavRail')
-  assert.equal(defaultRail.props.size, undefined)
+  assert.equal(Object.hasOwn(output.props, 'navRailSize'), false)
+  for (const activeId of ['now', 'nav_songlist', 'nav_search', 'nav_top', 'nav_love', 'nav_setting']) {
+    const rail = find(render(Shell, { ...output.props, activeId }), node => node.type == 'NavRail')
+    assert.equal(Object.hasOwn(rail.props, 'size'), false)
+    assert.equal(rail.props.componentId, 'player')
+    assert.equal(rail.props.activeId, activeId)
+  }
+  const homeRail = find(render(Shell, { children: React.createElement('Content') }), node => node.type == 'NavRail')
+  assert.equal(Object.hasOwn(homeRail.props, 'size'), false)
+  assert.equal(homeRail.props.componentId, undefined)
+  assert.equal(homeRail.props.activeId, undefined)
 })
 
 test('SPRSH stacks cover and controls next to a wider six-line lyric viewport at every car scale', () => {

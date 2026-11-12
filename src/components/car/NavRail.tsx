@@ -15,11 +15,11 @@ import CarText from './CarText'
 import CarIcon from './CarIcon'
 import { useClock } from './hooks'
 
-export const NAV_RAIL_WIDTH = 112
+export const NAV_RAIL_WIDTH = 160
 
-const RAIL_LAYOUTS = {
-  default: { width: NAV_RAIL_WIDTH, buttonSize: 64, radius: 20, iconSize: 28, gap: 14, padding: 0, settingsSize: 56, settingsRadius: 28, settingsIconSize: 24 },
-  large: { width: 160, buttonSize: 112, radius: 24, iconSize: 44, gap: 24, padding: 24, settingsSize: 96, settingsRadius: 32, settingsIconSize: 40 },
+// Pen 公共组件 sOwkY：所有页面使用同一套尺寸，避免切页时导航栏跳变。
+const RAIL_LAYOUT = {
+  width: NAV_RAIL_WIDTH, buttonSize: 112, radius: 24, iconSize: 44, gap: 24, padding: 24, settingsSize: 96, settingsRadius: 32, settingsIconSize: 40,
 } as const
 
 /** now：正在播放；其余对应主页 tab */
@@ -38,8 +38,6 @@ export interface NavRailProps {
   componentId?: string
   /** 覆盖高亮项，正在播放页传 now */
   activeId?: RailId
-  /** oNiqn 播放页使用 large，其他页面保留默认导航尺寸。 */
-  size?: keyof typeof RAIL_LAYOUTS
 }
 
 const handleExit = () => {
@@ -81,8 +79,7 @@ const RailButton = ({ icon, active, size, radius, iconSize, idleBackground, idle
   )
 }
 
-// 默认栏宽 112；oNiqn 实例宽 160、主按钮 112、设置按钮 96，上下内边距仍为 40。
-export default memo(({ componentId, activeId, size = 'default' }: NavRailProps) => {
+export default memo(({ componentId, activeId }: NavRailProps) => {
   useWindowSize()
   const theme = useTheme()
   const time = useClock()
@@ -90,7 +87,7 @@ export default memo(({ componentId, activeId, size = 'default' }: NavRailProps) 
   const showBackBtn = useSettingValue('common.showBackBtn')
   const showExitBtn = useSettingValue('common.showExitBtn')
   const currentId: RailId = activeId ?? navActiveId
-  const layout = RAIL_LAYOUTS[size]
+  const layout = RAIL_LAYOUT
 
   const handlePress = (id: RailId) => {
     if (id == 'now') {
@@ -114,9 +111,9 @@ export default memo(({ componentId, activeId, size = 'default' }: NavRailProps) 
       borderRightColor: theme.hairline,
     }}>
       <CarText size={22} weight="600" num style={{ letterSpacing: -0.4 }}>{time}</CarText>
-      <View style={{ gap: px(layout.gap), alignItems: 'center', alignSelf: size == 'large' ? 'stretch' : undefined, paddingHorizontal: px(layout.padding) }}>
+      <View style={{ gap: px(layout.gap), alignItems: 'center', alignSelf: 'stretch', paddingHorizontal: px(layout.padding) }}>
         {RAIL_ITEMS.map(item => (
-          <RailButton key={item.id} icon={item.icon} active={currentId == item.id} size={layout.buttonSize} radius={layout.radius} iconSize={layout.iconSize} idleColor={size == 'large' ? theme['text-2'] : undefined} onPress={() => { handlePress(item.id) }} />
+          <RailButton key={item.id} icon={item.icon} active={currentId == item.id} size={layout.buttonSize} radius={layout.radius} iconSize={layout.iconSize} idleColor={theme['text-2']} onPress={() => { handlePress(item.id) }} />
         ))}
       </View>
       <View style={{ gap: px(18), alignItems: 'center' }}>

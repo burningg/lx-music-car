@@ -116,13 +116,15 @@ function responsiveComponent(file, props, mocks = {}) {
   let mountEffect
   const useWindowSize = load('src/utils/hooks/useWindowSize.ts', {
     react: { ...React, useEffect: effect => { mountEffect ??= effect } },
-    '@/utils/windowSizeTools': { windowSizeTools: {
-      getSize: () => size,
-      onSizeChanged: listener => {
-        listeners.add(listener)
-        return () => listeners.delete(listener)
+    '@/utils/windowSizeTools': {
+      windowSizeTools: {
+        getSize: () => size,
+        onSizeChanged: listener => {
+          listeners.add(listener)
+          return () => listeners.delete(listener)
+        },
       },
-    } },
+    },
   }).default
   const Component = load(file, {
     ...mocks,
@@ -159,33 +161,37 @@ const railMocks = {
 test('memoized car controls rescale on window changes without clicking or changing props', () => {
   const cases = [
     {
-      file: 'CarIcon', props: { name: 'lucide-search', size: 28, color: '#777' },
+      file: 'CarIcon',
+      props: { name: 'lucide-search', size: 28, color: '#777' },
       mocks: { '@/components/common/Icon': { Icon: 'Icon' } },
-      value: output => output.props.rawSize, designSize: 28,
+      value: output => output.props.rawSize,
+      designSize: 28,
     },
     {
-      file: 'CarText', props: { size: 22, children: '09:43' },
+      file: 'CarText',
+      props: { size: 22, children: '09:43' },
       mocks: {
         'react-native': { Text: 'Text', StyleSheet: { compose: (a, b) => [a, b] } },
         '@/theme/fonts': { getFontStyle: () => ({}) },
       },
-      value: output => flatStyle(output).fontSize, designSize: 22,
+      value: output => flatStyle(output).fontSize,
+      designSize: 22,
     },
     {
-      file: 'IconButton', props: { icon: 'lucide-search', size: 64 },
-      value: output => flatStyle(output).width, designSize: 64,
+      file: 'IconButton',
+      props: { icon: 'lucide-search', size: 64 },
+      value: output => flatStyle(output).width,
+      designSize: 64,
     },
     {
-      file: 'SegmentTabs', props: { compact: true, items: [{ id: 'song', label: '歌曲' }], activeId: 'song', onChange: noop },
-      value: output => output.props.style.padding, designSize: 5,
-    },
-    {
-      file: 'NavRail', props: {}, mocks: railMocks,
-      value: output => output.props.style.width, designSize: 112,
+      file: 'SegmentTabs',
+      props: { compact: true, items: [{ id: 'song', label: '歌曲' }], activeId: 'song', onChange: noop },
+      value: output => output.props.style.padding,
+      designSize: 5,
     },
     {
       file: 'NavRail',
-      props: { size: 'large' },
+      props: {},
       mocks: railMocks,
       value: output => output.props.style.width,
       designSize: 160,
@@ -232,45 +238,62 @@ test('every rail icon and touch target keep the same size when selected', () => 
   }
 })
 
-test('oNiqn enlarges only the opted-in rail and preserves default navigation dimensions', () => {
+test('all 28 Pen pages share the playback rail geometry at every car scale', () => {
   const design = JSON.parse(readFileSync(path.join(root, 'design/lx-music-car-claude.pen'), 'utf8'))
-  const instance = design.children.find(node => node.id == 'SEv9u').children.find(node => node.id == 'oNiqn')
-  const overrides = instance.descendants
+  const template = design.children.find(node => node.id == 'sOwkY')
+  const instances = design.children.flatMap(page => page.children.filter(node => node.ref == template.id))
+  const templateNodes = new Map()
+  const indexNodes = node => {
+    templateNodes.set(node.id, node)
+    for (const child of node.children ?? []) indexNodes(child)
+  }
+  indexNodes(template)
+  const targets = [
+    ['fuc4s', 'pRDAM', 'now'], ['hswUy', 'RfyDO', 'nav_songlist'],
+    ['I3Kqj', 'zWpoJ', 'nav_search'], ['xZFVB', 'nznH1', 'nav_top'],
+    ['WVMvr', 'wcl2K', 'nav_love'], ['UndJK', 'ANp4O', 'nav_setting'],
+  ]
+  assert.equal(instances.length, 28, 'include day/night pages, details and overlay states')
   for (const [width, height, density] of [[1920, 1080, 1], [1280, 720, 1], [1920, 1080, 2]]) {
     const scale = scaler(width, height, density)
     const { default: NavRail, NAV_RAIL_WIDTH } = load('src/components/car/NavRail.tsx', { ...railMocks, '@/utils/pixelRatio': scale })
-    assert.equal(NAV_RAIL_WIDTH, 112)
-    for (const size of [undefined, 'large']) {
-      const large = size == 'large'
-      const rail = render(NavRail, { size, activeId: 'now' })
+    assert.equal(NAV_RAIL_WIDTH, 160)
+    assert.equal(NAV_RAIL_WIDTH, template.width)
+    for (const instance of instances) {
+      const resolve = id => ({ ...templateNodes.get(id), ...instance.descendants?.[id] })
+      const activeId = targets.find(([id]) => resolve(id).fill == '$glass-strong')[2]
+      const rail = render(NavRail, { activeId })
       const [clock, nav, bottom] = children(rail)
-      assert.equal(flatStyle(rail).width, scale.px(large ? instance.width : 112))
-      assert.equal(flatStyle(rail).paddingVertical, scale.px(40))
-      assert.equal(clock.props.size, 22)
-      assert.equal(flatStyle(nav).gap, scale.px(large ? overrides.q4bHg.gap : 14))
-      assert.equal(flatStyle(nav).paddingHorizontal, scale.px(large ? overrides.q4bHg.padding[1] : 0))
+      const railWidth = instance.width ?? template.width
+      const navDesign = resolve('q4bHg')
+      assert.equal(flatStyle(rail).width, scale.px(railWidth), instance.id)
+      assert.equal(flatStyle(rail).paddingVertical, scale.px(template.padding[0]))
+      assert.equal(clock.props.size, resolve('Umlv9').fontSize)
+      assert.equal(flatStyle(nav).gap, scale.px(navDesign.gap))
+      assert.equal(flatStyle(nav).paddingHorizontal, scale.px(navDesign.padding[1]))
+      assert.equal(flatStyle(nav).alignSelf, 'stretch')
       assert.equal(children(nav).length, 5)
-      const ids = ['fuc4s', 'hswUy', 'I3Kqj', 'xZFVB', 'WVMvr']
-      const iconIds = ['pRDAM', 'RfyDO', 'zWpoJ', 'nznH1', 'wcl2K']
       children(nav).forEach((button, index) => {
         const output = render(button.type, button.props)
-        const geometry = large ? overrides[ids[index]] : { height: 64, cornerRadius: 20 }
-        assert.equal(flatStyle(output).width, scale.px(geometry.height))
+        const [id, iconId, tabId] = targets[index]
+        const geometry = resolve(id)
+        assert.equal(flatStyle(output).width, scale.px(railWidth - navDesign.padding[1] * 2))
         assert.equal(flatStyle(output).height, scale.px(geometry.height))
         assert.equal(flatStyle(output).borderRadius, scale.px(geometry.cornerRadius))
-        assert.equal(output.props.disabled, index == 0)
+        assert.equal(output.props.disabled, tabId == activeId)
         const icon = children(output)[0]
-        assert.equal(icon.props.size, large ? overrides[iconIds[index]].width : 28)
-        assert.equal(icon.props.color, theme[index == 0 ? 'text-1' : large ? 'text-2' : 'text-3'])
+        assert.equal(icon.props.size, resolve(iconId).width)
+        assert.equal(icon.props.color, theme[tabId == activeId ? 'text-1' : 'text-2'])
       })
       const actions = children(bottom)
       assert.equal(actions.length, 3, 'optional home and exit remain available')
       for (const button of actions.slice(0, 2)) assert.equal(flatStyle(render(button.type, button.props)).height, scale.px(56))
       const settings = render(actions[2].type, actions[2].props)
-      assert.equal(flatStyle(settings).width, scale.px(large ? overrides.UndJK.width : 56))
-      assert.equal(flatStyle(settings).height, scale.px(large ? overrides.UndJK.height : 56))
-      assert.equal(flatStyle(settings).borderRadius, scale.px(large ? overrides.UndJK.cornerRadius : 28))
-      assert.equal(children(settings)[0].props.size, large ? overrides.ANp4O.width : 24)
+      assert.equal(flatStyle(settings).width, scale.px(resolve('UndJK').width))
+      assert.equal(flatStyle(settings).height, scale.px(resolve('UndJK').height))
+      assert.equal(flatStyle(settings).borderRadius, scale.px(resolve('UndJK').cornerRadius))
+      assert.equal(settings.props.disabled, activeId == 'nav_setting')
+      assert.equal(children(settings)[0].props.size, resolve('ANp4O').width)
       const navHeight = children(nav).reduce((sum, button) => sum + scale.px(button.props.size), 0) + flatStyle(nav).gap * 4
       const bottomHeight = actions.reduce((sum, button) => sum + scale.px(button.props.size), 0) + flatStyle(bottom).gap * 2
       assert.ok(navHeight + bottomHeight + scale.px(80 + 22 * 1.3) <= height / density, 'buttons and default clock fit with both optional actions enabled')
@@ -278,7 +301,7 @@ test('oNiqn enlarges only the opted-in rail and preserves default navigation dim
   }
 })
 
-test('large rail preserves playback and home-tab navigation callbacks', () => {
+test('shared rail preserves playback and home-tab navigation callbacks', () => {
   const calls = []
   const state = { musicInfo: { id: 'track' } }
   const NavRail = load('src/components/car/NavRail.tsx', {
@@ -290,7 +313,7 @@ test('large rail preserves playback and home-tab navigation callbacks', () => {
     '@/store/player/state': state,
     '@/core/common': { exitApp: noop, setNavActiveId: id => calls.push(['tab', id]) },
   }).default
-  const rail = render(NavRail, { size: 'large', componentId: 'player', activeId: 'now' })
+  const rail = render(NavRail, { componentId: 'player', activeId: 'now' })
   const tabs = children(children(rail)[1])
   const ids = ['nav_songlist', 'nav_search', 'nav_top', 'nav_love']
   tabs.slice(1).forEach((button, index) => {
@@ -300,7 +323,7 @@ test('large rail preserves playback and home-tab navigation callbacks', () => {
   children(children(rail)[2]).at(-1).props.onPress()
   assert.deepEqual(calls.splice(0), [['pop', 'player'], ['tab', 'nav_setting']])
   for (const componentId of [undefined, 'detail']) {
-    const output = render(NavRail, { size: 'large', componentId })
+    const output = render(NavRail, { componentId })
     children(children(output)[1])[0].props.onPress()
     assert.deepEqual(calls.splice(0), [['player', componentId ?? 'home']])
   }

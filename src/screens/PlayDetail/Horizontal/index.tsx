@@ -56,7 +56,7 @@ export default memo(({ componentId }: { componentId: string }) => {
 
   return (
     <PageContent>
-      <CarShell componentId={componentId} activeId="now" navRailSize="large" background={<AmbientBackground />}>
+      <CarShell componentId={componentId} activeId="now" background={<AmbientBackground />}>
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1, paddingHorizontal: px(80) }}>
             <View style={{ position: 'absolute', top: px(40), left: px(80), right: px(80), zIndex: 1 }}>

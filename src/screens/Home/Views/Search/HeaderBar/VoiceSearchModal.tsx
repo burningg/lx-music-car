@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { ActivityIndicator, Modal, StyleSheet, View } from 'react-native'
-import { CarText, IconButton } from '@/components/car'
+import { CarText, IconButton, NAV_RAIL_WIDTH } from '@/components/car'
 import { useI18n } from '@/lang'
 import { useTheme } from '@/store/theme/hook'
 import useWindowSize from '@/utils/hooks/useWindowSize'
@@ -15,12 +15,12 @@ export interface VoiceSearchModalProps {
 
 const audioLevels = [10, 20, 28, 18, 10]
 
-// U5jSt：720 × 344 的轻量弹框，在横屏主内容区域（扣除 112px 导航栏）居中。
+// U5jSt：720 × 344 的轻量弹框，在横屏主内容区域（扣除公共导航栏）居中。
 export default memo(({ visible, isPreparing, isProcessing, onCancel }: VoiceSearchModalProps) => {
   const t = useI18n()
   const theme = useTheme()
   const { width, height } = useWindowSize()
-  const railWidth = width > height ? px(112) : 0
+  const railWidth = width > height ? px(NAV_RAIL_WIDTH) : 0
   const isBusy = isPreparing || isProcessing
 
   return (

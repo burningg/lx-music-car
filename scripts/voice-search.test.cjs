@@ -376,19 +376,20 @@ function findNode(node, id) {
     if (found) return found
   }
 }
+const navRailDesign = findNode(voiceDesign, 'sOwkY')
 const backdropDesign = findNode(voiceDesign, 'U5jSt')
 const dialogDesign = backdropDesign.children[0]
 
-function renderVoiceModal({ theme = DAYLIGHT_TOKENS, width = 1920, height = 1080, ...props } = {}) {
+function renderVoiceModal({ theme = DAYLIGHT_TOKENS, width = 1920, height = 1080, scale = 1, ...props } = {}) {
   const VoiceModal = load('src/screens/Home/Views/Search/HeaderBar/VoiceSearchModal.tsx', {
     react: React,
     'react/jsx-runtime': require('react/jsx-runtime'),
     'react-native': { ActivityIndicator: 'ActivityIndicator', Modal: 'Modal', View: 'View', StyleSheet: { absoluteFillObject: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } } },
-    '@/components/car': { CarText: 'CarText', IconButton: 'IconButton' },
+    '@/components/car': { CarText: 'CarText', IconButton: 'IconButton', NAV_RAIL_WIDTH: navRailDesign.width },
     '@/lang': { useI18n: () => key => key },
     '@/store/theme/hook': { useTheme: () => theme },
     '@/utils/hooks/useWindowSize': { default: () => ({ width, height }), __esModule: true },
-    '@/utils/pixelRatio': { px: n => n },
+    '@/utils/pixelRatio': { px: n => n * scale },
   }).default
   const renderer = new ShallowRenderer()
   renderer.render(React.createElement(VoiceModal, { visible: true, isPreparing: false, isProcessing: false, ...props }))
@@ -405,7 +406,8 @@ for (const [mode, theme] of [['light', DAYLIGHT_TOKENS], ['dark', NOCTURNE_TOKEN
   test(`voice dialog matches U5jSt geometry and ${mode} design tokens`, () => {
     const { modal, overlay, scrim, dialog, header, transcript, border, close, indicator, title } = renderVoiceModal({ theme })
     assert.equal(modal.props.transparent, true)
-    assert.equal(overlay.props.style.paddingLeft, backdropDesign.padding[3])
+    // The backdrop still has an old 112px inset in Pen; center against the enlarged shared rail.
+    assert.equal(overlay.props.style.paddingLeft, navRailDesign.width)
     assert.equal(dialog.props.style.width, dialogDesign.width)
     assert.equal(dialog.props.style.minHeight, dialogDesign.height)
     assert.equal(dialog.props.style.borderRadius, dialogDesign.cornerRadius)
@@ -463,6 +465,17 @@ for (const [state, label] of [['isPreparing', 'search_voice_preparing'], ['isPro
     assert.equal(indicator.props.children.type, 'ActivityIndicator')
   })
 }
+
+test('voice modal centers in the remaining content width at every landscape scale', () => {
+  for (const [width, height, scale] of [[1920, 1080, 1], [1280, 720, 2 / 3], [960, 540, 0.5], [800, 720, 1]]) {
+    const { overlay, dialog } = renderVoiceModal({ width, height, scale })
+    const railWidth = navRailDesign.width * scale
+    assert.equal(overlay.props.style.paddingLeft, railWidth)
+    assert.equal(overlay.props.style.alignItems, 'center')
+    assert.equal(dialog.props.style.width, Math.min(dialogDesign.width * scale, width - railWidth - 48 * scale))
+    assert.ok(dialog.props.style.width + railWidth + 48 * scale <= width, 'dialog leaves side clearance beside the wider rail')
+  }
+})
 
 test('voice modal fits narrow portrait windows without a navigation rail offset', () => {
   const { overlay, dialog, transcript } = renderVoiceModal({ width: 640, height: 1000 })
