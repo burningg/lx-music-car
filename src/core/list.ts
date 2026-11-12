@@ -4,6 +4,7 @@ import listState from '@/store/list/state'
 import settingState from '@/store/setting/state'
 import { fixNewMusicInfoQuality } from '@/utils'
 import { saveListPrevSelectId } from '@/utils/data'
+import { type ListInfoItem } from '@/store/songlist/state'
 
 /**
  * 覆盖全部列表数据
@@ -166,9 +167,10 @@ export const setUserList = (lists: LX.List.UserListInfo[]) => {
  * @param id
  * @param list
  */
-export const setTempList = async(id: string, list: LX.Music.MusicInfoOnline[]) => {
+export const setTempList = async(id: string, list: LX.Music.MusicInfoOnline[], songlistInfo?: ListInfoItem) => {
   await overwriteListMusics(LIST_IDS.TEMP, list)
-  listAction.setTempListMeta({ id })
+  // 随队列保存来源快照；切换到排行榜等非歌单队列时同时清除。
+  listAction.setTempListMeta({ id, songlistInfo: songlistInfo ? { ...songlistInfo } : undefined })
 }
 
 

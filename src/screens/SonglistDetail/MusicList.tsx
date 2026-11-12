@@ -82,7 +82,7 @@ export default forwardRef<MusicListType, MusicListProps>(({ onInfo }, ref) => {
 
   const handlePlayList: OnlineListProps['onPlayList'] = (index) => {
     const listDetailInfo = songlistState.listDetailInfo
-    void handlePlay(listDetailInfo.id, listDetailInfo.source, listDetailInfo.list, index)
+    void handlePlay(listDetailInfo.id, listDetailInfo.source, listDetailInfo.list, index, { ...info, ...listDetailInfo.info })
   }
   const handleRefresh: OnlineListProps['onRefresh'] = () => {
     const page = 1

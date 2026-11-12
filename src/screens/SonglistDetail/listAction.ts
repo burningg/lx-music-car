@@ -5,17 +5,18 @@ import { LIST_IDS } from '@/config/constant'
 import listState from '@/store/list/state'
 import syncSourceList from '@/core/syncSourceList'
 import { confirmDialog, toMD5, toast } from '@/utils/tools'
-import { type Source } from '@/store/songlist/state'
+import { type ListInfoItem, type Source } from '@/store/songlist/state'
 
 const getListId = (id: string, source: LX.OnlineSource) => `${source}__${id}`
 
-export const handlePlay = async(id: string, source: Source, list?: LX.Music.MusicInfoOnline[], index = 0) => {
+export const handlePlay = async(id: string, source: Source, list?: LX.Music.MusicInfoOnline[], index = 0, info?: ListInfoItem) => {
   const listId = getListId(id, source)
+  const songlistInfo = info ? { ...info, id, source } : undefined
   let isPlayingList = false
   // console.log(list)
   if (!list?.length) list = (await getListDetail(id, source, 1)).list
   if (list?.length) {
-    await setTempList(listId, [...list])
+    await setTempList(listId, [...list], songlistInfo)
     void playList(LIST_IDS.TEMP, index)
     isPlayingList = true
   }
@@ -23,10 +24,10 @@ export const handlePlay = async(id: string, source: Source, list?: LX.Music.Musi
   if (!fullList.length) return
   if (isPlayingList) {
     if (listState.tempListMeta.id == listId) {
-      await setTempList(listId, [...fullList])
+      await setTempList(listId, [...fullList], songlistInfo)
     }
   } else {
-    await setTempList(listId, [...fullList])
+    await setTempList(listId, [...fullList], songlistInfo)
     void playList(LIST_IDS.TEMP, index)
   }
 }

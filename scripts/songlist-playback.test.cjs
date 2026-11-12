@@ -88,9 +88,9 @@ function playback(kind = 'songlist') {
     '@/store/dislikeList': { state: { dislikeInfo: { names: new Set(), musicNames: new Set(), singerNames: new Set() } } },
   }, globals)
   const listActions = {
-    async setTempList(id, list) {
+    async setTempList(id, list, songlistInfo) {
       queues.temp = list
-      listState.tempListMeta = { id }
+      listState.tempListMeta = { id, songlistInfo }
       playInfo.updatePlayIndex()
     },
   }
@@ -245,6 +245,7 @@ for (const entry of ['row', 'menu']) {
     assert.deepEqual(singlePlays, [])
     assert.equal(ctx.state.playInfo.playerListId, 'temp')
     assert.equal(ctx.state.playInfo.playerPlayIndex, 3)
+    assert.deepEqual({ ...ctx.listState.tempListMeta.songlistInfo }, info)
     assert.equal(ctx.state.playMusicInfo.musicInfo.id, songs[3].id)
     await ctx.player.playNext()
     assert.equal(ctx.state.playMusicInfo.musicInfo.id, songs[4].id)
@@ -308,7 +309,8 @@ test('the overview play button starts at the current song when present, otherwis
     }).default
     const overview = find(mount(Screen, { componentId: 'detail', info })(), 'Overview')
     overview.props.onPlay()
-    assert.deepEqual(calls[0], [info.id, info.source, songs, expected])
+    assert.deepEqual(calls[0].slice(0, 4), [info.id, info.source, songs, expected])
+    assert.deepEqual({ ...calls[0][4] }, info)
     overview.props.onShuffle()
     assert.equal(settings[0]['player.togglePlayMethod'], 'random')
     assert.equal(calls[1][3], 0, 'shuffle keeps its existing starting behavior')
@@ -338,4 +340,45 @@ test('a late full-playlist response cannot replace a newer playlist queue', asyn
   await started
   await ctx.player.playNext()
   assert.equal(ctx.state.playMusicInfo.musicInfo.id, 'newer-2')
+})
+
+
+test('online playlist metadata survives background loading and is cleared by non-songlist playback', async() => {
+  const ctx = playback()
+  const original = { ...info, author: 'Author', img: 'cover' }
+  const started = ctx.playlist.handlePlay(info.id, info.source, songs, 2, original)
+  await flush()
+  original.name = 'A different browsing result'
+  assert.equal(ctx.listState.tempListMeta.songlistInfo.name, info.name)
+  assert.equal(ctx.listState.tempListMeta.songlistInfo.id, info.id)
+  assert.equal(ctx.listState.tempListMeta.songlistInfo.img, 'cover')
+  ctx.resolveFull(songs)
+  await started
+  assert.equal(ctx.listState.tempListMeta.songlistInfo.name, info.name)
+  await ctx.playlist.handlePlay('another-list-without-metadata', 'kw', songs)
+  assert.equal(ctx.listState.tempListMeta.songlistInfo, undefined)
+})
+
+
+test('setTempList stores an independent source snapshot and clears it for a leaderboard queue', async() => {
+  const state = { tempListMeta: { id: '' } }
+  const writes = []
+  const { setTempList } = load('src/core/list.ts', {
+    '@/config/constant': { LIST_IDS: { TEMP: 'temp' } },
+    '@/store/list/action': { setTempListMeta: meta => { state.tempListMeta = meta } },
+    '@/store/list/state': state,
+    '@/store/setting/state': {},
+    '@/utils': {},
+    '@/utils/data': {},
+    '@/utils/listManage': {},
+  }, { global: { list_event: { list_music_overwrite: (...args) => writes.push(args) } } })
+  const original = { ...info }
+  await setTempList('kw__online-playlist', songs, original)
+  original.name = 'Changed elsewhere'
+  assert.equal(state.tempListMeta.songlistInfo.name, info.name)
+  assert.equal(state.tempListMeta.id, 'kw__online-playlist')
+  assert.equal(writes.length, 1)
+  await setTempList('board__kw__16', songs)
+  assert.equal(state.tempListMeta.id, 'board__kw__16')
+  assert.equal(state.tempListMeta.songlistInfo, undefined)
 })

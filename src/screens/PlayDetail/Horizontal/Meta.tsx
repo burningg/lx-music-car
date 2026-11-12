@@ -1,6 +1,7 @@
 import { memo } from 'react'
-import { View } from 'react-native'
-import { usePlayerMusicInfo } from '@/store/player/hook'
+import { TouchableOpacity, View } from 'react-native'
+import { usePlayerMusicInfo, usePlayMusicInfo } from '@/store/player/hook'
+import { useMyList } from '@/store/list/hook'
 import { useSettingValue } from '@/store/setting/hook'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
@@ -8,17 +9,21 @@ import { CarText } from '@/components/car'
 import { px } from '@/utils/pixelRatio'
 import useWindowSize from '@/utils/hooks/useWindowSize'
 import listState from '@/store/list/state'
-import playerState from '@/store/player/state'
+import { LIST_IDS } from '@/config/constant'
+import { setActiveList } from '@/core/list'
+import { setNavActiveId } from '@/core/common'
+import { navigations, popToRoot } from '@/navigation'
 
 // SPRSH 歌曲信息：464px 宽，来源行 + 歌名 52/700 + 音质标签 + 歌手/专辑 26
-export default memo(() => {
+export default memo(({ componentId }: { componentId: string }) => {
   useWindowSize()
   const theme = useTheme()
   const t = useI18n()
   const musicInfo = usePlayerMusicInfo()
+  const { musicInfo: playMusicInfo, listId } = usePlayMusicInfo()
+  const lists = useMyList()
   const sourceNameType = useSettingValue('common.sourceNameType')
 
-  const playMusicInfo = playerState.playMusicInfo.musicInfo
   const meta = playMusicInfo ? ('progress' in playMusicInfo ? playMusicInfo.metadata.musicInfo.meta : playMusicInfo.meta) : null
   const source = playMusicInfo ? ('progress' in playMusicInfo ? playMusicInfo.metadata.musicInfo.source : playMusicInfo.source) : null
 
@@ -26,8 +31,20 @@ export default memo(() => {
     ? ''
     : source == 'local' ? t('car_local_source') : t(`source_${sourceNameType}_${source}`)
 
-  const listId = playerState.playMusicInfo.listId
-  const listName = listId ? listState.allList.find(list => list.id == listId)?.name ?? '' : ''
+  const sourceList = playMusicInfo ? lists.find(list => list.id == listId) : undefined
+  const onlineList = playMusicInfo && listId == LIST_IDS.TEMP ? listState.tempListMeta.songlistInfo : undefined
+  const listName = sourceList?.name ?? onlineList?.name ?? ''
+  const canOpenList = !!(sourceList ?? onlineList)
+
+  const handleOpenList = () => {
+    if (sourceList) {
+      setActiveList(sourceList.id)
+      setNavActiveId('nav_love')
+      void popToRoot(componentId)
+    } else if (onlineList) {
+      navigations.pushSonglistDetailScreen(componentId, onlineList)
+    }
+  }
 
   let quality: string | undefined
   if (meta && '_qualitys' in meta) {
@@ -42,12 +59,20 @@ export default memo(() => {
 
   return (
     <View style={{ minWidth: 0, gap: px(12) }}>
-      <View style={{ minHeight: px(28), minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: px(10) }}>
+      {/* PpGhw：来源歌单可点击；仅有平台来源时保留文本展示。 */}
+      <TouchableOpacity
+        onPress={handleOpenList}
+        disabled={!canOpenList}
+        accessibilityRole={canOpenList ? 'button' : undefined}
+        activeOpacity={0.6}
+        hitSlop={{ top: px(10), bottom: px(10) }}
+        style={{ minHeight: px(28), minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: px(10) }}
+      >
         <View style={{ width: px(8), height: px(8), flexShrink: 0, borderRadius: px(4), backgroundColor: theme.accent }} />
         <CarText size={20} lineHeight={1.4} color={theme['text-2']} numberOfLines={2} ellipsizeMode="tail" style={{ flex: 1, minWidth: 0 }}>
           {listName ? `${t('car_from_list')} · ${listName}` : sourceLabel}
         </CarText>
-      </View>
+      </TouchableOpacity>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(16) }}>
         <CarText size={52} weight="700" lineHeight={1.25} numberOfLines={1} ellipsizeMode="tail" style={{ flexShrink: 1, minWidth: 0, letterSpacing: px(-0.8) }}>{musicInfo.name}</CarText>
         {quality

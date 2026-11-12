@@ -29,6 +29,7 @@ module.exports = async newVerNum => {
     version: version.version,
     desc: version.desc,
   })
+  version.name = pkg.name
   version.version = newVerNum
   version.desc = newMDChangeLog.replace(/(?:^|(\n))#{1,6} (.+)\n/g, '$1$2').trim()
   pkg.version = newVerNum

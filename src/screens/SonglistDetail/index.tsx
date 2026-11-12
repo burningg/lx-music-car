@@ -49,7 +49,7 @@ export default ({ componentId, info }: { componentId: string, info: ListInfoItem
   }
   const startPlaylist = (index: number) => {
     if (!songlistState.listDetailInfo.info.name) return
-    void handlePlay(info.id, info.source, songlistState.listDetailInfo.list, index)
+    void handlePlay(info.id, info.source, songlistState.listDetailInfo.list, index, { ...info, ...songlistState.listDetailInfo.info })
   }
   const handlePlayAll = () => {
     const currentId = playerState.playMusicInfo.musicInfo?.id

@@ -851,10 +851,16 @@
                 {
                   "type": "frame",
                   "id": "R6aIVO",
-                  "name": "歌词 · 大字沉浸阅读",
+                  "name": "歌词 · 留白阅读",
                   "width": "fill_container",
                   "layout": "vertical",
-                  "gap": 32,
+                  "gap": 40,
+                  "padding": [
+                    0,
+                    0,
+                    56,
+                    0
+                  ],
                   "children": [
                     {
                       "type": "frame",
@@ -928,7 +934,13 @@
                       "name": "歌词正文 · 当前句突出",
                       "width": "fill_container",
                       "layout": "vertical",
-                      "gap": 32,
+                      "gap": 36,
+                      "padding": [
+                        0,
+                        64,
+                        0,
+                        0
+                      ],
                       "children": [
                         {
                           "type": "text",
@@ -940,7 +952,7 @@
                           "content": "风把海面吹成一片金色",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-cn",
-                          "fontSize": 40
+                          "fontSize": 32
                         },
                         {
                           "type": "text",
@@ -952,7 +964,7 @@
                           "content": "我们并肩不说话",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-cn",
-                          "fontSize": 44,
+                          "fontSize": 34,
                           "fontWeight": "500"
                         },
                         {
@@ -965,9 +977,8 @@
                           "content": "就让这一刻慢一点",
                           "lineHeight": 1.3,
                           "fontFamily": "$font-cn",
-                          "fontSize": 72,
-                          "fontWeight": "700",
-                          "letterSpacing": -1
+                          "fontSize": 56,
+                          "fontWeight": "600"
                         },
                         {
                           "type": "text",
@@ -980,7 +991,7 @@
                           "content": "慢到落日也舍不得走",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-cn",
-                          "fontSize": 48,
+                          "fontSize": 36,
                           "fontWeight": "500"
                         },
                         {
@@ -993,7 +1004,7 @@
                           "content": "慢到你的侧脸",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-cn",
-                          "fontSize": 40
+                          "fontSize": 32
                         },
                         {
                           "type": "text",
@@ -1005,7 +1016,7 @@
                           "content": "被晚霞轻轻收藏",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-cn",
-                          "fontSize": 40
+                          "fontSize": 32
                         }
                       ]
                     }

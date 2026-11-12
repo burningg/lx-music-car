@@ -1,5 +1,6 @@
 import { httpGet } from '@/utils/request'
-import { author, name } from '../../package.json'
+import { name } from '../../package.json'
+import { PROJECT_URL, PROJECT_REPOSITORY } from '@/config/project'
 import { downloadFile, stopDownload, temporaryDirectoryPath } from '@/utils/fs'
 import { getSupportedAbis, installApk } from '@/utils/nativeModules/utils'
 import { APP_PROVIDER_NAME } from '@/config/constant'
@@ -12,15 +13,12 @@ const abis = [
   'universal',
 ]
 
+// Only use this fork's release metadata; never fall back to upstream channels.
 const address = [
-  [`https://raw.githubusercontent.com/${author.name}/${name}/master/publish/version.json`, 'direct'],
-  ['https://registry.npmjs.org/lx-music-mobile-version-info/latest', 'npm'],
-  [`https://cdn.jsdelivr.net/gh/${author.name}/${name}/publish/version.json`, 'direct'],
-  [`https://fastly.jsdelivr.net/gh/${author.name}/${name}/publish/version.json`, 'direct'],
-  [`https://gcore.jsdelivr.net/gh/${author.name}/${name}/publish/version.json`, 'direct'],
-  ['https://registry.npmmirror.com/lx-music-mobile-version-info/latest', 'npm'],
-  ['https://gitee.com/lyswhut/lx-music-mobile-versions/raw/master/version.json', 'direct'],
-  ['http://cdn.stsky.cn/lx-music/mobile/version.json', 'direct'],
+  `https://raw.githubusercontent.com/${PROJECT_REPOSITORY}/master/publish/version.json`,
+  `https://cdn.jsdelivr.net/gh/${PROJECT_REPOSITORY}@master/publish/version.json`,
+  `https://fastly.jsdelivr.net/gh/${PROJECT_REPOSITORY}@master/publish/version.json`,
+  `https://gcore.jsdelivr.net/gh/${PROJECT_REPOSITORY}@master/publish/version.json`,
 ]
 
 
@@ -38,39 +36,18 @@ const request = async(url, retryNum = 0) => {
   })
 }
 
-const getDirectInfo = async(url) => {
-  return request(url).then(info => {
-    if (info.version == null) throw new Error('failed')
-    return info
-  })
-}
-
-const getNpmPkgInfo = async(url) => {
-  return request(url).then(json => {
-    if (!json.versionInfo) throw new Error('failed')
-    const info = JSON.parse(json.versionInfo)
-    if (info.version == null) throw new Error('failed')
-    return info
-  })
-}
-
 export const getVersionInfo = async(index = 0) => {
-  const [url, source] = address[index]
-  let promise
-  switch (source) {
-    case 'direct':
-      promise = getDirectInfo(url)
-      break
-    case 'npm':
-      promise = getNpmPkgInfo(url)
-      break
+  try {
+    const info = await request(address[index])
+    // Old fork snapshots can still contain the upstream version.json.
+    if (info?.name != name || typeof info.version != 'string' || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(info.version)) {
+      throw new Error('Invalid release metadata for ' + name)
+    }
+    return info
+  } catch (err) {
+    if (index + 1 >= address.length) throw err
+    return getVersionInfo(index + 1)
   }
-
-  return promise.catch(async(err) => {
-    index++
-    if (index >= address.length) throw err
-    return getVersionInfo(index)
-  })
 }
 
 const getTargetAbi = async() => {
@@ -86,8 +63,8 @@ let apkSavePath
 
 export const downloadNewVersion = async(version, onDownload = noop) => {
   const abi = await getTargetAbi()
-  const url = `https://github.com/${author.name}/${name}/releases/download/v${version}/${name}-v${version}-${abi}.apk`
-  let savePath = temporaryDirectoryPath + '/lx-music-mobile.apk'
+  const url = `${PROJECT_URL}/releases/download/v${version}/${name}-v${version}-${abi}.apk`
+  let savePath = `${temporaryDirectoryPath}/${name}.apk`
 
   if (downloadJobId) stopDownload(downloadJobId)
 

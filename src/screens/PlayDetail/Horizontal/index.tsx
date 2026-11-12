@@ -67,7 +67,7 @@ export default memo(({ componentId }: { componentId: string }) => {
             {!fullscreen ? (
               <View style={{ width: px(464), flexShrink: 0, gap: px(28) }}>
                 <Cover componentId={componentId} />
-                <Meta />
+                <Meta componentId={componentId} />
               </View>
             ) : null}
             {lyricsVisible ? (

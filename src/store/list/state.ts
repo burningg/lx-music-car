@@ -1,4 +1,5 @@
 import { LIST_IDS } from '@/config/constant'
+import { type ListInfoItem } from '@/store/songlist/state'
 
 
 export interface InitState {
@@ -13,6 +14,7 @@ export interface InitState {
 
   tempListMeta: {
     id: string
+    songlistInfo?: ListInfoItem
   }
 
   fetchingListStatus: Record<string, boolean>

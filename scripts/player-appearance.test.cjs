@@ -226,6 +226,7 @@ test('SEv9u and AHpf9 match the revised Pen geometry at every car scale', () => 
       assert.equal(style(stack).width, stackDesign.width * scale)
       assert.equal(style(stack).gap, stackDesign.gap * scale)
       assert.deepEqual(children(stack).map(node => node.type), ['Cover', 'Meta'])
+      assert.equal(children(stack)[1].props.componentId, 'player')
       assert.equal(children(stack)[0].props.componentId, 'player')
       assert.equal(style(lyric).flex, 1)
       assert.equal(style(lyric).minWidth, 0)
@@ -296,17 +297,27 @@ test('464px artwork keeps its rounded clipping, external shadow and shared-eleme
   }
 })
 
-function metadata(musicInfo, track, listName = '') {
+function metadata(musicInfo, track, listName = '', options = {}) {
+  const lists = options.lists ?? (listName ? [{ id: 'playlist', name: listName }] : [])
+  const playMusicInfo = { musicInfo: track, listId: options.listId ?? 'playlist' }
+  const calls = options.calls ?? []
   const Meta = load('src/screens/PlayDetail/Horizontal/Meta.tsx', {
     '@/store/theme/hook': { useTheme: () => palettes.dark },
-    '@/store/player/hook': { usePlayerMusicInfo: () => musicInfo },
+    '@/store/player/hook': { usePlayerMusicInfo: () => musicInfo, usePlayMusicInfo: () => playMusicInfo },
+    '@/store/list/hook': { useMyList: () => lists },
     '@/store/setting/hook': { useSettingValue: () => 'alias' },
     '@/lang': { useI18n: () => key => key },
     '@/components/car': { CarText: 'CarText' },
-    '@/store/list/state': { allList: [{ id: 'playlist', name: listName }] },
-    '@/store/player/state': { playMusicInfo: { musicInfo: track, listId: 'playlist' } },
+    '@/store/list/state': { tempListMeta: options.tempListMeta ?? { id: '' } },
+    '@/config/constant': { LIST_IDS: { TEMP: 'temp' } },
+    '@/core/list': { setActiveList: id => calls.push(['list', id]) },
+    '@/core/common': { setNavActiveId: id => calls.push(['tab', id]) },
+    '@/navigation': {
+      popToRoot: id => calls.push(['root', id]),
+      navigations: { pushSonglistDetailScreen: (id, info) => calls.push(['detail', id, info]) },
+    },
   })
-  return render(Meta)
+  return render(Meta, { componentId: 'player-screen' })
 }
 
 test('464px metadata uses the Pen typography and truncates long titles without squeezing quality', () => {
@@ -350,6 +361,49 @@ test('compact metadata preserves local-source and empty-player fallbacks', () =>
   const empty = metadata({ name: '', singer: '', album: '' }, null)
   assert.equal(children(children(empty)[0])[1].props.children, '')
   assert.equal(children(children(empty)[1]).length, 1)
+})
+
+test('PpGhw opens the exact local playlist in My Music without changing playback', () => {
+  for (const id of ['default', 'love', 'custom-list']) {
+    const calls = []
+    const source = children(metadata({ name: 'Song' }, { source: 'kw', meta: {} }, '', {
+      lists: [{ id, name: 'Source playlist' }], listId: id, calls,
+    }))[0]
+    assert.equal(source.type, 'TouchableOpacity')
+    assert.equal(source.props.disabled, false)
+    assert.equal(source.props.accessibilityRole, 'button')
+    assert.equal(children(source)[1].props.children, 'car_from_list · Source playlist')
+    source.props.onPress()
+    assert.deepEqual(calls, [['list', id], ['tab', 'nav_love'], ['root', 'player-screen']])
+  }
+})
+
+test('PpGhw opens the online playlist snapshot from the playback queue', () => {
+  const calls = []
+  const info = { id: 'online-source', source: 'wy', name: 'Online playlist', author: 'Author', img: 'cover' }
+  const source = children(metadata({ name: 'Song' }, { source: 'wy', meta: {} }, '', {
+    listId: 'temp', tempListMeta: { id: 'wy__online-source', songlistInfo: info }, calls,
+  }))[0]
+  assert.equal(source.props.disabled, false)
+  assert.equal(children(source)[1].props.children, 'car_from_list · Online playlist')
+  source.props.onPress()
+  assert.deepEqual(calls, [['detail', 'player-screen', info]])
+})
+
+test('PpGhw is inert for missing/deleted lists, non-songlist queues, and an empty player', () => {
+  for (const [track, options] of [
+    [{ source: 'kw', meta: {} }, { listId: 'deleted-list' }],
+    [{ source: 'local', meta: {} }, { listId: 'download' }],
+    [{ source: 'kw', meta: {} }, { listId: 'temp', tempListMeta: { id: 'board__kw__16' } }],
+    [null, { listId: 'playlist', lists: [{ id: 'playlist', name: 'Old playlist' }] }],
+  ]) {
+    const calls = []
+    const source = children(metadata({ name: '' }, track, '', { ...options, calls }))[0]
+    assert.equal(source.props.disabled, true)
+    assert.equal(source.props.accessibilityRole, undefined)
+    source.props.onPress()
+    assert.deepEqual(calls, [])
+  }
 })
 
 test('secondary actions match Pen and preserve favorite, comments and add-to-list behavior', () => {
