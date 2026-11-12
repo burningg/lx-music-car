@@ -10,7 +10,7 @@ import useWindowSize from '@/utils/hooks/useWindowSize'
 import listState from '@/store/list/state'
 import playerState from '@/store/player/state'
 
-// SPRSH 歌曲信息：368px 宽，来源行 + 歌名 44/700 + 音质标签 + 歌手/专辑 22
+// SPRSH 歌曲信息：464px 宽，来源行 + 歌名 52/700 + 音质标签 + 歌手/专辑 26
 export default memo(() => {
   useWindowSize()
   const theme = useTheme()
@@ -34,31 +34,31 @@ export default memo(() => {
     const qualitys = meta._qualitys
     if (qualitys.flac24bit) quality = t('quality_lossless_24bit')
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    else if (qualitys.flac || qualitys.ape) quality = t('quality_lossless')
+    else if (qualitys.flac || qualitys.ape) quality = t('car_quality_lossless')
     else if (qualitys['320k']) quality = t('quality_high_quality')
   }
 
   const album = musicInfo.album
 
   return (
-    <View style={{ minWidth: 0, gap: px(10) }}>
-      <View style={{ minHeight: px(23), minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: px(8) }}>
-        <View style={{ width: px(7), height: px(7), flexShrink: 0, borderRadius: px(4), backgroundColor: theme.accent }} />
-        <CarText size={16} color={theme['text-2']} numberOfLines={1} ellipsizeMode="tail" style={{ flexShrink: 1, minWidth: 0 }}>
+    <View style={{ minWidth: 0, gap: px(12) }}>
+      <View style={{ minHeight: px(28), minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: px(10) }}>
+        <View style={{ width: px(8), height: px(8), flexShrink: 0, borderRadius: px(4), backgroundColor: theme.accent }} />
+        <CarText size={20} lineHeight={1.4} color={theme['text-2']} numberOfLines={2} ellipsizeMode="tail" style={{ flex: 1, minWidth: 0 }}>
           {listName ? `${t('car_from_list')} · ${listName}` : sourceLabel}
         </CarText>
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: px(16) }}>
-        <CarText size={44} weight="700" lineHeight={1.3} numberOfLines={1} ellipsizeMode="tail" style={{ flexShrink: 1, minWidth: 0, letterSpacing: px(-0.8) }}>{musicInfo.name}</CarText>
+        <CarText size={52} weight="700" lineHeight={1.25} numberOfLines={1} ellipsizeMode="tail" style={{ flexShrink: 1, minWidth: 0, letterSpacing: px(-0.8) }}>{musicInfo.name}</CarText>
         {quality
           ? (
-            <View style={{ flexShrink: 0, paddingVertical: px(4), paddingHorizontal: px(9), borderRadius: px(6), borderWidth: 1, borderColor: theme['badge-stroke'] }}>
-              <CarText size={13} color={theme['text-2']}>{quality}</CarText>
+            <View style={{ flexShrink: 0, paddingVertical: px(5), paddingHorizontal: px(10), borderRadius: px(6), borderWidth: px(1), borderColor: theme['badge-stroke'] }}>
+              <CarText size={18} weight="500" color={theme['text-2']}>{quality}</CarText>
             </View>
             )
           : null}
       </View>
-      <CarText size={22} lineHeight={1.4} color={theme['text-2']} numberOfLines={1} ellipsizeMode="tail">
+      <CarText size={26} lineHeight={1.4} color={theme['text-2']} numberOfLines={1} ellipsizeMode="tail">
         {album ? `${musicInfo.singer} — 《${album}》` : musicInfo.singer}
       </CarText>
     </View>

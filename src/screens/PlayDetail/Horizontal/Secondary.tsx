@@ -1,31 +1,30 @@
 import { memo, useRef } from 'react'
 import { View } from 'react-native'
-import { useSettingValue } from '@/store/setting/hook'
 import { useTheme } from '@/store/theme/hook'
-import { useStatusText } from '@/store/player/hook'
 import { useI18n } from '@/lang'
-import { CarIcon, CarText, IconButton, useCurrentMusicLoved } from '@/components/car'
+import { useCurrentMusicLoved } from '@/components/car'
 import { px } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
+import ActionButton from './ActionButton'
 import { collectMusic, uncollectMusic } from '@/core/player/player'
 import { navigations } from '@/navigation'
 import commonState from '@/store/common/state'
 import playerState from '@/store/player/state'
 import MusicAddModal, { type MusicAddModalType } from '@/components/MusicAddModal'
 
-// 设计稿副操作行：左侧输出信息胶囊，右侧 收藏 / 评论 / 添加到歌单
-export default memo(() => {
+// p9GxJ5：收藏 / 歌词 / 队列；长按保留添加到歌单与评论入口。
+interface SecondaryProps {
+  lyricsVisible: boolean
+  onToggleLyrics: () => void
+  onQueue: () => void
+}
+
+export default memo(({ lyricsVisible, onToggleLyrics, onQueue }: SecondaryProps) => {
+  useWindowSize()
   const theme = useTheme()
   const t = useI18n()
-  const statusText = useStatusText()
   const loved = useCurrentMusicLoved()
-  const sourceNameType = useSettingValue('common.sourceNameType')
   const musicAddModalRef = useRef<MusicAddModalType>(null)
-
-  const playMusicInfo = playerState.playMusicInfo.musicInfo
-  const source = playMusicInfo ? ('progress' in playMusicInfo ? playMusicInfo.metadata.musicInfo.source : playMusicInfo.source) : null
-  const sourceLabel = source == null
-    ? ''
-    : source == 'local' ? t('car_local_source') : t(`source_${sourceNameType}_${source}`)
 
   const openComment = () => {
     navigations.pushCommentScreen(commonState.componentIds.playDetail!)
@@ -41,22 +40,28 @@ export default memo(() => {
   }
 
   return (
-    <View style={{ height: px(42), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <View style={{ height: px(42), flexShrink: 1, minWidth: 0, marginRight: px(20), flexDirection: 'row', alignItems: 'center', gap: px(10), paddingHorizontal: px(16), borderRadius: 999, backgroundColor: theme.glass }}>
-        <CarIcon name="lucide-speaker" size={18} color={theme['text-2']} />
-        <CarText size={15} style={{ flexShrink: 1, minWidth: 0 }} color={theme['text-2']} numberOfLines={1} ellipsizeMode="tail">{statusText || sourceLabel}</CarText>
-      </View>
-      <View style={{ flexDirection: 'row', flexShrink: 0, alignItems: 'center', gap: px(28) }}>
-        <IconButton
-          icon={loved ? 'ph-heart-fill' : 'ph-heart'}
-          iconSize={28}
-          size={28}
-          color={loved ? theme.accent : theme['text-2']}
-          onPress={loved ? uncollectMusic : collectMusic}
-        />
-        <IconButton icon="lucide-message-square-quote" iconSize={26} size={26} color={theme['text-2']} onPress={openComment} />
-        <IconButton icon="lucide-list-music" iconSize={26} size={26} color={theme['text-2']} onPress={showAddMusic} />
-      </View>
+    <View style={{ flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: px(20) }}>
+      <ActionButton
+        icon={loved ? 'ph-heart-fill' : 'ph-heart'}
+        label={t(loved ? 'car_collected' : 'collect')}
+        selected={loved}
+        color={loved ? theme.accent : theme['text-2']}
+        onPress={loved ? uncollectMusic : collectMusic}
+        onLongPress={showAddMusic}
+        accessibilityHint={t('car_hold_add_to_list')}
+      />
+      <ActionButton
+        icon="lucide-message-square-quote"
+        label={t('play_detail_setting_lyrics')}
+        active={lyricsVisible}
+        selected={lyricsVisible}
+        color={lyricsVisible ? theme.accent : theme['text-2']}
+        labelColor={lyricsVisible ? theme.isDark ? theme.accent : '#A93616' : theme['text-2']}
+        onPress={onToggleLyrics}
+        onLongPress={openComment}
+        accessibilityHint={t('car_hold_comments')}
+      />
+      <ActionButton icon="ph-queue" label={t('car_queue')} color={theme['text-1']} onPress={onQueue} />
       <MusicAddModal ref={musicAddModalRef} />
     </View>
   )

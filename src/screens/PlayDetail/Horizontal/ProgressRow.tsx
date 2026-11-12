@@ -5,23 +5,26 @@ import { useBufferProgress } from '@/plugins/player'
 import { useTheme } from '@/store/theme/hook'
 import { CarText, SeekBar } from '@/components/car'
 import { px } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
 import { formatPlayTime2 } from '@/utils/common'
 
-// 设计稿进度：6px 轨道 + 当前/剩余时间 16/500
+// ESlgG：72px 操作区，8px 强调色轨道、22px 拖动点与时间。
 export default memo(() => {
+  useWindowSize()
   const theme = useTheme()
   const { progress, maxPlayTime, nowPlayTimeStr } = useProgress()
   const buffered = useBufferProgress()
-  const remain = maxPlayTime > 0 ? formatPlayTime2(Math.max(maxPlayTime - progress * maxPlayTime, 0)) : '--:--'
+  const remain = maxPlayTime > 0 ? formatPlayTime2(Math.max(maxPlayTime - progress * maxPlayTime, 0)).replace(/^0(?=\d:)/, '') : '--:--'
 
   return (
-    <View style={{ height: px(37) }}>
-      <View style={{ position: 'absolute', top: -px(12), left: 0, right: 0 }}>
-        <SeekBar progress={progress} duration={maxPlayTime} buffered={buffered} barHeight={6} touchHeight={30} color={theme['text-1']} />
+    <View style={{ height: px(72), justifyContent: 'center', gap: px(8) }}>
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+        <SeekBar progress={progress} duration={maxPlayTime} buffered={buffered} barHeight={8} touchHeight={72} trackCenter={18.5} thumbSize={22} color={theme.accent} thumbColor={theme['text-1']} />
       </View>
-      <View style={{ marginTop: px(18), height: px(19), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <CarText size={16} weight="500" num color={theme['text-3']}>{nowPlayTimeStr}</CarText>
-        <CarText size={16} weight="500" num color={theme['text-3']}>{`-${remain}`}</CarText>
+      <View pointerEvents="none" style={{ height: px(32) }} />
+      <View pointerEvents="none" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <CarText size={22} weight="500" num color={theme['text-2']}>{nowPlayTimeStr.replace(/^0(?=\d:)/, '')}</CarText>
+        <CarText size={22} weight="500" num color={theme['text-2']}>{`-${remain}`}</CarText>
       </View>
     </View>
   )

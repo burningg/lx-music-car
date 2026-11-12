@@ -1,4 +1,13 @@
 {
+  "car_quality_lossless": "無損",
+  "car_queue": "佇列",
+  "car_queue_empty": "佇列為空",
+  "car_fullscreen": "全螢幕",
+  "car_fullscreen_lyrics": "全螢幕歌詞",
+  "car_collected": "已收藏",
+  "car_list_loop": "清單循環",
+  "car_hold_add_to_list": "長按加入歌單",
+  "car_hold_comments": "長按查看評論",
   "add_to": "添加到...",
   "agree": "好好好",
   "agree_go": "去開啟",

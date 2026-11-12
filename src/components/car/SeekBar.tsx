@@ -3,6 +3,7 @@ import { PanResponder, View, type ColorValue } from 'react-native'
 import { useDrag } from '@/utils/hooks'
 import { useTheme } from '@/store/theme/hook'
 import { px } from '@/utils/pixelRatio'
+import useWindowSize from '@/utils/hooks/useWindowSize'
 
 export interface SeekBarProps {
   progress: number
@@ -17,6 +18,11 @@ export interface SeekBarProps {
   seekable?: boolean
   color?: ColorValue
   trackColor?: ColorValue
+  /** 默认不显示，播放页使用 22px 拖动点。 */
+  thumbSize?: number
+  thumbColor?: ColorValue
+  /** 轨道中心距触控区顶部的位置，默认居中。 */
+  trackCenter?: number
 }
 
 const Bar = ({ width, color }: { width: `${number}%`, color?: ColorValue }) => (
@@ -27,7 +33,8 @@ const Bar = ({ width, color }: { width: `${number}%`, color?: ColorValue }) => (
  * 进度条：触控层与可见条同宽，onLayout 测的就是可见条宽度，
  * 加大触控区不影响点击位置换算
  */
-export default memo(({ progress, duration, buffered, barHeight = 3, touchHeight = 24, align = 'center', seekable = true, color, trackColor }: SeekBarProps) => {
+export default memo(({ progress, duration, buffered, barHeight = 3, touchHeight = 24, align = 'center', seekable = true, color, trackColor, thumbSize = 0, thumbColor, trackCenter }: SeekBarProps) => {
+  useWindowSize()
   const theme = useTheme()
   const [dragging, setDragging] = useState(false)
   const [dragProgress, setDragProgress] = useState(0)
@@ -56,16 +63,22 @@ export default memo(({ progress, duration, buffered, barHeight = 3, touchHeight 
   ).current
 
   const current = dragging ? dragProgress : progress
+  const fraction = Math.min(Math.max(Number.isFinite(current) ? current : 0, 0), 1)
   return (
     <View
       style={{ height: px(touchHeight), justifyContent: align == 'bottom' ? 'flex-end' : 'center' }}
       onLayout={seekable ? onLayout : undefined}
       {...(seekable ? panResponder.panHandlers : null)}
     >
-      <View style={{ height: px(barHeight), borderRadius: 99, backgroundColor: trackColor ?? theme['track-bg'], overflow: 'hidden' }}>
+      <View style={{ height: px(barHeight), borderRadius: 99, backgroundColor: trackColor ?? theme['track-bg'], overflow: 'hidden', ...(trackCenter != null ? { position: 'absolute', left: 0, right: 0, top: px(trackCenter) - px(barHeight) / 2 } as const : {}) }}>
         {buffered != null ? <Bar width={`${Math.min(Math.max(buffered, 0), 1) * 100}%`} color={theme['glass-strong']} /> : null}
-        <Bar width={`${Math.min(Math.max(current, 0), 1) * 100}%`} color={color ?? theme.accent} />
+        <Bar width={`${fraction * 100}%`} color={color ?? theme.accent} />
       </View>
+      {thumbSize > 0 ? (
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: px(thumbSize), top: (trackCenter != null ? px(trackCenter) : px(touchHeight) / 2) - px(thumbSize) / 2 }}>
+          <View style={{ position: 'absolute', left: `${fraction * 100}%`, width: px(thumbSize), height: px(thumbSize), borderRadius: px(thumbSize / 2), backgroundColor: thumbColor ?? theme['text-1'] }} />
+        </View>
+      ) : null}
     </View>
   )
 })

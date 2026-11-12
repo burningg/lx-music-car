@@ -1,4 +1,13 @@
 {
+  "car_quality_lossless": "Lossless",
+  "car_queue": "Queue",
+  "car_queue_empty": "The queue is empty",
+  "car_fullscreen": "Full screen",
+  "car_fullscreen_lyrics": "Full-screen lyrics",
+  "car_collected": "Liked",
+  "car_list_loop": "Repeat all",
+  "car_hold_add_to_list": "Hold to add to a playlist",
+  "car_hold_comments": "Hold to view comments",
   "add_to": "Add to ...",
   "agree": "Sure",
   "agree_go": "Turn it on",

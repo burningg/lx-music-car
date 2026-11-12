@@ -31,12 +31,11 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
   const textAlign = useSettingValue('playDetail.style.align')
   const distance = lineNum - activeLine
   const active = distance == 0
-  // 保留用户的歌词字号比例，以默认 220 对应 SPRSH 的 36 / 64px。
-  const size = (active ? 64 : distance == 1 ? 40 : 36) * lrcFontSize / 220
-  const lineHeight = sp(size) * 1.35
-
-  // 设计稿以主文字色逐级淡出，避免次级灰再叠加原生渐隐后接近全黑。
-  const opacity = active ? 1 : distance == 1 ? 0.75 : distance == 2 ? 0.58 : distance > 2 ? 0.46 : distance == -1 ? 0.65 : 0.48
+  // zBoI7：40 / 44 / 72 / 48 / 40 / 40；保留用户字号与对齐设置。
+  const size = (active ? 72 : distance == -1 ? 44 : distance == 1 ? 48 : 40) * lrcFontSize / 220
+  const lineHeight = sp(size) * (active ? 1.3 : 1.4)
+  const color = active ? theme.accent : distance == 1 ? theme['text-1'] : theme['text-2']
+  const opacity = distance == 1 ? 0.82 : 1
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     onLayout(lineNum, nativeEvent.layout.height, nativeEvent.layout.width)
@@ -45,14 +44,15 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
   // textBreakStrategy="simple" 用于解决某些设备上字体被截断的问题
   // https://stackoverflow.com/a/72822360
   return (
-    <View style={{ paddingVertical: px(18) }} onLayout={handleLayout}>
+    <View style={{ paddingVertical: px(16) }} onLayout={handleLayout}>
       <AnimatedColorText style={{
         ...styles.lineText,
         textAlign,
         fontSize: sp(size),
-        ...getFontStyle(active ? '700' : distance == 1 ? '500' : '400', false),
+        ...getFontStyle(active ? '700' : Math.abs(distance) == 1 ? '500' : '400', false),
         lineHeight,
-      }} textBreakStrategy="simple" color={theme['text-1']} opacity={opacity} size={size}>{line.text}</AnimatedColorText>
+        letterSpacing: active ? px(-1) : 0,
+      }} textBreakStrategy="simple" color={color} opacity={opacity} size={size}>{line.text}</AnimatedColorText>
       {
         line.extendedLyrics.map((lrc, index) => {
           return (<AnimatedColorText style={{
@@ -61,7 +61,7 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
             textAlign,
             fontSize: sp(size * 0.8),
             lineHeight: lineHeight * 0.8,
-          }} textBreakStrategy="simple" key={index} color={active ? theme['text-2'] : theme['text-1']} opacity={opacity} size={size * 0.8}>{lrc}</AnimatedColorText>)
+          }} textBreakStrategy="simple" key={index} color={theme['text-2']} opacity={opacity} size={size * 0.8}>{lrc}</AnimatedColorText>)
         })
       }
     </View>
@@ -73,6 +73,8 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
     prevProps.onLayout === nextProps.onLayout
 })
 const wait = async() => new Promise(resolve => setTimeout(resolve, 100))
+// 设计稿中当前行中心距歌词区顶部 228.4px，正文区高 550.4px。
+const ACTIVE_LINE_ANCHOR = 228.4 / 550.4
 
 export default () => {
   useWindowSize()
@@ -87,6 +89,7 @@ export default () => {
   const isFirstSetLrc = useRef(true)
   const scrollInfoRef = useRef<NativeSyntheticEvent<NativeScrollEvent>['nativeEvent'] | null>(null)
   const listLayoutInfoRef = useRef<{ spaceHeight: number, lineHeights: number[] }>({ spaceHeight: 0, lineHeights: [] })
+  const viewportHeightRef = useRef(0)
   const scrollCancelRef = useRef<(() => void) | null>(null)
   const isShowLyricProgressSetting = useSettingValue('playDetail.isShowLyricProgressSetting')
   // useLock()
@@ -113,7 +116,7 @@ export default () => {
         }
         offset += (listLayoutInfoRef.current.lineHeights[index] ?? 0) / 2
         try {
-          scrollCancelRef.current = scrollTo(flatListRef.current, scrollInfoRef.current, offset - scrollInfoRef.current.layoutMeasurement.height * 0.42, 600, () => {
+          scrollCancelRef.current = scrollTo(flatListRef.current, scrollInfoRef.current, offset - viewportHeightRef.current * ACTIVE_LINE_ANCHOR, 600, () => {
             scrollCancelRef.current = null
           })
         } catch {}
@@ -126,7 +129,9 @@ export default () => {
           flatListRef.current.scrollToIndex({
             index,
             animated: true,
-            viewPosition: 0.42,
+            viewPosition: 0.5,
+            // RN viewPosition 按剩余空间定位；补偿后与逐行滚动使用同一中心锚点。
+            viewOffset: viewportHeightRef.current * (ACTIVE_LINE_ANCHOR - 0.5),
           })
         } catch {}
       }
@@ -217,15 +222,12 @@ export default () => {
     lineRef.current.line = line
     if (!flatListRef.current || isPauseScrollRef.current) return
 
-    if (line - lineRef.current.prevLine != 1) {
-      handleScrollToActive()
-      return
-    }
-
+    // 字号层级随当前行变化，先等待原生行高更新，避免跳转时按旧行高裁切首行。
+    if (delayScrollTimeout.current) clearTimeout(delayScrollTimeout.current)
     delayScrollTimeout.current = setTimeout(() => {
       delayScrollTimeout.current = null
       handleScrollToActive()
-    }, 600)
+    }, line - lineRef.current.prevLine == 1 ? 600 : 100)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [line])
 
@@ -253,6 +255,16 @@ export default () => {
     playLineRef.current?.updateLayoutInfo(listLayoutInfoRef.current)
   }, [])
 
+  const handleViewportLayout = ({ nativeEvent }: LayoutChangeEvent) => {
+    viewportHeightRef.current = nativeEvent.layout.height
+    if (isPauseScrollRef.current) return
+    if (delayScrollTimeout.current) clearTimeout(delayScrollTimeout.current)
+    delayScrollTimeout.current = setTimeout(() => {
+      delayScrollTimeout.current = null
+      handleScrollToActive()
+    }, 100)
+  }
+
   const handlePlayLine = useCallback((time: number) => {
     playLineRef.current?.setVisible(false)
     global.app_event.setProgress(time)
@@ -275,14 +287,15 @@ export default () => {
         data={lyricLines}
         renderItem={renderItem}
         keyExtractor={getkey}
-        style={{ flex: 1, paddingLeft: px(16) }}
+        style={{ flex: 1 }}
         ref={flatListRef}
         showsVerticalScrollIndicator={false}
+        onLayout={handleViewportLayout}
         ListHeaderComponent={spaceComponent}
         ListFooterComponent={spaceComponent}
         onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={onScrollEndDrag}
-        fadingEdgeLength={px(32)}
+        fadingEdgeLength={0}
         initialNumToRender={Math.max(line + 10, 10)}
         onScrollToIndexFailed={handleScrollToIndexFailed}
         onScroll={handleScroll}
