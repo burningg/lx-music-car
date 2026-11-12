@@ -588,7 +588,7 @@ test('playlist overview uses large artwork, uncropped stats and two 208×72 acti
   for (const action of children(actions)) assert.equal(action.props.onPress, noop)
 })
 
-test('lyrics apply car scaling once to the revised 40/44/72/48px hierarchy', () => {
+test('lyrics apply car scaling once to the revised 32/34/56/36px hierarchy', () => {
   const Lyric = load('src/screens/PlayDetail/Horizontal/Lyric.tsx', {
     'react-native': { ...native, StyleSheet: { create: value => value } },
     '@/utils/pixelRatio': { px: size => size / 2, sp: size => size / 2 },
@@ -609,10 +609,10 @@ test('lyrics apply car scaling once to the revised 40/44/72/48px hierarchy', () 
   const list = find(render(Lyric), node => node.type == 'FlatList')
   assert.equal(list.props.style.paddingLeft, undefined)
   const item = { text: 'Lyric', extendedLyrics: ['Translation'] }
-  for (const [index, size] of [[0, 22], [1, 36], [2, 24], [3, 20]]) {
+  for (const [index, size] of [[0, 17], [1, 28], [2, 18], [3, 16]]) {
     const line = list.props.renderItem({ item, index })
     const output = render(line.type, line.props)
-    assert.equal(output.props.style.paddingVertical, 8)
+    assert.equal(output.props.style.paddingVertical, 9)
     assert.equal(children(output)[0].props.style.fontSize, size)
     assert.equal(children(output)[1].props.style.paddingTop, 2.5)
   }

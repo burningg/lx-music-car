@@ -11,6 +11,13 @@ const React = require('react')
 const ShallowRenderer = require('react-shallow-renderer')
 
 const root = path.resolve(__dirname, '..')
+const design = JSON.parse(readFileSync(path.join(root, 'design/lx-music-car-claude.pen'), 'utf8'))
+const mainDesign = design.children.find(node => node.id == 'SEv9u').children.find(node => node.id == 'SPRSH')
+const lyricDesign = mainDesign.children[0].children[1]
+const lyricBodyDesign = lyricDesign.children[1]
+const lyricLineHeights = lyricBodyDesign.children.map(line => line.fontSize * line.lineHeight)
+const lyricBodyHeight = lyricLineHeights.reduce((sum, height) => sum + height, 0) + lyricBodyDesign.gap * (lyricLineHeights.length - 1)
+const activeLineCenter = lyricLineHeights[0] + lyricLineHeights[1] + lyricBodyDesign.gap * 2 + lyricLineHeights[2] / 2
 const noop = () => {}
 const fill = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }
 const native = {
@@ -203,15 +210,15 @@ test('playback and every CarShell page use the same rail without page-specific s
   assert.equal(homeRail.props.activeId, undefined)
 })
 
-test('SEv9u and AHpf9 match the revised Pen geometry at every car scale', () => {
+test('both player themes share the revised SPRSH lyric spacing at every car scale', () => {
   const design = JSON.parse(readFileSync(path.join(root, 'design/lx-music-car-claude.pen'), 'utf8'))
   for (const pageId of ['SEv9u', 'AHpf9']) {
     const page = design.children.find(node => node.id == pageId)
     const main = page.children.at(-1)
     const [rowDesign, bottomDesign] = main.children
-    const [stackDesign, lyricDesign] = rowDesign.children
-    const lyricBody = lyricDesign.children[1]
-    const lyricHeight = lyricDesign.children[0].height + lyricDesign.gap + lyricBody.children.reduce((height, line) => height + line.fontSize * line.lineHeight, 0) + lyricBody.gap * (lyricBody.children.length - 1)
+    const [stackDesign] = rowDesign.children
+    // SPRSH is the updated reference; the daytime artboard still contains the previous lyrics.
+    const lyricHeight = lyricDesign.children[0].height + lyricDesign.gap + lyricBodyHeight + lyricDesign.padding[2]
     for (const scale of [0.5, 2 / 3, 1, 1.5]) {
       const output = player(scale)
       const content = children(output)[0]
@@ -232,6 +239,13 @@ test('SEv9u and AHpf9 match the revised Pen geometry at every car scale', () => 
       assert.equal(style(lyric).minWidth, 0)
       assert.ok(Math.abs(style(lyric).height - lyricHeight * scale) < 0.001)
       assert.equal(style(lyric).gap, lyricDesign.gap * scale)
+      assert.equal(style(lyric).paddingBottom, lyricDesign.padding[2] * scale)
+      const lyricBody = children(lyric)[1]
+      assert.equal(style(lyricBody).paddingRight, lyricBodyDesign.padding[1] * scale)
+      assert.equal(style(lyricBody).flex, 1)
+      assert.equal(style(lyricBody).minHeight, 0)
+      const bodyHeight = style(lyric).height - lyricDesign.children[0].height * scale - style(lyric).gap - style(lyric).paddingBottom
+      assert.ok(Math.abs(bodyHeight - lyricBodyHeight * scale) < 0.001)
       assert.equal(children(lyric)[0].type, 'LyricHeader')
       assert.ok(find(lyric, node => node.type == 'Lyric'))
       assert.equal(find(output, node => node.type == 'TopBar'), undefined, 'no extra toolbar in the revised design')
@@ -253,6 +267,10 @@ test('full-screen lyrics, lyric visibility and queue controls work without chang
   assert.equal(get('Cover'), undefined)
   assert.ok(get('TopBar'))
   assert.ok(get('Lyric'))
+  const fullscreen = find(renderer.getRenderOutput(), node => children(node).some(child => child.type == 'TopBar'))
+  assert.equal(style(fullscreen).height, '100%')
+  assert.equal(style(fullscreen).paddingBottom, 0, 'fullscreen keeps its full-height viewport')
+  assert.equal(style(children(fullscreen)[1]).paddingRight, 0, 'two-column inset does not narrow fullscreen lyrics')
   assert.ok(get('Transport'))
   get('TopBar').props.onBack()
   assert.ok(get('Cover'))
@@ -462,19 +480,26 @@ function lyrics(mode = 'dark', fontSize = 220, scale = 1) {
   return find(render(Lyric), node => node.type == 'FlatList')
 }
 
-test('lyric brightness, weight and size follow the six-line design in both themes', () => {
-  for (const mode of ['dark', 'light']) {
-    const list = lyrics(mode)
-    for (const [index, opacity, size, weight] of [[0, 1, 40, '400'], [1, 1, 40, '400'], [2, 1, 44, '500'], [3, 1, 72, '700'], [4, 0.82, 48, '500'], [5, 1, 40, '400'], [6, 1, 40, '400']]) {
+test('lyric brightness, weight, size and line spacing follow SPRSH in both themes', () => {
+  for (const mode of ['dark', 'light']) for (const scale of [0.5, 2 / 3, 1, 1.5]) {
+    const list = lyrics(mode, 220, scale)
+    for (const index of [0, 1, 2, 3, 4, 5, 6]) {
+      const lineDesign = lyricBodyDesign.children[Math.max(index - 1, 0)]
+      const size = lineDesign.fontSize * scale
+      const opacity = lineDesign.opacity ?? 1
+      const weight = lineDesign.fontWeight ?? '400'
       const item = list.props.renderItem({ item: { text: '歌词', extendedLyrics: ['Translation'] }, index })
       const output = render(item.type, item.props)
       const [text, translation] = children(output)
       assert.equal(text.props.color, palettes[mode][index == 3 ? 'accent' : index == 4 ? 'text-1' : 'text-2'])
       assert.equal(text.props.opacity, opacity)
+      assert.equal(style(output).paddingVertical * 2, lyricBodyDesign.gap * scale)
       assert.equal(style(text).fontSize, size)
-      assert.equal(style(text).lineHeight, size * (index == 3 ? 1.3 : 1.4))
+      assert.equal(style(text).lineHeight, size * lineDesign.lineHeight)
+      assert.equal(style(text).letterSpacing ?? 0, (lineDesign.letterSpacing ?? 0) * scale)
       assert.equal(style(text).fontWeight, weight)
       assert.equal(style(text).textAlign, 'right', 'preserve user alignment')
+      assert.ok(Math.abs(style(translation).fontSize - size * 0.8) < 0.001)
       assert.equal(translation.props.opacity, opacity)
       assert.equal(translation.props.color, palettes[mode]['text-2'])
     }
@@ -515,24 +540,25 @@ test('lyric jumps wait for new line heights and share the sequential-scroll cent
   const flush = () => { const callbacks = [...timers.keys()]; timers.clear(); callbacks.forEach(callback => callback()) }
   let list = draw()
   list.ref.current = { scrollToOffset: noop, scrollToIndex: args => indexCalls.push(args) }
-  list.props.onLayout({ nativeEvent: { layout: { height: 550.4 } } })
+  list.props.onLayout({ nativeEvent: { layout: { height: lyricBodyHeight } } })
   effects.forEach(effect => effect())
   flush()
   assert.equal(indexCalls.at(-1).index, 2)
   assert.equal(indexCalls.at(-1).viewPosition, 0.5)
-  assert.ok(Math.abs(indexCalls.at(-1).viewOffset - (228.4 - 550.4 / 2)) < 0.001)
+  assert.ok(Math.abs(indexCalls.at(-1).viewOffset - (activeLineCenter - lyricBodyHeight / 2)) < 0.001)
 
   activeLine = 3
   list = draw()
   effects[2]()
   assert.deepEqual([...timers.values()], [600])
   list.props.ListHeaderComponent.props.onLayout({ nativeEvent: { layout: { height: 1000 } } })
-  for (const [index, height] of [88, 88, 93.6, 125.6].entries()) {
+  const measuredHeights = [0, 0, 1, 2].map(index => lyricLineHeights[index] + lyricBodyDesign.gap)
+  for (const [index, height] of measuredHeights.entries()) {
     list.props.renderItem({ item: data[index], index }).props.onLayout(index, height, 500)
   }
-  list.props.onScroll({ nativeEvent: { layoutMeasurement: { height: 550.4 } } })
+  list.props.onScroll({ nativeEvent: { layoutMeasurement: { height: lyricBodyHeight } } })
   flush()
-  assert.ok(Math.abs(scrolls.at(-1) - (1000 + 88 + 88 + 93.6 + 125.6 / 2 - 228.4)) < 0.001)
+  assert.ok(Math.abs(scrolls.at(-1) - (1000 + measuredHeights[0] + measuredHeights[1] + measuredHeights[2] + measuredHeights[3] / 2 - activeLineCenter)) < 0.001)
 
   activeLine = 6
   list = draw()
@@ -543,7 +569,7 @@ test('lyric jumps wait for new line heights and share the sequential-scroll cent
   assert.equal(indexCalls.at(-1).index, 6)
   list.props.onLayout({ nativeEvent: { layout: { height: 800 } } })
   flush()
-  assert.ok(Math.abs(indexCalls.at(-1).viewOffset - 800 * (228.4 / 550.4 - 0.5)) < 0.001, 'fullscreen/resize realigns to the same anchor')
+  assert.ok(Math.abs(indexCalls.at(-1).viewOffset - 800 * (activeLineCenter / lyricBodyHeight - 0.5)) < 0.001, 'fullscreen/resize realigns to the same anchor')
 })
 
 test('neighboring lyric lines rerender when the active index changes, not only when highlighted', () => {
@@ -560,8 +586,8 @@ test('lyrics do not add a fade absent from the Pen, while font preference still 
   assert.equal(list.props.fadingEdgeLength, 0)
   const line = list.props.renderItem({ item: { text: '歌词', extendedLyrics: [] }, index: 3 })
   const text = children(render(line.type, line.props))[0]
-  assert.equal(style(text).fontSize, 54)
-  assert.equal(style(text).lineHeight, 54 * 1.3)
+  assert.equal(style(text).fontSize, 42)
+  assert.equal(style(text).lineHeight, 42 * 1.3)
 })
 
 test('transport matches the Pen hit targets and preserves every playback mode', () => {

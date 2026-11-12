@@ -19,7 +19,7 @@ import Lyric from './Lyric'
 import LyricHeader from './LyricHeader'
 import Queue from './Queue'
 
-// SPRSH / SEv9u、AHpf9：1920×1080，464px 封面，104px 栏距，底部独立操作区。
+// SPRSH：1920×1080，464px 封面，104px 栏距；歌词区增加右侧和底部留白。
 export default memo(({ componentId }: { componentId: string }) => {
   useWindowSize()
   const [lyricsVisible, setLyricsVisible] = useState(true)
@@ -71,11 +71,19 @@ export default memo(({ componentId }: { componentId: string }) => {
               </View>
             ) : null}
             {lyricsVisible ? (
-              <View style={{ flex: 1, minWidth: 0, height: fullscreen ? '100%' : px(646.4), maxHeight: '100%', gap: px(32) }}>
+              <View style={{
+                flex: 1,
+                minWidth: 0,
+                // 64px 标题 + 40px 间距 + 485.2px 六行正文 + 56px 底部留白。
+                height: fullscreen ? '100%' : px(645.2),
+                maxHeight: '100%',
+                gap: px(fullscreen ? 32 : 40),
+                paddingBottom: fullscreen ? 0 : px(56),
+              }}>
                 {fullscreen
                   ? <TopBar onBack={() => { setFullscreen(false) }} />
                   : <LyricHeader onFullscreen={() => { setFullscreen(true) }} />}
-                <View style={{ flex: 1, minHeight: 0 }}>
+                <View style={{ flex: 1, minHeight: 0, paddingRight: fullscreen ? 0 : px(64) }}>
                   <Lyric />
                 </View>
               </View>

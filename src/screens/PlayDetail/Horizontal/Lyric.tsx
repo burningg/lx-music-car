@@ -31,8 +31,8 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
   const textAlign = useSettingValue('playDetail.style.align')
   const distance = lineNum - activeLine
   const active = distance == 0
-  // zBoI7：40 / 44 / 72 / 48 / 40 / 40；保留用户字号与对齐设置。
-  const size = (active ? 72 : distance == -1 ? 44 : distance == 1 ? 48 : 40) * lrcFontSize / 220
+  // SPRSH / zBoI7：32 / 34 / 56 / 36 / 32 / 32；保留用户字号与对齐设置。
+  const size = (active ? 56 : distance == -1 ? 34 : distance == 1 ? 36 : 32) * lrcFontSize / 220
   const lineHeight = sp(size) * (active ? 1.3 : 1.4)
   const color = active ? theme.accent : distance == 1 ? theme['text-1'] : theme['text-2']
   const opacity = distance == 1 ? 0.82 : 1
@@ -44,14 +44,13 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
   // textBreakStrategy="simple" 用于解决某些设备上字体被截断的问题
   // https://stackoverflow.com/a/72822360
   return (
-    <View style={{ paddingVertical: px(16) }} onLayout={handleLayout}>
+    <View style={{ paddingVertical: px(18) }} onLayout={handleLayout}>
       <AnimatedColorText style={{
         ...styles.lineText,
         textAlign,
         fontSize: sp(size),
-        ...getFontStyle(active ? '700' : Math.abs(distance) == 1 ? '500' : '400', false),
+        ...getFontStyle(active ? '600' : Math.abs(distance) == 1 ? '500' : '400', false),
         lineHeight,
-        letterSpacing: active ? px(-1) : 0,
       }} textBreakStrategy="simple" color={color} opacity={opacity} size={size}>{line.text}</AnimatedColorText>
       {
         line.extendedLyrics.map((lrc, index) => {
@@ -73,8 +72,8 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
     prevProps.onLayout === nextProps.onLayout
 })
 const wait = async() => new Promise(resolve => setTimeout(resolve, 100))
-// 设计稿中当前行中心距歌词区顶部 228.4px，正文区高 550.4px。
-const ACTIVE_LINE_ANCHOR = 228.4 / 550.4
+// SPRSH：当前行中心距正文顶部 200.8px，正文区高 485.2px（不含底部留白）。
+const ACTIVE_LINE_ANCHOR = 200.8 / 485.2
 
 export default () => {
   useWindowSize()
