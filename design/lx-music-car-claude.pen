@@ -691,362 +691,316 @@
           "name": "Main",
           "width": "fill_container",
           "height": "fill_container",
-          "gap": 72,
+          "layout": "vertical",
+          "gap": 32,
           "padding": [
-            0,
-            80
+            48,
+            72,
+            44,
+            72
           ],
-          "alignItems": "center",
           "children": [
             {
               "type": "frame",
-              "id": "snIN7",
-              "name": "Cover",
-              "width": 512,
-              "height": 512,
-              "fill": {
-                "type": "image",
-                "enabled": true,
-                "url": "images/generated-3.png",
-                "mode": "cover"
-              },
-              "cornerRadius": 24,
-              "stroke": "$art-stroke",
-              "strokeWidth": 1,
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "$shadow-strong",
-                "offset": {
-                  "x": 0,
-                  "y": 40
-                },
-                "blur": 90
-              }
-            },
-            {
-              "type": "frame",
-              "id": "lAYoo",
-              "name": "Info",
+              "id": "bnmpx",
+              "name": "歌曲与歌词 · 双栏主视区",
               "width": "fill_container",
-              "layout": "vertical",
-              "gap": 48,
+              "height": "fill_container",
+              "gap": 104,
+              "alignItems": "center",
               "children": [
                 {
                   "type": "frame",
-                  "id": "wmLRb",
-                  "name": "Meta",
-                  "width": "fill_container",
+                  "id": "lAYoo",
+                  "name": "封面与歌曲信息",
+                  "width": 464,
                   "layout": "vertical",
-                  "gap": 14,
+                  "gap": 28,
                   "children": [
                     {
                       "type": "frame",
-                      "id": "PpGhw",
-                      "name": "Source",
-                      "gap": 8,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "ellipse",
-                          "id": "SsiD7",
-                          "name": "Dot",
-                          "fill": "$accent",
-                          "width": 7,
-                          "height": 7
+                      "id": "snIN7",
+                      "name": "Cover",
+                      "width": "fill_container",
+                      "height": 464,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "images/generated-3.png",
+                        "mode": "cover"
+                      },
+                      "cornerRadius": 20,
+                      "stroke": "$art-stroke",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "$shadow-strong",
+                        "offset": {
+                          "x": 0,
+                          "y": 24
                         },
-                        {
-                          "type": "text",
-                          "id": "vUxvN",
-                          "name": "Label",
-                          "fill": "$text-2",
-                          "content": "来自歌单 · 秋日私语｜想和你一起听歌看日落",
-                          "fontFamily": "$font-cn",
-                          "fontSize": 16,
-                          "fontWeight": "normal"
-                        }
-                      ]
+                        "blur": 64
+                      }
                     },
                     {
                       "type": "frame",
-                      "id": "YosCH",
-                      "name": "Title Row",
+                      "id": "wmLRb",
+                      "name": "歌曲信息",
                       "width": "fill_container",
-                      "gap": 16,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "PpGhw",
+                          "name": "Source",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "SsiD7",
+                              "name": "Dot",
+                              "fill": "$accent",
+                              "width": 8,
+                              "height": 8
+                            },
+                            {
+                              "type": "text",
+                              "id": "vUxvN",
+                              "name": "来源歌单",
+                              "fill": "$text-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "来自歌单 · 秋日私语｜想和你一起听歌看日落",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 20,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YosCH",
+                          "name": "Title Row",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "i5KRlV",
+                              "name": "歌曲标题",
+                              "fill": "$text-1",
+                              "content": "落日与晚风",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 52,
+                              "fontWeight": "700",
+                              "letterSpacing": -0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "o43Uka",
+                              "name": "Quality",
+                              "cornerRadius": 6,
+                              "stroke": "$badge-stroke",
+                              "strokeWidth": 1,
+                              "padding": [
+                                5,
+                                10
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "LaLac",
+                                  "name": "无损音质",
+                                  "fill": "$text-2",
+                                  "content": "无损",
+                                  "fontFamily": "$font-cn",
+                                  "fontSize": 18,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "IBglo",
+                          "name": "歌手与专辑",
+                          "fill": "$text-2",
+                          "content": "陈屿 — 《海岸线以西》",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 26,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "R6aIVO",
+                  "name": "歌词 · 大字沉浸阅读",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 32,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "cc10w",
+                      "name": "歌词状态与全屏入口",
+                      "width": "fill_container",
+                      "height": 64,
+                      "justifyContent": "space_between",
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "text",
-                          "id": "i5KRlV",
-                          "name": "Title",
-                          "fill": "$text-1",
-                          "content": "落日与晚风",
-                          "lineHeight": 1.3,
+                          "id": "PUbDs",
+                          "name": "歌词标题",
+                          "fill": "$text-2",
+                          "content": "歌词",
                           "fontFamily": "$font-cn",
-                          "fontSize": 60,
-                          "fontWeight": "700",
-                          "letterSpacing": -1.2
+                          "fontSize": 24,
+                          "fontWeight": "500"
                         },
                         {
                           "type": "frame",
-                          "id": "o43Uka",
-                          "name": "Quality",
-                          "cornerRadius": 6,
-                          "stroke": "$badge-stroke",
-                          "strokeWidth": 1,
-                          "padding": [
-                            4,
-                            9
-                          ],
+                          "id": "l6Omt",
+                          "name": "歌词工具",
+                          "gap": 24,
+                          "alignItems": "center",
                           "children": [
                             {
-                              "type": "text",
-                              "id": "LaLac",
-                              "name": "Label",
-                              "fill": "$text-2",
-                              "content": "无损",
-                              "fontFamily": "$font-cn",
-                              "fontSize": 13,
-                              "fontWeight": "600"
+                              "type": "frame",
+                              "id": "QCA0O",
+                              "name": "全屏歌词 · 64px 触控",
+                              "height": 64,
+                              "fill": "$glass",
+                              "cornerRadius": 20,
+                              "gap": 12,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "nxHW4",
+                                  "name": "展开歌词",
+                                  "width": 28,
+                                  "height": 28,
+                                  "icon": "corners-out",
+                                  "library": "phosphor",
+                                  "fill": "$text-1"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "tJ0hw",
+                                  "name": "全屏歌词标签",
+                                  "fill": "$text-1",
+                                  "content": "全屏",
+                                  "fontFamily": "$font-cn",
+                                  "fontSize": 20,
+                                  "fontWeight": "500"
+                                }
+                              ]
                             }
                           ]
                         }
                       ]
                     },
                     {
-                      "type": "text",
-                      "id": "IBglo",
-                      "name": "Artist",
-                      "fill": "$text-2",
-                      "content": "陈屿 — 《海岸线以西》",
-                      "lineHeight": 1.4,
-                      "fontFamily": "$font-cn",
-                      "fontSize": 26,
-                      "fontWeight": "normal"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "ESlgG",
-                  "name": "Progress",
-                  "width": "fill_container",
-                  "layout": "vertical",
-                  "gap": 12,
-                  "children": [
-                    {
                       "type": "frame",
-                      "id": "hgcah",
-                      "name": "Track",
+                      "id": "zBoI7",
+                      "name": "歌词正文 · 当前句突出",
                       "width": "fill_container",
-                      "height": 6,
-                      "fill": "$track-bg",
-                      "cornerRadius": 3,
-                      "children": [
-                        {
-                          "type": "rectangle",
-                          "cornerRadius": 3,
-                          "id": "A6fwX",
-                          "name": "Played",
-                          "fill": "$text-1",
-                          "width": 228,
-                          "height": 6
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "bfGEM",
-                      "name": "Times",
-                      "width": "fill_container",
-                      "justifyContent": "space_between",
+                      "layout": "vertical",
+                      "gap": 32,
                       "children": [
                         {
                           "type": "text",
-                          "id": "lKgfZ",
-                          "name": "Time",
-                          "fill": "$text-3",
-                          "content": "1:32",
-                          "fontFamily": "$font-num",
-                          "fontSize": 16,
-                          "fontWeight": "500"
-                        },
-                        {
-                          "type": "text",
-                          "id": "wZgio",
-                          "name": "Time",
-                          "fill": "$text-3",
-                          "content": "-2:33",
-                          "fontFamily": "$font-num",
-                          "fontSize": 16,
-                          "fontWeight": "500"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "drstA",
-                  "name": "Transport",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "gykP7",
-                      "name": "Shuffle",
-                      "width": 32,
-                      "height": 32,
-                      "icon": "shuffle",
-                      "library": "Material Symbols Rounded",
-                      "fill": "$text-3"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "E1Ezs",
-                      "name": "Previous",
-                      "width": 48,
-                      "height": 48,
-                      "icon": "skip-back-fill",
-                      "library": "phosphor",
-                      "fill": "$text-1"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "UxyKR",
-                      "name": "Play Pause",
-                      "width": 104,
-                      "height": 104,
-                      "fill": "$text-1",
-                      "cornerRadius": 52,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "$shadow-soft",
-                        "offset": {
-                          "x": 0,
-                          "y": 16
-                        },
-                        "blur": 40
-                      },
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "Tri4w",
-                          "name": "Pause",
-                          "width": 44,
-                          "height": 44,
-                          "icon": "pause-fill",
-                          "library": "phosphor",
-                          "fill": "$on-primary"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "icon",
-                      "id": "RzNfV",
-                      "name": "Next",
-                      "width": 48,
-                      "height": 48,
-                      "icon": "skip-forward-fill",
-                      "library": "phosphor",
-                      "fill": "$text-1"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "FD4GD",
-                      "name": "Repeat",
-                      "width": 32,
-                      "height": 32,
-                      "icon": "repeat",
-                      "library": "Material Symbols Rounded",
-                      "fill": "$accent"
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "hLvs5",
-                  "name": "Secondary",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "frame",
-                      "id": "sXnOu",
-                      "name": "Output",
-                      "fill": "$glass",
-                      "cornerRadius": 999,
-                      "gap": 10,
-                      "padding": [
-                        10,
-                        16
-                      ],
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "KShxp",
-                          "name": "Icon",
-                          "width": 18,
-                          "height": 18,
-                          "icon": "speaker",
-                          "library": "lucide",
-                          "fill": "$text-2"
-                        },
-                        {
-                          "type": "text",
-                          "id": "a2T2K",
-                          "name": "Label",
+                          "id": "X39q7a",
+                          "name": "前两句",
                           "fill": "$text-2",
-                          "content": "车载音响 · 杜比全景声",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "风把海面吹成一片金色",
+                          "lineHeight": 1.4,
                           "fontFamily": "$font-cn",
-                          "fontSize": 15,
-                          "fontWeight": "normal"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "frame",
-                      "id": "p9GxJ5",
-                      "name": "Actions",
-                      "gap": 28,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "awGJ2",
-                          "name": "Like",
-                          "width": 28,
-                          "height": 28,
-                          "icon": "heart-fill",
-                          "library": "phosphor",
-                          "fill": "$accent"
+                          "fontSize": 40
                         },
                         {
-                          "type": "icon",
-                          "id": "c9vO7",
-                          "name": "Lyrics",
-                          "width": 26,
-                          "height": 26,
-                          "icon": "message-square-quote",
-                          "library": "lucide",
-                          "fill": "$text-1"
+                          "type": "text",
+                          "id": "qfNxe",
+                          "name": "上一句",
+                          "fill": "$text-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "我们并肩不说话",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 44,
+                          "fontWeight": "500"
                         },
                         {
-                          "type": "icon",
-                          "id": "yHEI4",
-                          "name": "Queue",
-                          "width": 26,
-                          "height": 26,
-                          "icon": "list-music",
-                          "library": "lucide",
-                          "fill": "$text-2"
+                          "type": "text",
+                          "id": "JBWmq",
+                          "name": "当前演唱 · 就让这一刻慢一点",
+                          "fill": "$accent",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "就让这一刻慢一点",
+                          "lineHeight": 1.3,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 72,
+                          "fontWeight": "700",
+                          "letterSpacing": -1
+                        },
+                        {
+                          "type": "text",
+                          "id": "mN0fh",
+                          "name": "下一句",
+                          "opacity": 0.82,
+                          "fill": "$text-1",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "慢到落日也舍不得走",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 48,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "f4zx78",
+                          "name": "后两句",
+                          "fill": "$text-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "慢到你的侧脸",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 40
+                        },
+                        {
+                          "type": "text",
+                          "id": "k6k8CB",
+                          "name": "后三句",
+                          "fill": "$text-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "被晚霞轻轻收藏",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 40
                         }
                       ]
                     }
@@ -1056,100 +1010,392 @@
             },
             {
               "type": "frame",
-              "id": "R6aIVO",
-              "name": "Lyrics",
-              "width": 440,
+              "id": "f6q6C",
+              "name": "播放控制 · 底部操作区",
+              "width": "fill_container",
               "layout": "vertical",
-              "gap": 32,
-              "padding": [
-                0,
-                0,
-                0,
-                8
-              ],
+              "gap": 20,
               "children": [
                 {
-                  "type": "text",
-                  "id": "X39q7a",
-                  "name": "Line",
-                  "opacity": 0.48,
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
+                  "type": "frame",
+                  "id": "ESlgG",
+                  "name": "播放进度 · 72px 触控",
                   "width": "fill_container",
-                  "content": "风把海面吹成一片金色",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 20,
-                  "fontWeight": "normal"
+                  "height": 72,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "hgcah",
+                      "name": "进度轨道与拖动位置",
+                      "width": "fill_container",
+                      "height": 32,
+                      "padding": [
+                        5,
+                        0
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 4,
+                          "id": "A6fwX",
+                          "name": "已播放 · 1分32秒",
+                          "fill": "$accent",
+                          "width": 596,
+                          "height": 8
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "SWuWh",
+                          "name": "进度拖动点",
+                          "fill": "$text-1",
+                          "width": 22,
+                          "height": 22
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 4,
+                          "id": "F2mYl",
+                          "name": "剩余进度",
+                          "fill": "$track-bg",
+                          "width": "fill_container",
+                          "height": 8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bfGEM",
+                      "name": "已播放与剩余时间",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lKgfZ",
+                          "name": "已播放时间",
+                          "fill": "$text-2",
+                          "content": "1:32",
+                          "fontFamily": "$font-num",
+                          "fontSize": 22,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "wZgio",
+                          "name": "剩余时间",
+                          "fill": "$text-2",
+                          "content": "-2:33",
+                          "fontFamily": "$font-num",
+                          "fontSize": 22,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
-                  "type": "text",
-                  "id": "qfNxe",
-                  "name": "Line",
-                  "opacity": 0.65,
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
+                  "type": "frame",
+                  "id": "hLvs5",
+                  "name": "主操作栏 · 大尺寸触控",
                   "width": "fill_container",
-                  "content": "我们并肩不说话",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 20,
-                  "fontWeight": "normal"
-                },
-                {
-                  "type": "text",
-                  "id": "JBWmq",
-                  "name": "Line",
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "就让这一刻慢一点",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 36,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "mN0fh",
-                  "name": "Line",
-                  "opacity": 0.75,
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "慢到落日也舍不得走",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 22,
-                  "fontWeight": "500"
-                },
-                {
-                  "type": "text",
-                  "id": "f4zx78",
-                  "name": "Line",
-                  "opacity": 0.58,
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "慢到你的侧脸",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 20,
-                  "fontWeight": "normal"
-                },
-                {
-                  "type": "text",
-                  "id": "k6k8CB",
-                  "name": "Line",
-                  "opacity": 0.46,
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "被晚霞轻轻收藏",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 20,
-                  "fontWeight": "normal"
+                  "height": 112,
+                  "gap": 16,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "a8QV2",
+                      "name": "音频输出区域",
+                      "width": "fill_container",
+                      "height": "fit_content(88)",
+                      "alignItems": "center"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "drstA",
+                      "name": "播放控制 · 居中",
+                      "width": 576,
+                      "gap": 24,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "BqRY3",
+                          "name": "随机播放 · 96×88px 触控",
+                          "width": 96,
+                          "height": 88,
+                          "cornerRadius": 20,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "gykP7",
+                              "name": "Shuffle",
+                              "width": 32,
+                              "height": 32,
+                              "icon": "shuffle",
+                              "library": "phosphor",
+                              "fill": "$text-2"
+                            },
+                            {
+                              "type": "text",
+                              "id": "BuoVQ",
+                              "name": "随机播放状态标签",
+                              "fill": "$text-2",
+                              "content": "随机播放",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 20,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "UsBJm",
+                          "name": "上一首 · 88px 触控",
+                          "width": 88,
+                          "height": 88,
+                          "fill": "$glass",
+                          "cornerRadius": 44,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "E1Ezs",
+                              "name": "Previous",
+                              "width": 44,
+                              "height": 44,
+                              "icon": "skip-back-fill",
+                              "library": "phosphor",
+                              "fill": "$text-1"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "UxyKR",
+                          "name": "暂停播放 · 112px 主操作",
+                          "width": 112,
+                          "height": 112,
+                          "fill": "$text-1",
+                          "cornerRadius": 56,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "$shadow-soft",
+                            "offset": {
+                              "x": 0,
+                              "y": 16
+                            },
+                            "blur": 40
+                          },
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "Tri4w",
+                              "name": "Pause",
+                              "width": 48,
+                              "height": 48,
+                              "icon": "pause-fill",
+                              "library": "phosphor",
+                              "fill": "$on-primary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "m8dLV4",
+                          "name": "下一首 · 88px 触控",
+                          "width": 88,
+                          "height": 88,
+                          "fill": "$glass",
+                          "cornerRadius": 44,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "RzNfV",
+                              "name": "Next",
+                              "width": 44,
+                              "height": 44,
+                              "icon": "skip-forward-fill",
+                              "library": "phosphor",
+                              "fill": "$text-1"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "dUMQX",
+                          "name": "列表循环 · 96×88px 触控",
+                          "width": 96,
+                          "height": 88,
+                          "cornerRadius": 20,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "FD4GD",
+                              "name": "Repeat",
+                              "width": 32,
+                              "height": 32,
+                              "icon": "repeat",
+                              "library": "phosphor",
+                              "fill": "$accent"
+                            },
+                            {
+                              "type": "text",
+                              "id": "T4g0z",
+                              "name": "列表循环状态标签",
+                              "fill": "$accent",
+                              "content": "列表循环",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 20,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "p9GxJ5",
+                      "name": "收藏、歌词与队列",
+                      "width": "fill_container",
+                      "gap": 20,
+                      "justifyContent": "end",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "fuRaM",
+                          "name": "已收藏 · 96×88px 触控",
+                          "width": 96,
+                          "height": 88,
+                          "cornerRadius": 20,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "awGJ2",
+                              "name": "Like",
+                              "width": 32,
+                              "height": 32,
+                              "icon": "heart-fill",
+                              "library": "phosphor",
+                              "fill": "$accent"
+                            },
+                            {
+                              "type": "text",
+                              "id": "o4U4s0",
+                              "name": "已收藏按钮标签",
+                              "fill": "$text-2",
+                              "content": "已收藏",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 22,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "oMRc2",
+                          "name": "歌词 · 96×88px 触控",
+                          "width": 96,
+                          "height": 88,
+                          "fill": "$accent-soft",
+                          "cornerRadius": 20,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "c9vO7",
+                              "name": "Lyrics",
+                              "width": 32,
+                              "height": 32,
+                              "icon": "message-square-quote",
+                              "library": "lucide",
+                              "fill": "$accent"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Pn4d2",
+                              "name": "歌词按钮标签",
+                              "fill": "$accent",
+                              "content": "歌词",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 22,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "H0WP0w",
+                          "name": "队列 · 96×88px 触控",
+                          "width": 96,
+                          "height": 88,
+                          "cornerRadius": 20,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "yHEI4",
+                              "name": "Queue",
+                              "width": 32,
+                              "height": 32,
+                              "icon": "queue",
+                              "library": "phosphor",
+                              "fill": "$text-1"
+                            },
+                            {
+                              "type": "text",
+                              "id": "alDT8",
+                              "name": "队列按钮标签",
+                              "fill": "$text-2",
+                              "content": "队列",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 22,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
@@ -3776,12 +4022,75 @@
           "ref": "sOwkY",
           "name": "Nav Rail",
           "height": "fill_container",
+          "width": 160,
           "descendants": {
+            "q4bHg": {
+              "width": "fill_container",
+              "gap": 24,
+              "padding": [
+                0,
+                24
+              ]
+            },
             "fuc4s": {
-              "fill": "$glass-strong"
+              "fill": "$glass-strong",
+              "width": "fill_container",
+              "height": 112,
+              "cornerRadius": 24
             },
             "pRDAM": {
-              "fill": "$text-1"
+              "fill": "$text-1",
+              "width": 44,
+              "height": 44
+            },
+            "hswUy": {
+              "width": "fill_container",
+              "height": 112,
+              "cornerRadius": 24
+            },
+            "RfyDO": {
+              "width": 44,
+              "height": 44,
+              "fill": "$text-2"
+            },
+            "I3Kqj": {
+              "width": "fill_container",
+              "height": 112,
+              "cornerRadius": 24
+            },
+            "zWpoJ": {
+              "width": 44,
+              "height": 44,
+              "fill": "$text-2"
+            },
+            "xZFVB": {
+              "width": "fill_container",
+              "height": 112,
+              "cornerRadius": 24
+            },
+            "nznH1": {
+              "width": 44,
+              "height": 44,
+              "fill": "$text-2"
+            },
+            "WVMvr": {
+              "width": "fill_container",
+              "height": 112,
+              "cornerRadius": 24
+            },
+            "wcl2K": {
+              "width": 44,
+              "height": 44,
+              "fill": "$text-2"
+            },
+            "UndJK": {
+              "width": 96,
+              "height": 96,
+              "cornerRadius": 32
+            },
+            "ANp4O": {
+              "width": 40,
+              "height": 40
             }
           }
         },
@@ -3791,306 +4100,439 @@
           "name": "Main",
           "width": "fill_container",
           "height": "fill_container",
-          "gap": 72,
+          "layout": "vertical",
+          "gap": 32,
           "padding": [
-            0,
-            80
+            48,
+            72,
+            44,
+            72
           ],
-          "alignItems": "center",
           "children": [
             {
               "type": "frame",
-              "id": "V3jzB",
-              "name": "Cover",
-              "width": 512,
-              "height": 512,
-              "fill": {
-                "type": "image",
-                "enabled": true,
-                "url": "images/generated-3.png",
-                "mode": "cover"
-              },
-              "cornerRadius": 24,
-              "stroke": "$art-stroke",
-              "strokeWidth": 1,
-              "effect": {
-                "type": "shadow",
-                "shadowType": "outer",
-                "color": "$shadow-strong",
-                "offset": {
-                  "x": 0,
-                  "y": 40
-                },
-                "blur": 90
-              }
-            },
-            {
-              "type": "frame",
-              "id": "HUTOs",
-              "name": "Info",
+              "id": "yaw1R",
+              "name": "歌曲与歌词 · 双栏主视区",
               "width": "fill_container",
-              "layout": "vertical",
-              "gap": 48,
+              "height": "fill_container",
+              "gap": 104,
+              "alignItems": "center",
               "children": [
                 {
                   "type": "frame",
-                  "id": "dqIcT",
-                  "name": "Meta",
-                  "width": "fill_container",
+                  "id": "HUTOs",
+                  "name": "封面与歌曲信息",
+                  "width": 464,
                   "layout": "vertical",
-                  "gap": 14,
+                  "gap": 28,
                   "children": [
                     {
                       "type": "frame",
-                      "id": "MF1qS",
-                      "name": "Source",
-                      "gap": 8,
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "ellipse",
-                          "id": "b2ZhsG",
-                          "name": "Dot",
-                          "fill": "$accent",
-                          "width": 7,
-                          "height": 7
+                      "id": "V3jzB",
+                      "name": "Cover",
+                      "width": "fill_container",
+                      "height": 464,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "images/generated-3.png",
+                        "mode": "cover"
+                      },
+                      "cornerRadius": 20,
+                      "stroke": "$art-stroke",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "$shadow-strong",
+                        "offset": {
+                          "x": 0,
+                          "y": 24
                         },
-                        {
-                          "type": "text",
-                          "id": "YXvip",
-                          "name": "Label",
-                          "fill": "$text-2",
-                          "content": "来自歌单 · 秋日私语｜想和你一起听歌看日落",
-                          "fontFamily": "$font-cn",
-                          "fontSize": 16,
-                          "fontWeight": "normal"
-                        }
-                      ]
+                        "blur": 64
+                      }
                     },
                     {
                       "type": "frame",
-                      "id": "uBknO",
-                      "name": "Title Row",
+                      "id": "dqIcT",
+                      "name": "歌曲信息",
                       "width": "fill_container",
-                      "gap": 16,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "MF1qS",
+                          "name": "Source",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "ellipse",
+                              "id": "b2ZhsG",
+                              "name": "Dot",
+                              "fill": "$accent",
+                              "width": 8,
+                              "height": 8
+                            },
+                            {
+                              "type": "text",
+                              "id": "YXvip",
+                              "name": "来源歌单",
+                              "fill": "$text-2",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "来自歌单 · 秋日私语｜想和你一起听歌看日落",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 20,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "uBknO",
+                          "name": "Title Row",
+                          "width": "fill_container",
+                          "gap": 16,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "wUChA",
+                              "name": "歌曲标题",
+                              "fill": "$text-1",
+                              "content": "落日与晚风",
+                              "lineHeight": 1.25,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 52,
+                              "fontWeight": "700",
+                              "letterSpacing": -0.8
+                            },
+                            {
+                              "type": "frame",
+                              "id": "G3EdeZ",
+                              "name": "Quality",
+                              "cornerRadius": 6,
+                              "stroke": "$badge-stroke",
+                              "strokeWidth": 1,
+                              "padding": [
+                                5,
+                                10
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "xaMFx",
+                                  "name": "无损音质",
+                                  "fill": "$text-2",
+                                  "content": "无损",
+                                  "fontFamily": "$font-cn",
+                                  "fontSize": 18,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "plBV7",
+                          "name": "歌手与专辑",
+                          "fill": "$text-2",
+                          "content": "陈屿 — 《海岸线以西》",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 26,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "pubmm",
+                  "name": "歌词 · 大字沉浸阅读",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 32,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "OcVZq",
+                      "name": "歌词状态与全屏入口",
+                      "width": "fill_container",
+                      "height": 64,
+                      "justifyContent": "space_between",
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "text",
-                          "id": "wUChA",
-                          "name": "Title",
-                          "fill": "$text-1",
-                          "content": "落日与晚风",
+                          "id": "F11QcZ",
+                          "name": "歌词标题",
+                          "fill": "$text-2",
+                          "content": "歌词",
                           "fontFamily": "$font-cn",
-                          "fontSize": 60,
-                          "fontWeight": "700",
-                          "letterSpacing": -1.2
+                          "fontSize": 24,
+                          "fontWeight": "500"
                         },
                         {
                           "type": "frame",
-                          "id": "G3EdeZ",
-                          "name": "Quality",
-                          "cornerRadius": 6,
-                          "stroke": "$badge-stroke",
-                          "strokeWidth": 1,
-                          "padding": [
-                            4,
-                            9
-                          ],
+                          "id": "J6dlzK",
+                          "name": "歌词工具",
+                          "gap": 24,
+                          "alignItems": "center",
                           "children": [
                             {
-                              "type": "text",
-                              "id": "xaMFx",
-                              "name": "Label",
-                              "fill": "$text-2",
-                              "content": "无损",
-                              "fontFamily": "$font-cn",
-                              "fontSize": 13,
-                              "fontWeight": "600"
+                              "type": "frame",
+                              "id": "pIiFb",
+                              "name": "全屏歌词 · 64px 触控",
+                              "height": 64,
+                              "fill": "$glass",
+                              "cornerRadius": 20,
+                              "gap": 12,
+                              "padding": [
+                                0,
+                                20
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "ACLJb",
+                                  "name": "展开歌词",
+                                  "width": 28,
+                                  "height": 28,
+                                  "icon": "corners-out",
+                                  "library": "phosphor",
+                                  "fill": "$text-1"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "el020",
+                                  "name": "全屏歌词标签",
+                                  "fill": "$text-1",
+                                  "content": "全屏",
+                                  "fontFamily": "$font-cn",
+                                  "fontSize": 20,
+                                  "fontWeight": "500"
+                                }
+                              ]
                             }
                           ]
                         }
                       ]
                     },
                     {
-                      "type": "text",
-                      "id": "plBV7",
-                      "name": "Artist",
-                      "fill": "$text-2",
-                      "content": "陈屿 — 《海岸线以西》",
-                      "fontFamily": "$font-cn",
-                      "fontSize": 26,
-                      "fontWeight": "normal"
+                      "type": "frame",
+                      "id": "lu19i",
+                      "name": "歌词正文 · 当前句突出",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 32,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IhBAE",
+                          "name": "前两句",
+                          "fill": "$text-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "风把海面吹成一片金色",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 40,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xE5hM",
+                          "name": "上一句",
+                          "fill": "$text-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "我们并肩不说话",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 44,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Y6ZWRl",
+                          "name": "当前演唱 · 就让这一刻慢一点",
+                          "fill": "$accent",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "就让这一刻慢一点",
+                          "lineHeight": 1.3,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 72,
+                          "fontWeight": "700",
+                          "letterSpacing": -1
+                        },
+                        {
+                          "type": "text",
+                          "id": "KkwZu",
+                          "name": "下一句",
+                          "opacity": 0.82,
+                          "fill": "$text-1",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "慢到落日也舍不得走",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 48,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "text",
+                          "id": "YyUiw",
+                          "name": "后两句",
+                          "fill": "$text-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "慢到你的侧脸",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 40,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "sLo8T",
+                          "name": "后三句",
+                          "fill": "$text-2",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "被晚霞轻轻收藏",
+                          "lineHeight": 1.4,
+                          "fontFamily": "$font-cn",
+                          "fontSize": 40,
+                          "fontWeight": "normal"
+                        }
+                      ]
                     }
                   ]
-                },
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "YEQLm",
+              "name": "播放控制 · 底部操作区",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
                 {
                   "type": "frame",
                   "id": "I9gugW",
-                  "name": "Progress",
+                  "name": "播放进度 · 72px 触控",
                   "width": "fill_container",
+                  "height": 72,
                   "layout": "vertical",
-                  "gap": 12,
+                  "gap": 8,
+                  "justifyContent": "center",
                   "children": [
                     {
                       "type": "frame",
                       "id": "AUjk4",
-                      "name": "Track",
+                      "name": "进度轨道与拖动位置",
                       "width": "fill_container",
-                      "height": 6,
-                      "fill": "$track-bg",
-                      "cornerRadius": 3,
+                      "height": 32,
+                      "padding": [
+                        5,
+                        0
+                      ],
+                      "alignItems": "center",
                       "children": [
                         {
                           "type": "rectangle",
-                          "cornerRadius": 3,
+                          "cornerRadius": 4,
                           "id": "rlGfG",
-                          "name": "Played",
+                          "name": "已播放 · 1分32秒",
+                          "fill": "$accent",
+                          "width": 596,
+                          "height": 8
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "lY90v",
+                          "name": "进度拖动点",
                           "fill": "$text-1",
-                          "width": 228,
-                          "height": 6
+                          "width": 22,
+                          "height": 22
+                        },
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 4,
+                          "id": "Lu2Fi",
+                          "name": "剩余进度",
+                          "fill": "$track-bg",
+                          "width": "fill_container",
+                          "height": 8
                         }
                       ]
                     },
                     {
                       "type": "frame",
                       "id": "nqTVS",
-                      "name": "Times",
+                      "name": "已播放与剩余时间",
                       "width": "fill_container",
                       "justifyContent": "space_between",
                       "children": [
                         {
                           "type": "text",
                           "id": "Bfhsm",
-                          "name": "Time",
-                          "fill": "$text-3",
+                          "name": "已播放时间",
+                          "fill": "$text-2",
                           "content": "1:32",
                           "fontFamily": "$font-num",
-                          "fontSize": 16,
+                          "fontSize": 22,
                           "fontWeight": "500"
                         },
                         {
                           "type": "text",
                           "id": "J1IIB",
-                          "name": "Time",
-                          "fill": "$text-3",
+                          "name": "剩余时间",
+                          "fill": "$text-2",
                           "content": "-2:33",
                           "fontFamily": "$font-num",
-                          "fontSize": 16,
+                          "fontSize": 22,
                           "fontWeight": "500"
                         }
                       ]
-                    }
-                  ]
-                },
-                {
-                  "type": "frame",
-                  "id": "uleUP",
-                  "name": "Transport",
-                  "width": "fill_container",
-                  "justifyContent": "space_between",
-                  "alignItems": "center",
-                  "children": [
-                    {
-                      "type": "icon",
-                      "id": "CEMQM",
-                      "name": "Shuffle",
-                      "width": 32,
-                      "height": 32,
-                      "icon": "shuffle",
-                      "library": "Material Symbols Rounded",
-                      "fill": "$text-3"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "fTewZ",
-                      "name": "Previous",
-                      "width": 48,
-                      "height": 48,
-                      "icon": "skip-back-fill",
-                      "library": "phosphor",
-                      "fill": "$text-1"
-                    },
-                    {
-                      "type": "frame",
-                      "id": "v47ofi",
-                      "name": "Play Pause",
-                      "width": 104,
-                      "height": 104,
-                      "fill": "$text-1",
-                      "cornerRadius": 52,
-                      "effect": {
-                        "type": "shadow",
-                        "shadowType": "outer",
-                        "color": "$shadow-soft",
-                        "offset": {
-                          "x": 0,
-                          "y": 16
-                        },
-                        "blur": 40
-                      },
-                      "justifyContent": "center",
-                      "alignItems": "center",
-                      "children": [
-                        {
-                          "type": "icon",
-                          "id": "U2YCC3",
-                          "name": "Pause",
-                          "width": 44,
-                          "height": 44,
-                          "icon": "pause-fill",
-                          "library": "phosphor",
-                          "fill": "$on-primary"
-                        }
-                      ]
-                    },
-                    {
-                      "type": "icon",
-                      "id": "TwfvV",
-                      "name": "Next",
-                      "width": 48,
-                      "height": 48,
-                      "icon": "skip-forward-fill",
-                      "library": "phosphor",
-                      "fill": "$text-1"
-                    },
-                    {
-                      "type": "icon",
-                      "id": "w0rId",
-                      "name": "Repeat",
-                      "width": 32,
-                      "height": 32,
-                      "icon": "repeat",
-                      "library": "Material Symbols Rounded",
-                      "fill": "$accent"
                     }
                   ]
                 },
                 {
                   "type": "frame",
                   "id": "Cvskx",
-                  "name": "Secondary",
+                  "name": "主操作栏 · 大尺寸触控",
                   "width": "fill_container",
-                  "justifyContent": "space_between",
+                  "height": 112,
+                  "gap": 16,
                   "alignItems": "center",
                   "children": [
                     {
                       "type": "frame",
                       "id": "E2JEv",
-                      "name": "Output",
-                      "fill": "$glass",
-                      "cornerRadius": 999,
-                      "gap": 10,
-                      "padding": [
-                        10,
-                        16
-                      ],
+                      "name": "音频输出区域",
+                      "width": "fill_container",
+                      "height": "fit_content(88)",
                       "alignItems": "center",
                       "children": [
                         {
                           "type": "icon",
                           "id": "dVTAc",
+                          "x": 16,
+                          "y": 12,
                           "name": "Icon",
+                          "enabled": false,
                           "width": 18,
                           "height": 18,
                           "icon": "speaker",
@@ -4100,7 +4542,10 @@
                         {
                           "type": "text",
                           "id": "Gn22L",
+                          "x": 44,
+                          "y": 10,
                           "name": "Label",
+                          "enabled": false,
                           "fill": "$text-2",
                           "content": "车载音响 · 杜比全景声",
                           "fontFamily": "$font-cn",
@@ -4111,143 +4556,286 @@
                     },
                     {
                       "type": "frame",
-                      "id": "Ylhql",
-                      "name": "Actions",
-                      "gap": 28,
+                      "id": "uleUP",
+                      "name": "播放控制 · 居中",
+                      "width": 576,
+                      "gap": 24,
                       "alignItems": "center",
                       "children": [
                         {
-                          "type": "icon",
-                          "id": "AEPur",
-                          "name": "Like",
-                          "width": 28,
-                          "height": 28,
-                          "icon": "heart-fill",
-                          "library": "phosphor",
-                          "fill": "$accent"
+                          "type": "frame",
+                          "id": "N5hWG",
+                          "name": "随机播放 · 96×88px 触控",
+                          "width": 96,
+                          "height": 88,
+                          "cornerRadius": 20,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "CEMQM",
+                              "name": "Shuffle",
+                              "width": 32,
+                              "height": 32,
+                              "icon": "shuffle",
+                              "library": "phosphor",
+                              "fill": "$text-2"
+                            },
+                            {
+                              "type": "text",
+                              "id": "l6miQG",
+                              "name": "随机播放状态标签",
+                              "fill": "$text-2",
+                              "content": "随机播放",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 20,
+                              "fontWeight": "500"
+                            }
+                          ]
                         },
                         {
-                          "type": "icon",
-                          "id": "rxIby",
-                          "name": "Lyrics",
-                          "width": 26,
-                          "height": 26,
-                          "icon": "message-square-quote",
-                          "library": "lucide",
-                          "fill": "$text-1"
+                          "type": "frame",
+                          "id": "hvO3L",
+                          "name": "上一首 · 88px 触控",
+                          "width": 88,
+                          "height": 88,
+                          "fill": "$glass",
+                          "cornerRadius": 44,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "fTewZ",
+                              "name": "Previous",
+                              "width": 44,
+                              "height": 44,
+                              "icon": "skip-back-fill",
+                              "library": "phosphor",
+                              "fill": "$text-1"
+                            }
+                          ]
                         },
                         {
-                          "type": "icon",
-                          "id": "Wh3mg",
-                          "name": "Queue",
-                          "width": 26,
-                          "height": 26,
-                          "icon": "list-music",
-                          "library": "lucide",
-                          "fill": "$text-2"
+                          "type": "frame",
+                          "id": "v47ofi",
+                          "name": "暂停播放 · 112px 主操作",
+                          "width": 112,
+                          "height": 112,
+                          "fill": "$text-1",
+                          "cornerRadius": 56,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "$shadow-soft",
+                            "offset": {
+                              "x": 0,
+                              "y": 16
+                            },
+                            "blur": 40
+                          },
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "U2YCC3",
+                              "name": "Pause",
+                              "width": 48,
+                              "height": 48,
+                              "icon": "pause-fill",
+                              "library": "phosphor",
+                              "fill": "$on-primary"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pxJtr",
+                          "name": "下一首 · 88px 触控",
+                          "width": 88,
+                          "height": 88,
+                          "fill": "$glass",
+                          "cornerRadius": 44,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "TwfvV",
+                              "name": "Next",
+                              "width": 44,
+                              "height": 44,
+                              "icon": "skip-forward-fill",
+                              "library": "phosphor",
+                              "fill": "$text-1"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yV7IS",
+                          "name": "列表循环 · 96×88px 触控",
+                          "width": 96,
+                          "height": 88,
+                          "cornerRadius": 20,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "w0rId",
+                              "name": "Repeat",
+                              "width": 32,
+                              "height": 32,
+                              "icon": "repeat",
+                              "library": "phosphor",
+                              "fill": "$accent"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Qem2b",
+                              "name": "列表循环状态标签",
+                              "fill": "#A93616",
+                              "content": "列表循环",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 20,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ylhql",
+                      "name": "收藏、歌词与队列",
+                      "width": "fill_container",
+                      "gap": 20,
+                      "justifyContent": "end",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "KNZRd",
+                          "name": "已收藏 · 96×88px 触控",
+                          "width": 96,
+                          "height": 88,
+                          "cornerRadius": 20,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "AEPur",
+                              "name": "Like",
+                              "width": 32,
+                              "height": 32,
+                              "icon": "heart-fill",
+                              "library": "phosphor",
+                              "fill": "$accent"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Q6KnvP",
+                              "name": "已收藏按钮标签",
+                              "fill": "$text-2",
+                              "content": "已收藏",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 22,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "yZ2dr",
+                          "name": "歌词 · 96×88px 触控",
+                          "width": 96,
+                          "height": 88,
+                          "fill": "$accent-soft",
+                          "cornerRadius": 20,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "rxIby",
+                              "name": "Lyrics",
+                              "width": 32,
+                              "height": 32,
+                              "icon": "message-square-quote",
+                              "library": "lucide",
+                              "fill": "$accent"
+                            },
+                            {
+                              "type": "text",
+                              "id": "AwD3c",
+                              "name": "歌词按钮标签",
+                              "fill": "#A93616",
+                              "content": "歌词",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 22,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "f6G7AJ",
+                          "name": "队列 · 96×88px 触控",
+                          "width": 96,
+                          "height": 88,
+                          "cornerRadius": 20,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 8,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "Wh3mg",
+                              "name": "Queue",
+                              "width": 32,
+                              "height": 32,
+                              "icon": "queue",
+                              "library": "phosphor",
+                              "fill": "$text-1"
+                            },
+                            {
+                              "type": "text",
+                              "id": "wlxkj",
+                              "name": "队列按钮标签",
+                              "fill": "$text-2",
+                              "content": "队列",
+                              "lineHeight": 1.4,
+                              "fontFamily": "$font-cn",
+                              "fontSize": 22,
+                              "fontWeight": "500"
+                            }
+                          ]
                         }
                       ]
                     }
                   ]
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "pubmm",
-              "name": "Lyrics",
-              "width": 440,
-              "layout": "vertical",
-              "gap": 32,
-              "padding": [
-                0,
-                0,
-                0,
-                8
-              ],
-              "children": [
-                {
-                  "type": "text",
-                  "id": "IhBAE",
-                  "name": "Line",
-                  "opacity": 0.2,
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "风把海面吹成一片金色",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 20,
-                  "fontWeight": "normal"
-                },
-                {
-                  "type": "text",
-                  "id": "xE5hM",
-                  "name": "Line",
-                  "opacity": 0.35,
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "我们并肩不说话",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 20,
-                  "fontWeight": "normal"
-                },
-                {
-                  "type": "text",
-                  "id": "Y6ZWRl",
-                  "name": "Line",
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "就让这一刻慢一点",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 36,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "KkwZu",
-                  "name": "Line",
-                  "opacity": 0.5,
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "慢到落日也舍不得走",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 22,
-                  "fontWeight": "500"
-                },
-                {
-                  "type": "text",
-                  "id": "YyUiw",
-                  "name": "Line",
-                  "opacity": 0.3,
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "慢到你的侧脸",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 20,
-                  "fontWeight": "normal"
-                },
-                {
-                  "type": "text",
-                  "id": "sLo8T",
-                  "name": "Line",
-                  "opacity": 0.15,
-                  "fill": "$text-1",
-                  "textGrowth": "fixed-width",
-                  "width": "fill_container",
-                  "content": "被晚霞轻轻收藏",
-                  "lineHeight": 1.3,
-                  "fontFamily": "$font-cn",
-                  "fontSize": 20,
-                  "fontWeight": "normal"
                 }
               ]
             }
