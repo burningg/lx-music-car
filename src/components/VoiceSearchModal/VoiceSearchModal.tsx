@@ -11,12 +11,14 @@ export interface VoiceSearchModalProps {
   isPreparing: boolean
   isProcessing: boolean
   onCancel: () => void
+  prompt?: string
+  hint?: string
 }
 
 const audioLevels = [10, 20, 28, 18, 10]
 
 // U5jSt：720 × 344 的轻量弹框，在横屏主内容区域（扣除公共导航栏）居中。
-export default memo(({ visible, isPreparing, isProcessing, onCancel }: VoiceSearchModalProps) => {
+export default memo(({ visible, isPreparing, isProcessing, onCancel, prompt, hint }: VoiceSearchModalProps) => {
   const t = useI18n()
   const theme = useTheme()
   const { width, height } = useWindowSize()
@@ -67,8 +69,8 @@ export default memo(({ visible, isPreparing, isProcessing, onCancel }: VoiceSear
           </View>
           <View style={{ flexGrow: 1, minHeight: px(192), justifyContent: 'center', gap: px(14) }}>
             {/* 离线引擎只返回最终结果，不把设计稿示例文字冒充为实时转写。 */}
-            <CarText size={38} weight="500" lineHeight={1.35}>{t('search_voice_listening')}</CarText>
-            <CarText size={20} lineHeight={1.4} color={theme['text-2']}>{t('search_voice_fill_hint')}</CarText>
+            <CarText size={38} weight="500" lineHeight={1.35}>{prompt ?? t('search_voice_listening')}</CarText>
+            <CarText size={20} lineHeight={1.4} color={theme['text-2']}>{hint ?? t('search_voice_fill_hint')}</CarText>
           </View>
           <View pointerEvents="none" style={[StyleSheet.absoluteFillObject, { borderRadius: px(24), borderWidth: px(1), borderColor: theme.hairline }]} />
         </View>

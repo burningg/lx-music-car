@@ -35,7 +35,7 @@ const waitForForeground = async(): Promise<boolean> => {
   })
 }
 
-// Shared across mounts so leaving/reopening Search cannot overlap recorder cleanup and playback.
+// Shared across pages and mounts so recorder cleanup and playback restoration cannot overlap a new session.
 let pendingSession = Promise.resolve()
 
 export default (onResult: (text: string) => void) => {

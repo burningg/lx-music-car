@@ -55,7 +55,7 @@ function setup({ permission = 'granted', available = true, locale = 'zh_cn', pla
       return { remove() { list.delete(callback); if (!list.size) delete listeners[name] } }
     },
   }
-  const useVoiceSearch = load('src/screens/Home/Views/Search/HeaderBar/useVoiceSearch.ts', {
+  const useVoiceSearch = load('src/components/VoiceSearchModal/useVoiceSearch.ts', {
     react: { ...React, useEffect: create => { if (!cleanups.length) cleanups.push(create()) } },
     'react-native': {
       AppState: appState,
@@ -265,6 +265,17 @@ test('empty final results never erase the input', async() => {
   assert.deepEqual(ctx.messages, ['search_voice_no_match'])
 })
 
+test('shared voice entry exports the modal and recognition hook without page dependencies', () => {
+  const VoiceSearchModal = () => null
+  const useVoiceSearch = () => ({})
+  const shared = load('src/components/VoiceSearchModal/index.ts', {
+    './VoiceSearchModal': { __esModule: true, default: VoiceSearchModal },
+    './useVoiceSearch': { __esModule: true, default: useVoiceSearch },
+  })
+  assert.equal(shared.default, VoiceSearchModal)
+  assert.equal(shared.useVoiceSearch, useVoiceSearch)
+})
+
 test('header follows the design: separate accent mic after source; STT fills without submission', () => {
   let resultHandler; let inputRef; let api; let cancelled = 0
   const changes = []; const searches = []; const inputValues = []
@@ -274,14 +285,14 @@ test('header follows the design: separate accent mic after source; STT fills wit
     'react-native': { View: 'View', Platform: { OS: 'android' }, Keyboard: { dismiss() {} } },
     '@/components/SourceSelector': { default: 'SourceSelector', __esModule: true },
     './SearchInput': { default: 'SearchInput', __esModule: true },
-    './VoiceSearchModal': { default: 'VoiceSearchModal', __esModule: true },
     '@/lang': { useI18n: () => key => key },
     '@/components/car': { CarText: 'CarText', IconButton: 'IconButton' },
     '@/utils/pixelRatio': { px: n => n },
     '@/store/theme/hook': { useTheme: () => ({ accent: '#E8562A', 'on-primary': '#fff' }) },
-    './useVoiceSearch': {
+    '@/components/VoiceSearchModal': {
       __esModule: true,
-      default: handler => {
+      default: 'VoiceSearchModal',
+      useVoiceSearch: handler => {
         resultHandler = handler
         return { isRecognizing: false, start() {}, cancel() { ++cancelled } }
       },
@@ -381,7 +392,7 @@ const backdropDesign = findNode(voiceDesign, 'U5jSt')
 const dialogDesign = backdropDesign.children[0]
 
 function renderVoiceModal({ theme = DAYLIGHT_TOKENS, width = 1920, height = 1080, scale = 1, ...props } = {}) {
-  const VoiceModal = load('src/screens/Home/Views/Search/HeaderBar/VoiceSearchModal.tsx', {
+  const VoiceModal = load('src/components/VoiceSearchModal/VoiceSearchModal.tsx', {
     react: React,
     'react/jsx-runtime': require('react/jsx-runtime'),
     'react-native': { ActivityIndicator: 'ActivityIndicator', Modal: 'Modal', View: 'View', StyleSheet: { absoluteFillObject: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } } },
@@ -447,6 +458,14 @@ for (const [mode, theme] of [['light', DAYLIGHT_TOKENS], ['dark', NOCTURNE_TOKEN
     assert.equal(hint.props.children, 'search_voice_fill_hint', 'preserve fill-only search behavior')
   })
 }
+
+test('shared voice modal accepts page-specific prompts and hints', () => {
+  const { transcript, title } = renderVoiceModal({ prompt: '说出想听的歌曲', hint: '识别结果将交给当前页面处理' })
+  const [words, hint] = React.Children.toArray(transcript.props.children)
+  assert.equal(words.props.children, '说出想听的歌曲')
+  assert.equal(hint.props.children, '识别结果将交给当前页面处理')
+  assert.equal(title.props.children, 'search_voice_listening_title')
+})
 
 test('voice modal has explicit visibility, close action and Android back cancellation', () => {
   let cancelled = 0
