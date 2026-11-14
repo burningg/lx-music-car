@@ -719,15 +719,23 @@
                   "id": "lAYoo",
                   "name": "封面与歌曲信息",
                   "width": 464,
+                  "height": "fill_container",
                   "layout": "vertical",
-                  "gap": 28,
+                  "gap": 24,
+                  "padding": [
+                    0,
+                    0,
+                    4,
+                    0
+                  ],
+                  "justifyContent": "end",
                   "children": [
                     {
                       "type": "frame",
                       "id": "snIN7",
                       "name": "Cover",
-                      "width": "fill_container",
-                      "height": 464,
+                      "width": 432,
+                      "height": 432,
                       "fill": {
                         "type": "image",
                         "enabled": true,
@@ -952,7 +960,8 @@
                           "content": "风把海面吹成一片金色",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-cn",
-                          "fontSize": 32
+                          "fontSize": 32,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1004,7 +1013,8 @@
                           "content": "慢到你的侧脸",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-cn",
-                          "fontSize": 32
+                          "fontSize": 32,
+                          "fontWeight": "normal"
                         },
                         {
                           "type": "text",
@@ -1016,7 +1026,8 @@
                           "content": "被晚霞轻轻收藏",
                           "lineHeight": 1.4,
                           "fontFamily": "$font-cn",
-                          "fontSize": 32
+                          "fontSize": 32,
+                          "fontWeight": "normal"
                         }
                       ]
                     }
@@ -4139,15 +4150,23 @@
                   "id": "HUTOs",
                   "name": "封面与歌曲信息",
                   "width": 464,
+                  "height": "fill_container",
                   "layout": "vertical",
-                  "gap": 28,
+                  "gap": 24,
+                  "padding": [
+                    0,
+                    0,
+                    4,
+                    0
+                  ],
+                  "justifyContent": "end",
                   "children": [
                     {
                       "type": "frame",
                       "id": "V3jzB",
                       "name": "Cover",
-                      "width": "fill_container",
-                      "height": 464,
+                      "width": 432,
+                      "height": 432,
                       "fill": {
                         "type": "image",
                         "enabled": true,
