@@ -1,8 +1,9 @@
 import { LIST_IDS } from '@/config/constant'
+import { APP_BACKUP_TYPE } from '@/core/backup/format'
 import { createList, getListMusics, overwriteList, overwriteListFull, overwriteListMusics } from '@/core/list'
 import { filterMusicList, fixNewMusicInfoQuality, toNewMusicInfo } from '@/utils'
 import { log } from '@/utils/log'
-import { confirmDialog, handleReadFile, handleSaveFile, showImportTip, toast } from '@/utils/tools'
+import { confirmDialog, handleReadFile, handleSaveFile, showImportTip, tipDialog, toast } from '@/utils/tools'
 import listState from '@/store/list/state'
 
 
@@ -131,6 +132,9 @@ const importPlayList = async(path: string) => {
   }
 
   switch (configData.type) {
+    case APP_BACKUP_TYPE:
+      await tipDialog({ message: global.i18n.t('setting_backup_app_use_app_import') })
+      return true
     case 'defautlList': // 兼容0.6.2及以前版本的列表数据
       if (!await showConfirm()) return true
       await overwriteListMusics(LIST_IDS.DEFAULT, filterMusicList((configData.data as LX.List.MyDefaultListInfoFull).list.map(m => toNewMusicInfo(m))))
@@ -167,8 +171,10 @@ const importPlayList = async(path: string) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       void handleImportListPart(configData.data)
       return true
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    default: showImportTip(configData.type)
+    default:
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      showImportTip(configData.type)
+      return true
   }
 }
 
@@ -191,11 +197,7 @@ const exportAllList = async(path: string) => {
     data: await getAllLists(),
   }))
 
-  try {
-    await handleSaveFile(path + '/lx_list.lxmc', data)
-  } catch (error: any) {
-    log.error(error.stack)
-  }
+  await handleSaveFile(path + '/lx_list.lxmc', data)
 }
 export const handleExportList = (path: string) => {
   toast(global.i18n.t('setting_backup_part_export_list_tip_zip'))

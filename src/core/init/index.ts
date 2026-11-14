@@ -13,10 +13,18 @@ import commonActions from '@/store/common/action'
 import settingState from '@/store/setting/state'
 import { checkUpdate } from '@/core/version'
 import { bootLog } from '@/utils/bootLog'
-import { cheatTip } from '@/utils/tools'
+import { cheatTip, tipDialog } from '@/utils/tools'
+import { takeAppRestoreResult } from '@/core/backup/storage'
 
 let isFirstPush = true
 const handlePushedHomeScreen = async() => {
+  const restoreResult = takeAppRestoreResult()
+  if (restoreResult) {
+    await tipDialog({
+      message: global.i18n.t(restoreResult === 'restored' ? 'setting_backup_app_restored' : 'setting_backup_app_rolled_back'),
+      bgClose: false,
+    })
+  }
   await cheatTip()
   if (settingState.setting['common.isAgreePact']) {
     if (isFirstPush) {

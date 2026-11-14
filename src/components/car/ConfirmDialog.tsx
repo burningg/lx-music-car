@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Pressable, TouchableOpacity, View } from 'react-native'
+import { Pressable, ScrollView, TouchableOpacity, View } from 'react-native'
 import { useTheme } from '@/store/theme/hook'
 import { px } from '@/utils/pixelRatio'
 import CarIcon from './CarIcon'
@@ -38,6 +38,8 @@ export default memo(({ options, onCancel, onConfirm }: {
       />
       <View style={{
         width: px(640),
+        maxWidth: '92%',
+        maxHeight: '90%',
         minHeight: px(375),
         borderRadius: px(32),
         padding: px(40),
@@ -45,14 +47,14 @@ export default memo(({ options, onCancel, onConfirm }: {
         backgroundColor: theme.elevated,
         elevation: 24,
       }}>
-        <View style={{ width: px(64), height: px(64), borderRadius: px(20), backgroundColor: iconBg, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ flexShrink: 0, width: px(64), height: px(64), borderRadius: px(20), backgroundColor: iconBg, alignItems: 'center', justifyContent: 'center' }}>
           <CarIcon name={danger ? 'lucide-trash-2' : 'lucide-info'} size={30} color={iconColor} />
         </View>
-        <View style={{ gap: px(10) }}>
+        <ScrollView style={{ flexGrow: 0, flexShrink: 1 }} contentContainerStyle={{ gap: px(10) }}>
           {options.title ? <CarText size={30} weight="700">{options.title}</CarText> : null}
           <CarText size={18} color={theme['text-2']} lineHeight={1.5}>{options.message}</CarText>
-        </View>
-        <View style={{ flexDirection: 'row', gap: px(14), marginTop: 'auto' }}>
+        </ScrollView>
+        <View style={{ flexDirection: 'row', flexShrink: 0, gap: px(14), marginTop: 'auto' }}>
           {single
             ? (
               <TouchableOpacity activeOpacity={0.8} onPress={onConfirm} style={{ ...buttonStyle, backgroundColor: confirmColor }}>

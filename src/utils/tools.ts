@@ -156,24 +156,33 @@ export const exitApp = () => {
   BackHandler.exitApp()
 }
 
+let backupTempFileId = 0
+const getBackupTempPath = () => `${temporaryDirectoryPath}/backup-${Date.now()}-${++backupTempFileId}.json`
+const cleanBackupTempFile = async(path: string) => {
+  await unlink(path).catch(err => { console.warn('Backup temporary file cleanup failed', err) })
+}
+
 export const handleSaveFile = async(path: string, data: any) => {
-  // if (!path.endsWith('.json')) path += '.json'
-  // const buffer = gzip(data)
-  const tempFilePath = `${temporaryDirectoryPath}/tempFile.json`
-  await writeFile(tempFilePath, JSON.stringify(data))
-  await gzipFile(tempFilePath, path)
-  await unlink(tempFilePath)
+  const tempFilePath = getBackupTempPath()
+  try {
+    await writeFile(tempFilePath, JSON.stringify(data))
+    await gzipFile(tempFilePath, path)
+  } finally {
+    await cleanBackupTempFile(tempFilePath)
+  }
 }
 export const handleReadFile = async<T = unknown>(path: string): Promise<T> => {
-  let isJSON = path.endsWith('.json')
   let data
-  if (isJSON) {
+  if (path.toLowerCase().endsWith('.json')) {
     data = await readFile(path)
   } else {
-    const tempFilePath = `${temporaryDirectoryPath}/tempFile.json`
-    await unGzipFile(path, tempFilePath)
-    data = await readFile(tempFilePath)
-    await unlink(tempFilePath)
+    const tempFilePath = getBackupTempPath()
+    try {
+      await unGzipFile(path, tempFilePath)
+      data = await readFile(tempFilePath)
+    } finally {
+      await cleanBackupTempFile(tempFilePath)
+    }
   }
   data = JSON.parse(data)
 

@@ -20,6 +20,12 @@
 
 安装依赖并连接 Android 设备后，运行 `npm run android`；独立 APK 打包使用 `npm run pack:android:standalone`。离线语音构建还需要 Rust 和 Android 编译目标，见 [离线语音输入](docs/Android语音输入.md)。详见 [Android 启动与打包](docs/Android启动与打包.md)。
 
+## 备份与恢复
+
+卸载前可在 **设置 → 备份与恢复 → 应用备份** 手动导出设置、音源脚本、收藏和歌单等数据，
+保存到 `Download`、`Documents` 或外置存储的公共目录。重装后选择 **恢复备份**，确认后重新打开应用生效。
+不自动备份、不上传数据；备份文件未加密，请妥善保管。详见 [手动备份与恢复](docs/手动备份与恢复.md)。
+
 ## 版本与更新
 
 本项目从 **1.0.0** 开始独立编号，不跟随 LX Music Mobile 的版本号。
