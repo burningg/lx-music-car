@@ -38,7 +38,7 @@ const flush = async() => new Promise(resolve => { setImmediate(resolve) })
 
 const playbackStates = Object.fromEntries(['None', 'Ready', 'Playing', 'Paused', 'Stopped', 'Buffering', 'Connecting'].map(state => [state, state]))
 
-function setup({ permission = 'granted', available = true, locale = 'zh_cn', playbackState = 'Paused', initialized = true, pauseResult, resumeResult } = {}) {
+function setup({ permission = 'granted', available = true, locale = 'zh_cn', playbackState = 'Paused', initialized = true, pauseResult, resumeResult, searchPlayback = false, modal = false } = {}) {
   const messages = []; const results = []; const requests = []; const cleanups = []
   const listeners = {}
   const callbacks = {}
@@ -55,7 +55,7 @@ function setup({ permission = 'granted', available = true, locale = 'zh_cn', pla
       return { remove() { list.delete(callback); if (!list.size) delete listeners[name] } }
     },
   }
-  const useVoiceSearch = load('src/components/VoiceSearchModal/useVoiceSearch.ts', {
+  const useSpeechRecognition = load('src/components/SpeechRecognitionModal/useSpeechRecognition.ts', {
     react: { ...React, useEffect: create => { if (!cleanups.length) cleanups.push(create()) } },
     'react-native': {
       AppState: appState,
@@ -66,6 +66,21 @@ function setup({ permission = 'granted', available = true, locale = 'zh_cn', pla
         request: async name => { assert.equal(name, 'microphone'); ++permissionRequests; return permission },
       },
     },
+    '@/lang': { useI18n: () => key => key },
+    '@/utils/tools': { toast: message => messages.push(message) },
+    '@/utils/nativeModules/speechRecognition': {
+      isSpeechRecognitionAvailable: async() => available,
+      onSpeechRecognitionState: handler => appState.addEventListener('speech', handler).remove,
+      startSpeechRecognition: language => {
+        playback.events.push('recording-start')
+        const result = deferred()
+        requests.push({ language, ...result })
+        return result.promise.finally(() => { playback.events.push('recording-stopped') })
+      },
+      cancelSpeechRecognition: () => { ++cancelled; playback.events.push('cancel-recording') },
+    },
+  }, { i18n: { locale } }).default
+  const prepare = searchPlayback ? load('src/screens/Home/Views/Search/HeaderBar/prepareVoiceSearch.ts', {
     'react-native-track-player': {
       __esModule: true,
       State: playbackStates,
@@ -89,23 +104,27 @@ function setup({ permission = 'granted', available = true, locale = 'zh_cn', pla
     },
     '@/plugins/player': { isInitialized: () => playback.initialized },
     '@/store/player/state': { __esModule: true, default: playerState },
+  }, { lx }).default : undefined
+  function Harness() {
+    const recognition = useSpeechRecognition(text => results.push(text))
+    api = { ...recognition, start: () => recognition.start(prepare) }
+    return React.createElement('View')
+  }
+  const Component = modal ? load('src/components/SpeechRecognitionModal/SpeechRecognitionModal.tsx', {
+    react: { ...React, useImperativeHandle: (_, create) => { api = create() }, useEffect() {} },
+    'react/jsx-runtime': require('react/jsx-runtime'),
+    'react-native': { ActivityIndicator: 'ActivityIndicator', Modal: 'Modal', View: 'View', StyleSheet: { absoluteFillObject: {} } },
+    '@/components/car/CarText': { default: 'CarText', __esModule: true },
+    '@/components/car/IconButton': { default: 'IconButton', __esModule: true },
     '@/lang': { useI18n: () => key => key },
-    '@/utils/tools': { toast: message => messages.push(message) },
-    '@/utils/nativeModules/speechRecognition': {
-      isSpeechRecognitionAvailable: async() => available,
-      onSpeechRecognitionState: handler => appState.addEventListener('speech', handler).remove,
-      startSpeechRecognition: language => {
-        playback.events.push('recording-start')
-        const result = deferred()
-        requests.push({ language, ...result })
-        return result.promise.finally(() => { playback.events.push('recording-stopped') })
-      },
-      cancelSpeechRecognition: () => { ++cancelled; playback.events.push('cancel-recording') },
-    },
-  }, { i18n: { locale }, lx }).default
-  function Harness() { api = useVoiceSearch(text => results.push(text)); return React.createElement('View') }
+    '@/store/theme/hook': { useTheme: () => DAYLIGHT_TOKENS },
+    '@/utils/hooks/useWindowSize': { default: () => ({ width: 1920, height: 1080 }), __esModule: true },
+    '@/utils/pixelRatio': { px: n => n },
+    './useSpeechRecognition': { default: useSpeechRecognition, __esModule: true },
+  }).default : Harness
   const renderer = new ShallowRenderer()
-  renderer.render(React.createElement(Harness))
+  const render = () => renderer.render(React.createElement(Component, { onResult: text => results.push(text) }))
+  render()
   return {
     messages,
     results,
@@ -119,8 +138,13 @@ function setup({ permission = 'granted', available = true, locale = 'zh_cn', pla
     get permissionRequests() { return permissionRequests },
     get cancelled() { return cancelled },
     unmount() { cleanups.splice(0).forEach(fn => fn()); renderer.unmount() },
-    remount() { renderer.render(React.createElement(Harness)) },
+    remount: render,
+    output: () => renderer.getRenderOutput(),
   }
+}
+
+function setupSearch(options = {}) {
+  return setup({ ...options, searchPlayback: true })
 }
 
 for (const [locale, language] of [['zh_cn', 'zh-CN'], ['zh_tw', 'zh-TW'], ['en_us', 'en-US']]) {
@@ -138,7 +162,7 @@ for (const [locale, language] of [['zh_cn', 'zh-CN'], ['zh_tw', 'zh-TW'], ['en_u
   })
 }
 
-for (const [permission, message] of [['denied', 'search_voice_permission'], ['never', 'search_voice_permission_settings']]) {
+for (const [permission, message] of [['denied', 'speech_recognition_permission'], ['never', 'speech_recognition_permission_settings']]) {
   test(`permission ${permission} never starts the microphone`, async() => {
     const ctx = setup({ permission })
     await ctx.api.start()
@@ -151,7 +175,7 @@ for (const [permission, message] of [['denied', 'search_voice_permission'], ['ne
 test('missing service is reported before asking for microphone access', async() => {
   const ctx = setup({ available: false })
   await ctx.api.start()
-  assert.deepEqual(ctx.messages, ['search_voice_unavailable'])
+  assert.deepEqual(ctx.messages, ['speech_recognition_unavailable'])
   assert.equal(ctx.permissionRequests, 0)
 })
 
@@ -236,11 +260,11 @@ for (const action of ['back', 'background', 'unmount']) {
 }
 
 for (const [code, message] of [
-  ['E_NO_MATCH', 'search_voice_no_match'], ['E_TIMEOUT', 'search_voice_no_match'],
-  ['E_NETWORK', 'search_voice_network'], ['E_AUDIO', 'search_voice_audio'],
-  ['E_BUSY', 'search_voice_busy'], ['E_LANGUAGE', 'search_voice_language'],
-  ['E_MODEL', 'search_voice_model_error'],
-  ['E_PERMISSION', 'search_voice_permission'], ['E_RECOGNITION', 'search_voice_failed'],
+  ['E_NO_MATCH', 'speech_recognition_no_match'], ['E_TIMEOUT', 'speech_recognition_no_match'],
+  ['E_NETWORK', 'speech_recognition_network'], ['E_AUDIO', 'speech_recognition_audio'],
+  ['E_BUSY', 'speech_recognition_busy'], ['E_LANGUAGE', 'speech_recognition_language'],
+  ['E_MODEL', 'speech_recognition_model_error'],
+  ['E_PERMISSION', 'speech_recognition_permission'], ['E_RECOGNITION', 'speech_recognition_failed'],
   ['E_CANCELLED', null],
 ]) {
   test(`${code} preserves input and resets the session`, async() => {
@@ -262,53 +286,50 @@ test('empty final results never erase the input', async() => {
   ctx.requests[0].resolve('   ')
   await running
   assert.deepEqual(ctx.results, [])
-  assert.deepEqual(ctx.messages, ['search_voice_no_match'])
+  assert.deepEqual(ctx.messages, ['speech_recognition_no_match'])
 })
 
 test('shared voice entry exports the modal and recognition hook without page dependencies', () => {
-  const VoiceSearchModal = () => null
-  const useVoiceSearch = () => ({})
-  const shared = load('src/components/VoiceSearchModal/index.ts', {
-    './VoiceSearchModal': { __esModule: true, default: VoiceSearchModal },
-    './useVoiceSearch': { __esModule: true, default: useVoiceSearch },
+  const SpeechRecognitionModal = () => null
+  const useSpeechRecognition = () => ({})
+  const shared = load('src/components/SpeechRecognitionModal/index.ts', {
+    './SpeechRecognitionModal': { __esModule: true, default: SpeechRecognitionModal },
+    './useSpeechRecognition': { __esModule: true, default: useSpeechRecognition },
   })
-  assert.equal(shared.default, VoiceSearchModal)
-  assert.equal(shared.useVoiceSearch, useVoiceSearch)
+  assert.equal(shared.default, SpeechRecognitionModal)
+  assert.equal(shared.useSpeechRecognition, useSpeechRecognition)
 })
 
-test('header follows the design: separate accent mic after source; STT fills without submission', () => {
-  let resultHandler; let inputRef; let api; let cancelled = 0
-  const changes = []; const searches = []; const inputValues = []
+test('search owns result handling, prompts, layout and playback preparation', () => {
+  let api; let voiceKey; let cancelled = 0; let blurred = 0; let dismissed = 0; let hidden = 0
+  const changes = []; const searches = []; const inputValues = []; const starts = []
+  const prepareVoiceSearch = async() => {}
+  const design = JSON.parse(readFileSync(path.resolve(__dirname, '../design/lx-music-car-claude.pen'), 'utf8'))
+  const railWidth = findNode(design, 'sOwkY').width
   const Header = load('src/screens/Home/Views/Search/HeaderBar/index.tsx', {
     react: { ...React, useImperativeHandle: (_, create) => { api = create() } },
     'react/jsx-runtime': require('react/jsx-runtime'),
-    'react-native': { View: 'View', Platform: { OS: 'android' }, Keyboard: { dismiss() {} } },
+    'react-native': { View: 'View', Platform: { OS: 'android' }, Keyboard: { dismiss() { ++dismissed } } },
     '@/components/SourceSelector': { default: 'SourceSelector', __esModule: true },
     './SearchInput': { default: 'SearchInput', __esModule: true },
+    './prepareVoiceSearch': { default: prepareVoiceSearch, __esModule: true },
+    './useVoiceKey': { default: handler => { voiceKey = handler }, __esModule: true },
     '@/lang': { useI18n: () => key => key },
-    '@/components/car': { CarText: 'CarText', IconButton: 'IconButton' },
+    '@/components/car': { CarText: 'CarText', IconButton: 'IconButton', NAV_RAIL_WIDTH: railWidth },
     '@/utils/pixelRatio': { px: n => n },
+    '@/utils/hooks/useWindowSize': { default: () => ({ width: 1920, height: 1080 }), __esModule: true },
     '@/store/theme/hook': { useTheme: () => ({ accent: '#E8562A', 'on-primary': '#fff' }) },
-    '@/components/VoiceSearchModal': {
-      __esModule: true,
-      default: 'VoiceSearchModal',
-      useVoiceSearch: handler => {
-        resultHandler = handler
-        return { isRecognizing: false, start() {}, cancel() { ++cancelled } }
-      },
-    },
+    '@/components/SpeechRecognitionModal': { __esModule: true, default: 'SpeechRecognitionModal' },
   }).default
   const renderer = new ShallowRenderer()
   renderer.render(React.createElement(Header, {
-    onTipSearch: text => changes.push(text), onSearch: text => searches.push(text),
+    onTipSearch: text => changes.push(text), onSearch: text => searches.push(text), onHideTipList: () => { ++hidden },
   }))
   const nodes = React.Children.toArray(renderer.getRenderOutput().props.children)
   assert.equal(nodes[1].type, 'SearchInput')
-  inputRef = nodes[1].ref
-  inputRef.current = { setText: text => inputValues.push(text) }
+  nodes[1].ref.current = { setText: text => inputValues.push(text), blur() { ++blurred } }
   assert.equal(nodes[2].type, 'SourceSelector')
   const button = nodes[3].props.children[0]
-  const design = JSON.parse(readFileSync(path.resolve(__dirname, '../design/lx-music-car-claude.pen'), 'utf8'))
   const searchPage = design.children.find(n => n.id == 'x7pOo')
   const header = searchPage.children.find(n => n.name == 'Main').children.find(n => n.name == 'Header')
   const voice = header.children.find(n => n.name == 'Voice')
@@ -318,17 +339,39 @@ test('header follows the design: separate accent mic after source; STT fills wit
   assert.equal(button.props.icon, 'lucide-mic')
   assert.equal(button.props.background, '#E8562A')
   assert.equal(button.props.color, '#fff')
-  assert.equal(button.props.accessibilityLabel, 'search_voice_start')
+  assert.equal(button.props.accessibilityLabel, 'speech_recognition_start')
   const modal = nodes[3].props.children[1]
-  assert.equal(modal.type, 'VoiceSearchModal')
-  assert.equal(modal.props.visible, false)
-  modal.props.onCancel()
+  assert.equal(modal.type, 'SpeechRecognitionModal')
+  assert.equal(modal.props.prompt, 'search_voice_listening')
+  assert.equal(modal.props.hint, 'search_voice_fill_hint')
+  assert.equal(modal.props.contentInsetLeft, railWidth)
+  for (const prop of ['visible', 'isPreparing', 'isProcessing']) assert.equal(Object.hasOwn(modal.props, prop), false)
+  modal.ref.current = { start: async prepare => { starts.push(prepare) }, cancel() { ++cancelled } }
+  button.props.onPress()
+  assert.deepEqual(starts, [prepareVoiceSearch])
+  assert.equal(blurred, 1)
+  assert.equal(dismissed, 1)
+  assert.equal(hidden, 1)
+  voiceKey()
+  assert.deepEqual(starts, [prepareVoiceSearch, prepareVoiceSearch], 'hardware key uses the same preparation and result path')
+  assert.equal(blurred, 2)
+  assert.equal(dismissed, 2)
+  assert.equal(hidden, 2)
+  modal.props.onRecognizingChange(true)
+  voiceKey()
+  assert.equal(starts.length, 2, 'hardware wake does not restart an active recognition')
+  assert.equal(cancelled, 0, 'hardware wake is not the touch button cancel toggle')
+  const busyButton = React.Children.toArray(renderer.getRenderOutput().props.children)[3].props.children[0]
+  assert.equal(busyButton.props.icon, 'lucide-x')
+  assert.equal(busyButton.props.accessibilityState.busy, true)
+  assert.equal(busyButton.props.accessibilityLabel, 'speech_recognition_cancel')
+  busyButton.props.onPress()
   assert.equal(cancelled, 1)
   cancelled = 0
-  resultHandler('周杰伦')
+  modal.props.onResult('周杰伦')
   assert.deepEqual(inputValues, ['周杰伦'])
   assert.deepEqual(changes, ['周杰伦'])
-  assert.deepEqual(searches, [])
+  assert.deepEqual(searches, [], 'recognition only fills the input; it never submits a search')
   api.setText('新的搜索')
   nodes[1].props.onEdit()
   assert.equal(cancelled, 2)
@@ -391,31 +434,41 @@ const navRailDesign = findNode(voiceDesign, 'sOwkY')
 const backdropDesign = findNode(voiceDesign, 'U5jSt')
 const dialogDesign = backdropDesign.children[0]
 
-function renderVoiceModal({ theme = DAYLIGHT_TOKENS, width = 1920, height = 1080, scale = 1, ...props } = {}) {
-  const VoiceModal = load('src/components/VoiceSearchModal/VoiceSearchModal.tsx', {
-    react: React,
+function renderVoiceModal({ theme = DAYLIGHT_TOKENS, width = 1920, height = 1080, scale = 1, visible = true, isPreparing = false, isProcessing = false, onCancel = () => {}, ...props } = {}) {
+  let api; let resultHandler
+  const starts = []; const states = []
+  const VoiceModal = load('src/components/SpeechRecognitionModal/SpeechRecognitionModal.tsx', {
+    react: { ...React, useImperativeHandle: (_, create) => { api = create() }, useEffect: create => { create() } },
     'react/jsx-runtime': require('react/jsx-runtime'),
     'react-native': { ActivityIndicator: 'ActivityIndicator', Modal: 'Modal', View: 'View', StyleSheet: { absoluteFillObject: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 } } },
-    '@/components/car': { CarText: 'CarText', IconButton: 'IconButton', NAV_RAIL_WIDTH: navRailDesign.width },
+    '@/components/car/CarText': { default: 'CarText', __esModule: true },
+    '@/components/car/IconButton': { default: 'IconButton', __esModule: true },
     '@/lang': { useI18n: () => key => key },
     '@/store/theme/hook': { useTheme: () => theme },
     '@/utils/hooks/useWindowSize': { default: () => ({ width, height }), __esModule: true },
     '@/utils/pixelRatio': { px: n => n * scale },
+    './useSpeechRecognition': {
+      __esModule: true,
+      default: onResult => {
+        resultHandler = onResult
+        return { isRecognizing: visible, isPreparing, isProcessing, start: async prepare => { starts.push(prepare) }, cancel: onCancel }
+      },
+    },
   }).default
   const renderer = new ShallowRenderer()
-  renderer.render(React.createElement(VoiceModal, { visible: true, isPreparing: false, isProcessing: false, ...props }))
+  renderer.render(React.createElement(VoiceModal, { onResult() {}, onRecognizingChange: state => states.push(state), ...props }))
   const modal = renderer.getRenderOutput()
   const overlay = modal.props.children
   const [scrim, dialog] = React.Children.toArray(overlay.props.children)
   const [header, transcript, border] = React.Children.toArray(dialog.props.children)
   const [status, close] = React.Children.toArray(header.props.children)
   const [indicator, title] = React.Children.toArray(status.props.children)
-  return { modal, overlay, scrim, dialog, header, transcript, border, close, indicator, title }
+  return { modal, overlay, scrim, dialog, header, transcript, border, close, indicator, title, api, resultHandler, starts, states }
 }
 
 for (const [mode, theme] of [['light', DAYLIGHT_TOKENS], ['dark', NOCTURNE_TOKENS]]) {
   test(`voice dialog matches U5jSt geometry and ${mode} design tokens`, () => {
-    const { modal, overlay, scrim, dialog, header, transcript, border, close, indicator, title } = renderVoiceModal({ theme })
+    const { modal, overlay, scrim, dialog, header, transcript, border, close, indicator, title } = renderVoiceModal({ theme, contentInsetLeft: navRailDesign.width })
     assert.equal(modal.props.transparent, true)
     // The backdrop still has an old 112px inset in Pen; center against the enlarged shared rail.
     assert.equal(overlay.props.style.paddingLeft, navRailDesign.width)
@@ -442,7 +495,7 @@ for (const [mode, theme] of [['light', DAYLIGHT_TOKENS], ['dark', NOCTURNE_TOKEN
     assert.equal(close.props.radius, 12)
     assert.equal(close.props.iconSize, 24)
     assert.equal(close.props.color, theme['text-2'])
-    assert.equal(title.props.children, 'search_voice_listening_title')
+    assert.equal(title.props.children, 'speech_recognition_listening_title')
     assert.equal(title.props.size, 24)
     assert.equal(title.props.accessibilityLiveRegion, 'polite')
     assert.equal(indicator.props.style.width, 56)
@@ -453,9 +506,32 @@ for (const [mode, theme] of [['light', DAYLIGHT_TOKENS], ['dark', NOCTURNE_TOKEN
     const [words, hint] = React.Children.toArray(transcript.props.children)
     assert.equal(words.props.size, 38)
     assert.equal(words.props.lineHeight, 1.35)
-    assert.equal(words.props.children, 'search_voice_listening', 'show an honest prompt, not a fabricated transcript')
+    assert.equal(words.props.children, 'speech_recognition_listening', 'show an honest prompt, not a fabricated transcript')
     assert.equal(hint.props.size, 20)
-    assert.equal(hint.props.children, 'search_voice_fill_hint', 'preserve fill-only search behavior')
+    assert.equal(hint.props.children, 'speech_recognition_hint', 'default guidance must not refer to any business action')
+  })
+}
+
+test('standalone speech modal returns text through onResult and starts without business configuration', async() => {
+  const results = []
+  const { api, resultHandler, starts, states, overlay, dialog } = renderVoiceModal({ onResult: text => results.push(text) })
+  await api.start()
+  assert.deepEqual(starts, [undefined])
+  resultHandler('这是一段普通的语音内容')
+  assert.deepEqual(results, ['这是一段普通的语音内容'])
+  assert.deepEqual(states, [true])
+  assert.equal(overlay.props.style.paddingLeft, 0, 'the caller owns any navigation rail inset')
+  assert.equal(dialog.props.style.width, 720)
+})
+
+for (const locale of ['zh-cn', 'zh-tw', 'en-us']) {
+  test(`${locale} provides neutral speech prompts and localized recognition errors`, () => {
+    const messages = JSON.parse(readFileSync(path.resolve(__dirname, `../src/lang/${locale}.json`), 'utf8'))
+    const sources = ['SpeechRecognitionModal.tsx', 'useSpeechRecognition.ts'].map(file => readFileSync(path.resolve(__dirname, '../src/components/SpeechRecognitionModal', file), 'utf8')).join('\n')
+    const keys = new Set([...sources.matchAll(/'(speech_recognition_[^']+)'/g)].map(match => match[1]))
+    for (const key of keys) assert.ok(messages[key], `missing ${key}`)
+    assert.notEqual(messages.speech_recognition_listening, messages.search_voice_listening)
+    assert.notEqual(messages.speech_recognition_hint, messages.search_voice_fill_hint)
   })
 }
 
@@ -464,20 +540,22 @@ test('shared voice modal accepts page-specific prompts and hints', () => {
   const [words, hint] = React.Children.toArray(transcript.props.children)
   assert.equal(words.props.children, '说出想听的歌曲')
   assert.equal(hint.props.children, '识别结果将交给当前页面处理')
-  assert.equal(title.props.children, 'search_voice_listening_title')
+  assert.equal(title.props.children, 'speech_recognition_listening_title')
 })
 
-test('voice modal has explicit visibility, close action and Android back cancellation', () => {
+test('voice modal follows recognition visibility and cancels through close, ref and Android back', () => {
   let cancelled = 0
-  const { modal, close } = renderVoiceModal({ visible: false, onCancel: () => { ++cancelled } })
+  const { modal, close, api, states } = renderVoiceModal({ visible: false, onCancel: () => { ++cancelled } })
   assert.equal(modal.props.visible, false)
-  assert.equal(close.props.accessibilityLabel, 'search_voice_cancel')
+  assert.equal(close.props.accessibilityLabel, 'speech_recognition_cancel')
   close.props.onPress()
   modal.props.onRequestClose()
-  assert.equal(cancelled, 2)
+  api.cancel()
+  assert.equal(cancelled, 3)
+  assert.deepEqual(states, [false])
 })
 
-for (const [state, label] of [['isPreparing', 'search_voice_preparing'], ['isProcessing', 'search_voice_processing']]) {
+for (const [state, label] of [['isPreparing', 'speech_recognition_preparing'], ['isProcessing', 'speech_recognition_processing']]) {
   test(`${state} displays progress instead of a listening indicator`, () => {
     const { title, indicator } = renderVoiceModal({ [state]: true })
     assert.equal(title.props.children, label)
@@ -487,8 +565,8 @@ for (const [state, label] of [['isPreparing', 'search_voice_preparing'], ['isPro
 
 test('voice modal centers in the remaining content width at every landscape scale', () => {
   for (const [width, height, scale] of [[1920, 1080, 1], [1280, 720, 2 / 3], [960, 540, 0.5], [800, 720, 1]]) {
-    const { overlay, dialog } = renderVoiceModal({ width, height, scale })
     const railWidth = navRailDesign.width * scale
+    const { overlay, dialog } = renderVoiceModal({ width, height, scale, contentInsetLeft: railWidth })
     assert.equal(overlay.props.style.paddingLeft, railWidth)
     assert.equal(overlay.props.style.alignItems, 'center')
     assert.equal(dialog.props.style.width, Math.min(dialogDesign.width * scale, width - railWidth - 48 * scale))
@@ -505,9 +583,45 @@ test('voice modal fits narrow portrait windows without a navigation rail offset'
 })
 
 
+for (const outcome of ['success', 'cancel']) {
+  test(`standalone modal manages the real recognition lifecycle: ${outcome}`, async() => {
+    const ctx = setup({ modal: true })
+    assert.equal(ctx.output().props.visible, false)
+    const running = ctx.api.start()
+    await flush()
+    assert.equal(ctx.output().props.visible, true)
+    assert.equal(ctx.requests.length, 1)
+    if (outcome == 'cancel') {
+      ctx.output().props.onRequestClose()
+      assert.equal(ctx.output().props.visible, false)
+      assert.equal(ctx.cancelled, 1)
+    }
+    ctx.requests[0].resolve('  普通语音内容  ')
+    await running
+    assert.deepEqual(ctx.results, outcome == 'success' ? ['普通语音内容'] : [])
+    assert.equal(ctx.output().props.visible, false)
+    assert.equal(ctx.playback.stateReads, 0)
+    ctx.unmount()
+    assert.equal(Object.keys(ctx.listeners).length, 0)
+  })
+}
+
+test('standalone recognition handles arbitrary text without accessing playback or search state', async() => {
+  const ctx = setup({ playbackState: 'Playing' })
+  const running = ctx.api.start()
+  await flush()
+  ctx.requests[0].resolve('  明天上午开会  ')
+  await running
+  assert.deepEqual(ctx.results, ['明天上午开会'])
+  assert.equal(ctx.playback.stateReads, 0)
+  assert.equal(ctx.playback.pauseCalls, 0)
+  assert.equal(ctx.playback.playCalls, 0)
+  assert.equal(ctx.playback.state, 'Playing')
+})
+
 for (const playbackState of ['Playing', 'Buffering']) {
   test(`${playbackState} music pauses before recording and resumes after recognition`, async() => {
-    const ctx = setup({ playbackState })
+    const ctx = setupSearch({ playbackState })
     const running = ctx.api.start()
     await flush()
     assert.deepEqual(ctx.playback.events, ['pause-request', 'paused', 'recording-start'])
@@ -525,7 +639,7 @@ for (const playbackState of ['Playing', 'Buffering']) {
 
 for (const playbackState of ['Paused', 'Stopped', 'None', 'Ready', 'Connecting']) {
   test(`${playbackState} playback is not started by voice recognition`, async() => {
-    const ctx = setup({ playbackState })
+    const ctx = setupSearch({ playbackState })
     const running = ctx.api.start()
     await flush()
     ctx.requests[0].resolve('歌名')
@@ -537,7 +651,7 @@ for (const playbackState of ['Paused', 'Stopped', 'None', 'Ready', 'Connecting']
 }
 
 test('voice recognition works before the music player has been initialized', async() => {
-  const ctx = setup({ initialized: false })
+  const ctx = setupSearch({ initialized: false })
   const running = ctx.api.start()
   await flush()
   ctx.requests[0].resolve('歌名')
@@ -548,7 +662,7 @@ test('voice recognition works before the music player has been initialized', asy
 
 for (const options of [{ permission: 'denied' }, { available: false }]) {
   test(`failed prerequisites ${JSON.stringify(options)} do not interrupt music`, async() => {
-    const ctx = setup({ playbackState: 'Playing', ...options })
+    const ctx = setupSearch({ playbackState: 'Playing', ...options })
     await ctx.api.start()
     assert.equal(ctx.playback.pauseCalls, 0)
     assert.equal(ctx.playback.playCalls, 0)
@@ -558,7 +672,7 @@ for (const options of [{ permission: 'denied' }, { available: false }]) {
 
 for (const result of ['E_NO_MATCH', 'E_TIMEOUT', 'E_AUDIO', 'E_MODEL', 'E_CANCELLED', 'empty']) {
   test(`${result} restores the music paused for this session`, async() => {
-    const ctx = setup({ playbackState: 'Playing' })
+    const ctx = setupSearch({ playbackState: 'Playing' })
     const running = ctx.api.start()
     await flush()
     if (result == 'empty') ctx.requests[0].resolve(' ')
@@ -572,7 +686,7 @@ for (const result of ['E_NO_MATCH', 'E_TIMEOUT', 'E_AUDIO', 'E_MODEL', 'E_CANCEL
 
 for (const action of ['cancel', 'back', 'background', 'unmount']) {
   test(`${action} restores playback only after the microphone stops`, async() => {
-    const ctx = setup({ playbackState: 'Playing' })
+    const ctx = setupSearch({ playbackState: 'Playing' })
     const running = ctx.api.start()
     await flush()
     if (action == 'cancel') ctx.api.cancel()
@@ -596,7 +710,7 @@ for (const action of ['cancel', 'back', 'background', 'unmount']) {
 
 test('recording waits for the asynchronous pause operation', async() => {
   const pausing = deferred()
-  const ctx = setup({ playbackState: 'Playing', pauseResult: pausing.promise })
+  const ctx = setupSearch({ playbackState: 'Playing', pauseResult: pausing.promise })
   const running = ctx.api.start()
   await flush()
   assert.equal(ctx.playback.pauseCalls, 1)
@@ -612,7 +726,7 @@ test('recording waits for the asynchronous pause operation', async() => {
 for (const action of ['cancel', 'background', 'unmount']) {
   test(`${action} while pausing restores music without opening the microphone`, async() => {
     const pausing = deferred()
-    const ctx = setup({ playbackState: 'Playing', pauseResult: pausing.promise })
+    const ctx = setupSearch({ playbackState: 'Playing', pauseResult: pausing.promise })
     const running = ctx.api.start()
     await flush()
     if (action == 'cancel') ctx.api.cancel()
@@ -631,20 +745,20 @@ for (const action of ['cancel', 'background', 'unmount']) {
 
 test('a failed pause aborts recognition instead of recording over music', async() => {
   const pausing = deferred()
-  const ctx = setup({ playbackState: 'Playing', pauseResult: pausing.promise })
+  const ctx = setupSearch({ playbackState: 'Playing', pauseResult: pausing.promise })
   const running = ctx.api.start()
   await flush()
   pausing.reject(new Error('pause failed'))
   await running
   assert.equal(ctx.requests.length, 0)
   assert.equal(ctx.playback.playCalls, 0)
-  assert.deepEqual(ctx.messages, ['search_voice_failed'])
+  assert.deepEqual(ctx.messages, ['speech_recognition_failed'])
   assert.equal(ctx.api.isRecognizing, false)
 })
 
 for (const change of ['track', 'stop', 'destroy', 'scheduled-stop', 'already-playing']) {
   test(`playback ${change} during recognition is not overridden on completion`, async() => {
-    const ctx = setup({ playbackState: 'Playing' })
+    const ctx = setupSearch({ playbackState: 'Playing' })
     const running = ctx.api.start()
     await flush()
     if (change == 'track') ctx.playerState.playMusicInfo = { musicInfo: { id: 'other-song' }, listId: 'list' }
@@ -660,7 +774,7 @@ for (const change of ['track', 'stop', 'destroy', 'scheduled-stop', 'already-pla
 
 test('cancel then immediately retry waits for old recorder cleanup and never resumes during new recording', async() => {
   const resuming = deferred()
-  const ctx = setup({ playbackState: 'Playing', resumeResult: resuming.promise })
+  const ctx = setupSearch({ playbackState: 'Playing', resumeResult: resuming.promise })
   const first = ctx.api.start()
   await flush()
   ctx.api.cancel()
@@ -688,7 +802,7 @@ test('cancel then immediately retry waits for old recorder cleanup and never res
 
 test('resume failure still cleans up recognition and allows later sessions', async() => {
   const resuming = deferred()
-  const ctx = setup({ playbackState: 'Playing', resumeResult: resuming.promise })
+  const ctx = setupSearch({ playbackState: 'Playing', resumeResult: resuming.promise })
   const first = ctx.api.start()
   await flush()
   ctx.requests[0].resolve('第一次')
@@ -707,7 +821,7 @@ test('resume failure still cleans up recognition and allows later sessions', asy
 
 
 test('reopening search waits for playback restoration from the unmounted session', async() => {
-  const ctx = setup({ playbackState: 'Playing' })
+  const ctx = setupSearch({ playbackState: 'Playing' })
   const first = ctx.api.start()
   await flush()
   ctx.unmount()

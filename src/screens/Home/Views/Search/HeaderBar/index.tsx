@@ -1,4 +1,4 @@
-import { useRef, forwardRef, useImperativeHandle } from 'react'
+import { useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react'
 import { Keyboard, Platform, View } from 'react-native'
 import SourceSelector, {
   type SourceSelectorType as _SourceSelectorType,
@@ -6,10 +6,13 @@ import SourceSelector, {
 } from '@/components/SourceSelector'
 import SearchInput, { type SearchInputType, type SearchInputProps } from './SearchInput'
 import { useI18n } from '@/lang'
-import { CarText, IconButton } from '@/components/car'
+import { CarText, IconButton, NAV_RAIL_WIDTH } from '@/components/car'
 import { px } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
-import VoiceSearchModal, { useVoiceSearch } from '@/components/VoiceSearchModal'
+import SpeechRecognitionModal, { type SpeechRecognitionModalType } from '@/components/SpeechRecognitionModal'
+import useWindowSize from '@/utils/hooks/useWindowSize'
+import prepareVoiceSearch from './prepareVoiceSearch'
+import useVoiceKey from './useVoiceKey'
 import { type Source as MusicSource } from '@/store/search/music/state'
 import { type Source as SonglistSource } from '@/store/search/songlist/state'
 
@@ -36,12 +39,16 @@ export interface HeaderBarType {
 export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTipSearch, onSearch, onHideTipList, onShowTipList, onSearchInputLayout }, ref) => {
   const t = useI18n()
   const theme = useTheme()
+  const { width, height } = useWindowSize()
+  const speechRecognitionRef = useRef<SpeechRecognitionModalType>(null)
+  const [isRecognizing, setIsRecognizing] = useState(false)
   const sourceSelectorRef = useRef<SourceSelectorType>(null)
   const searchInputRef = useRef<SearchInputType>(null)
-  const { isRecognizing, isPreparing, isProcessing, start: startVoice, cancel: cancelVoice } = useVoiceSearch((text) => {
+  const cancelVoice = useCallback(() => { speechRecognitionRef.current?.cancel() }, [])
+  const handleVoiceResult = (text: string) => {
     searchInputRef.current?.setText(text)
     onTipSearch(text)
-  })
+  }
 
   useImperativeHandle(ref, () => ({
     setSourceList(list, source) {
@@ -56,15 +63,18 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
     },
   }), [cancelVoice])
 
-  const handleVoice = () => {
-    if (isRecognizing) {
-      cancelVoice()
-      return
-    }
+  const startVoice = () => {
+    if (isRecognizing) return
     searchInputRef.current?.blur()
     Keyboard.dismiss()
     onHideTipList()
-    void startVoice()
+    void speechRecognitionRef.current?.start(prepareVoiceSearch)
+  }
+  useVoiceKey(startVoice)
+
+  const handleVoice = () => {
+    if (isRecognizing) cancelVoice()
+    else startVoice()
   }
 
   return (
@@ -88,11 +98,18 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
             size={64}
             color={theme['on-primary']}
             background={theme.accent}
-            accessibilityLabel={t(isRecognizing ? 'search_voice_cancel' : 'search_voice_start')}
+            accessibilityLabel={t(isRecognizing ? 'speech_recognition_cancel' : 'speech_recognition_start')}
             accessibilityState={{ busy: isRecognizing }}
             onPress={handleVoice}
           />
-          <VoiceSearchModal visible={isRecognizing} isPreparing={isPreparing} isProcessing={isProcessing} onCancel={cancelVoice} />
+          <SpeechRecognitionModal
+            ref={speechRecognitionRef}
+            onResult={handleVoiceResult}
+            onRecognizingChange={setIsRecognizing}
+            prompt={t('search_voice_listening')}
+            hint={t('search_voice_fill_hint')}
+            contentInsetLeft={width > height ? px(NAV_RAIL_WIDTH) : 0}
+          />
         </View>
       ) : null}
     </View>
