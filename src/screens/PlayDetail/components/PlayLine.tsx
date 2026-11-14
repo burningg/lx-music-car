@@ -1,12 +1,10 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
-import { type NativeScrollEvent, type NativeSyntheticEvent, View, TouchableOpacity, Animated } from 'react-native'
-import Text from '@/components/common/Text'
-import { createStyle } from '@/utils/tools'
+import { type NativeScrollEvent, type NativeSyntheticEvent, View, TouchableOpacity, Animated, StyleSheet } from 'react-native'
+import { CarText, CarIcon } from '@/components/car'
 import { type Lines } from 'lrc-file-parser'
 import { useTheme } from '@/store/theme/hook'
-import { BorderWidths } from '@/theme'
 import { formatPlayTime2 } from '@/utils'
-import { Icon } from '@/components/common/Icon'
+import { px } from '@/utils/pixelRatio'
 
 
 export interface PlayLineType {
@@ -82,55 +80,47 @@ export default forwardRef<PlayLineType, PlayLineProps>(({ onPlayLine }, ref) => 
   const timeLabel = formatPlayTime2(time / 1000)
   return (
     <Animated.View style={{ ...styles.playLine, opacity: opsAnim }}>
-      <Text style={styles.label} color={theme['c-primary-font']} size={13}>{timeLabel}</Text>
+      <CarText size={13} weight="500" num color={theme.accent} style={styles.label}>{timeLabel}</CarText>
       <View style={styles.lineContent}>
-        <View style={{ ...styles.line, borderBottomColor: theme['c-primary-alpha-700'] }} />
+        <View style={{ ...styles.line, borderBottomColor: theme.accent, opacity: 0.5 }} />
         <TouchableOpacity style={styles.button} onPress={handlePlayLine}>
-          <Icon name="play" color={theme['c-button-font']} size={18} />
+          <CarIcon name="play" size={18} color={theme['text-1']} />
         </TouchableOpacity>
       </View>
     </Animated.View>
   )
 })
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   playLine: {
     position: 'absolute',
     width: '100%',
     top: '40%',
     left: 0,
-    height: 2,
-    // paddingTop: 5,
-    // paddingBottom: 5,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
+    height: px(2),
   },
   label: {
     position: 'absolute',
-    right: 45,
-    bottom: 3,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
+    right: px(45),
+    bottom: px(3),
   },
   lineContent: {
-    // backgroundColor: 'rgba(0,0,0,0.1)',
     position: 'absolute',
     width: '100%',
-    height: 20,
-    top: -10,
+    height: px(20),
+    top: px(-10),
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: px(5),
   },
   line: {
-    marginLeft: 30,
-    borderBottomWidth: BorderWidths.normal2,
+    marginLeft: px(30),
+    borderBottomWidth: px(2),
     borderStyle: 'dashed',
     flex: 1,
   },
   button: {
-    flex: 0,
-    paddingLeft: 5,
-    paddingRight: 15,
+    paddingLeft: px(5),
+    paddingRight: px(15),
   },
 })

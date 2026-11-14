@@ -56,7 +56,7 @@ export default memo(({ lyricsVisible, onToggleLyrics, onQueue }: SecondaryProps)
         active={lyricsVisible}
         selected={lyricsVisible}
         color={lyricsVisible ? theme.accent : theme['text-2']}
-        labelColor={lyricsVisible ? theme.isDark ? theme.accent : '#A93616' : theme['text-2']}
+        labelColor={lyricsVisible ? theme.accent : theme['text-2']}
         onPress={onToggleLyrics}
         onLongPress={openComment}
         accessibilityHint={t('car_hold_comments')}

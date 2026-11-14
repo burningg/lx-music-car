@@ -78,7 +78,7 @@ export default forwardRef<SheetType, SheetProps>(({ header, quick, actions, onPr
       onRequestClose={hide}
     >
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-end', padding: px(24) }}>
-        <Pressable style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.7)' }} onPress={hide} />
+        <Pressable style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: theme['voice-scrim'] }} onPress={hide} />
         <View style={{
           width: px(596),
           maxHeight: '100%',

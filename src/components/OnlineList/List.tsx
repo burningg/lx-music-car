@@ -1,16 +1,17 @@
 import { useMemo, useRef, useState, forwardRef, useImperativeHandle } from 'react'
-import { FlatList, type FlatListProps, RefreshControl, View } from 'react-native'
+import { FlatList, type FlatListProps, RefreshControl, View, StyleSheet } from 'react-native'
 
 // import { useMusicList } from '@/store/list/hook'
 import ListItem, { getItemHeight } from './ListItem'
-import { createStyle, type RowInfoType } from '@/utils/tools'
+import { type RowInfoType } from '@/utils/tools'
 import type { Position } from './ListMenu'
 import type { SelectMode } from './MultipleModeBar'
 import { useTheme } from '@/store/theme/hook'
 import settingState from '@/store/setting/state'
 import { MULTI_SELECT_BAR_HEIGHT } from './MultipleModeBar'
 import { useI18n } from '@/lang'
-import Text from '@/components/common/Text'
+import { CarText } from '@/components/car'
+import { px } from '@/utils/pixelRatio'
 import { handlePlay } from './listAction'
 import { useSettingValue } from '@/store/setting/hook'
 import { usePlayerMusicInfo } from '@/store/player/hook'
@@ -212,7 +213,7 @@ const List = forwardRef<ListType, ListProps>(({
   }
   const refreshControl = useMemo(() => (
     <RefreshControl
-      colors={[theme['c-primary']]}
+      colors={[theme.accent]}
       // progressBackgroundColor={theme.primary}
       refreshing={status == 'refreshing'}
       onRefresh={onRefresh} />
@@ -285,24 +286,21 @@ const Footer = ({ label, onLoadMore }: {
     label
       ? (
           <View>
-            <Text onPress={handlePress} style={styles.footer} color={theme['c-font-label']}>{t(label)}</Text>
+            <CarText size={15} color={theme['text-2']} onPress={handlePress} style={styles.footer}>{t(label)}</CarText>
           </View>
         )
       : null
   )
 }
 
-const styles = createStyle({
-  container: {
-    flex: 1,
-  },
+const styles = StyleSheet.create({
   list: {
     flexGrow: 1,
     flexShrink: 1,
   },
   footer: {
     textAlign: 'center',
-    padding: 10,
+    padding: px(10),
   },
 })
 

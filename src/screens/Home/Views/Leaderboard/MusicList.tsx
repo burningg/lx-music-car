@@ -110,7 +110,7 @@ export default forwardRef<MusicListType, MusicListProps>(({ onLoaded }, ref) => 
     onLoadMore={handleLoadMore}
     checkHomePagerIdle
     rowType='medium'
-    contentInsetBottom={px(12)}
+    contentInsetBottom={px(150)}
    />
 })
 

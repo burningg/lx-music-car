@@ -47,7 +47,7 @@ export default ({ onClose }: { onClose: () => void }) => {
 
   return (
     <Modal visible transparent statusBarTranslucent animationType="fade" onRequestClose={onClose}>
-      <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', backgroundColor: '#00000066' }}>
+      <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', backgroundColor: theme['voice-scrim'] }}>
         <Pressable accessibilityRole="button" accessibilityLabel={t('close')} onPress={onClose} style={{ flex: 1 }} />
         <View style={{ width: px(800), maxWidth: '90%', height: '100%', padding: px(40), backgroundColor: theme['surface-2'], gap: px(24) }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -62,7 +62,7 @@ export default ({ onClose }: { onClose: () => void }) => {
             ListEmptyComponent={<CarText size={24} color={theme['text-2']}>{t('car_queue_empty')}</CarText>}
             renderItem={({ item, index }) => {
               const music = 'progress' in item.musicInfo ? item.musicInfo.metadata.musicInfo : item.musicInfo
-              return <TrackRow index={index + 1} title={music.name} artist={music.singer} playing={current.musicInfo?.id == item.musicInfo.id} onPress={() => { select(item) }} />
+              return <TrackRow index={index} title={music.name} artist={music.singer} playing={current.musicInfo?.id == item.musicInfo.id} onPress={() => { select(item) }} />
             }}
           />
         </View>

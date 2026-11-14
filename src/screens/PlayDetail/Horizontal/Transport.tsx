@@ -48,8 +48,6 @@ export default memo(() => {
 
   const loopActive = playMode == MUSIC_TOGGLE_MODE.listLoop || playMode == MUSIC_TOGGLE_MODE.singleLoop
 
-  const accentLabel = theme.isDark ? theme.accent : '#A93616'
-
   return (
     <View style={{ width: px(576), height: px(112), flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: px(24) }}>
       <ActionButton
@@ -58,7 +56,7 @@ export default memo(() => {
         labelSize={20}
         selected={playMode == MUSIC_TOGGLE_MODE.random}
         color={playMode == MUSIC_TOGGLE_MODE.random ? theme.accent : theme['text-2']}
-        labelColor={playMode == MUSIC_TOGGLE_MODE.random ? accentLabel : theme['text-2']}
+        labelColor={playMode == MUSIC_TOGGLE_MODE.random ? theme.accent : theme['text-2']}
         onPress={toggleShuffle}
       />
       <IconButton icon="ph-skip-back-fill" iconSize={44} size={88} background={theme.glass} color={theme['text-1']} accessibilityLabel={t('play_prev')} onPress={handlePlayPrev} />
@@ -79,7 +77,7 @@ export default memo(() => {
         labelSize={20}
         selected={loopActive}
         color={loopActive ? theme.accent : theme['text-2']}
-        labelColor={loopActive ? accentLabel : theme['text-2']}
+        labelColor={loopActive ? theme.accent : theme['text-2']}
         onPress={nextPlayMode}
       />
     </View>

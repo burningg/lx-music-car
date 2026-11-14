@@ -134,7 +134,7 @@ export default forwardRef<MusicListType, MusicListProps>(({ onInfo }, ref) => {
           playListOnPress
           onRefresh={handleRefresh}
           onLoadMore={handleLoadMore}
-          contentInsetBottom={px(40)}
+          contentInsetBottom={px(150)}
         />
         <ListFade height={64} />
       </View>

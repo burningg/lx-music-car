@@ -12,7 +12,7 @@ export const ITEM_HEIGHT = getItemHeight()
 const useQualityTag = (musicInfo: LX.Music.MusicInfoOnline) => {
   const t = useI18n()
   if (musicInfo.meta._qualitys.flac24bit) return t('quality_lossless_24bit')
-  if (musicInfo.meta._qualitys.flac ?? musicInfo.meta._qualitys.ape) return t('quality_lossless')
+  if (musicInfo.meta._qualitys.flac || musicInfo.meta._qualitys.ape) return t('quality_lossless')
   if (musicInfo.meta._qualitys['320k']) return t('quality_high_quality')
   return undefined
 }

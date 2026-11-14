@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import OnlineList, { type OnlineListType, type OnlineListProps } from '@/components/OnlineList'
 import { search } from '@/core/search/music'
 import searchMusicState, { type Source } from '@/store/search/music/state'
+import { px } from '@/utils/pixelRatio'
 
 // export type MusicListProps = Pick<OnlineListProps,
 // 'onLoadMore'
@@ -97,6 +98,7 @@ export default forwardRef<MusicListType, { onResult?: (info: MusicResultInfo | n
     onRefresh={handleRefresh}
     onLoadMore={handleLoadMore}
     checkHomePagerIdle
+    contentInsetBottom={px(150)}
   />
 })
 
